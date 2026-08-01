@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse Music — MyGospelHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B0D;
+    --bg-raised:#141416;
+    --bg-card:#18181B;
+    --text:#F2EFE9;
+    --text-dim:#8A8780;
+    --gold:#D9A441;
+    --wine:#7A1F2B;
+    --wine-bright:#9C2C3A;
+    --line: rgba(242,239,233,0.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    padding-bottom:88px;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.01em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--gold);color:#0B0B0D;}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  button{font-family:inherit; cursor:pointer;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
+  }
+
+  /* ===== Nav ===== */
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 5%; position:sticky; top:0;
+    background:rgba(11,11,13,0.85); backdrop-filter:blur(10px);
+    z-index:100; border-bottom:1px solid var(--line);
+  }
+  .logo{font-family:'Fraunces',serif; font-size:22px; font-weight:700; display:flex; align-items:baseline; gap:2px;}
+  .logo .dot{color:var(--gold);}
+  .nav-links{display:flex; gap:36px; font-size:14px; font-weight:500;}
+  .nav-links a{color:var(--text-dim); transition:color 0.2s;}
+  .nav-links a:hover, .nav-links a.active{color:var(--text);}
+  .btn{padding:10px 20px; border-radius:100px; font-size:13px; font-weight:600; border:1px solid var(--line); background:transparent; color:var(--text); transition:all 0.2s;}
+  .btn-gold{background:var(--gold); color:#0B0B0D; border:1px solid var(--gold);}
+  .btn-gold:hover{background:#E5B45C;}
+
+  /* ===== Header + search ===== */
+  .browse-header{
+    padding:44px 5% 28px;
+    max-width:1400px; margin:0 auto;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:12px;
+  }
+  .browse-header h1{font-size:clamp(28px,3.6vw,40px); margin-bottom:22px;}
+
+  .search-bar{
+    position:relative;
+    max-width:640px;
+  }
+  .search-bar svg{
+    position:absolute; left:18px; top:50%; transform:translateY(-50%);
+    color:var(--text-dim); pointer-events:none;
+  }
+  .search-bar input{
+    width:100%;
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:15px 46px;
+    font-size:14.5px;
+    color:var(--text);
+    outline:none;
+    font-family:'Inter',sans-serif;
+    transition:border-color 0.2s;
+  }
+  .search-bar input:focus{border-color:var(--gold);}
+  .search-bar input::placeholder{color:var(--text-dim);}
+  .search-clear{
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:var(--text-dim); display:none;
+    width:22px; height:22px; align-items:center; justify-content:center; border-radius:50%;
+  }
+  .search-clear:hover{color:var(--text); background:var(--bg-raised);}
+  .search-clear.show{display:flex;}
+
+  /* ===== Filters ===== */
+  section{padding:0 5%; max-width:1400px; margin:0 auto;}
+  .filter-row{
+    display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+    padding:24px 0 8px;
+  }
+  .filter-group{display:flex; gap:10px; flex-wrap:wrap;}
+  .filter-label{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text-dim); margin-right:2px; align-self:center;
+  }
+  .chip{
+    padding:8px 16px; border-radius:100px; border:1px solid var(--line);
+    font-size:12.5px; font-weight:500; color:var(--text-dim); transition:all 0.2s; cursor:pointer;
+    background:transparent;
+  }
+  .chip:hover, .chip.active{border-color:var(--gold); color:var(--gold); background:rgba(217,164,65,0.08);}
+
+  .sort-select{
+    margin-left:auto;
+    background:var(--bg-card); border:1px solid var(--line); color:var(--text-dim);
+    font-size:12.5px; padding:9px 14px; border-radius:100px; font-family:'Inter',sans-serif;
+    outline:none; cursor:pointer;
+  }
+  .sort-select:focus{border-color:var(--gold);}
+
+  .results-count{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim);
+    padding:20px 0 16px; border-bottom:1px solid var(--line); margin-bottom:6px;
+  }
+  .results-count strong{color:var(--text); font-weight:600;}
+
+  /* ===== Track list ===== */
+  .track-list{display:flex; flex-direction:column; padding-bottom:60px;}
+  .track-row{
+    display:grid;
+    grid-template-columns:36px 52px 1fr auto auto 40px;
+    align-items:center;
+    gap:18px;
+    padding:13px 12px;
+    border-bottom:1px solid var(--line);
+    border-radius:10px;
+    transition:background 0.2s;
+    cursor:pointer;
+  }
+  .track-row:hover{background:var(--bg-card);}
+  .track-row.playing{background:rgba(217,164,65,0.06);}
+  .track-num{font-family:'JetBrains Mono',monospace; color:var(--text-dim); font-size:13px;}
+  .track-row:hover .track-num, .track-row.playing .track-num{color:var(--gold);}
+  .track-art{
+    width:52px; height:52px; border-radius:8px; flex-shrink:0;
+    background:linear-gradient(135deg, var(--wine-bright), #2A0810);
+    position:relative;
+  }
+  .eq{position:absolute; bottom:6px; left:6px; display:flex; align-items:flex-end; gap:2px; height:14px; z-index:1;}
+  .eq span{width:3px; background:var(--gold); border-radius:1px; animation:eqbar 0.9s ease-in-out infinite;}
+  .eq span:nth-child(1){height:40%; animation-delay:0s;}
+  .eq span:nth-child(2){height:100%; animation-delay:0.2s;}
+  .eq span:nth-child(3){height:65%; animation-delay:0.4s;}
+  @keyframes eqbar{0%,100%{transform:scaleY(0.4);}50%{transform:scaleY(1);}}
+  .track-title{font-size:15px; font-weight:600; margin-bottom:3px;}
+  .track-title mark{background:rgba(217,164,65,0.28); color:var(--gold); border-radius:2px; padding:0 1px;}
+  .track-artist{font-size:12.5px; color:var(--text-dim);}
+  .track-genre{
+    font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.05em; text-transform:uppercase;
+    padding:5px 10px; border-radius:100px; background:var(--bg-raised); color:var(--gold);
+    border:1px solid var(--line); white-space:nowrap;
+  }
+  .track-dur{font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--text-dim);}
+
+  .no-results{
+    text-align:center; padding:70px 20px; color:var(--text-dim);
+  }
+  .no-results .display{font-size:20px; color:var(--text); margin-bottom:10px;}
+  .no-results p{font-size:14px; max-width:360px; margin:0 auto; line-height:1.6;}
+
+  /* ===== Sticky Now Playing bar ===== */
+  .now-playing-bar{
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(15,15,17,0.92); backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);
+    padding:12px 5%;
+    display:flex; align-items:center; gap:20px;
+    z-index:200;
+  }
+  .np-track{display:flex; align-items:center; gap:12px; width:260px; min-width:0;}
+  .np-art{width:44px; height:44px; border-radius:7px; background:linear-gradient(135deg, var(--wine-bright), #2A0810); flex-shrink:0;}
+  .np-info{min-width:0;}
+  .np-title{font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .np-artist{font-size:11.5px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .np-controls{flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; max-width:520px; margin:0 auto;}
+  .np-buttons{display:flex; align-items:center; gap:18px;}
+  .np-buttons button{background:none; border:none; color:var(--text-dim); display:flex; align-items:center; justify-content:center; transition:color 0.2s;}
+  .np-buttons button:hover{color:var(--text);}
+  .np-play{width:34px; height:34px; border-radius:50%; background:var(--gold) !important; color:#0B0B0D !important; display:flex; align-items:center; justify-content:center;}
+  .np-play:hover{background:#E5B45C !important;}
+  .np-progress-row{display:flex; align-items:center; gap:10px; width:100%;}
+  .np-time{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-dim); width:34px;}
+  .np-time.right{text-align:right;}
+  .np-progress{flex:1; height:3px; border-radius:2px; background:rgba(242,239,233,0.15); position:relative; cursor:pointer;}
+  .np-progress-fill{position:absolute; left:0; top:0; bottom:0; width:22%; background:var(--gold); border-radius:2px;}
+  .np-extra{width:120px; display:flex; justify-content:flex-end; gap:14px;}
+  .np-extra button{background:none; border:none; color:var(--text-dim); transition:color 0.2s;}
+  .np-extra button:hover{color:var(--gold);}
+  .np-extra button.liked{color:var(--gold);}
+
+  @media (max-width:900px){
+    .nav-links{display:none;}
+    .track-row{grid-template-columns:24px 42px 1fr 32px;}
+    .track-genre, .track-dur{display:none;}
+    .sort-select{margin-left:0; width:100%;}
+    .np-track{width:150px;}
+    .np-extra{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">MyGospelHub<span class="dot">.</span></div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#videos">Videos</a>
+      <a href="music.html">Music</a>
+      <a href="index.html#gist">Gist</a>
+      <a href="index.html#genres">Genres</a>
+    </div>
+    <button class="btn btn-gold">Watch Live</button>
+  </nav>
+
+  <div class="browse-header">
+    <div class="eyebrow">Full library</div>
+    <h1>Browse all music</h1>
+    <div class="search-bar">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Search songs, artists...">
+      <button class="search-clear" id="clearBtn" aria-label="Clear search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <section>
+    <div class="filter-row">
+      <div class="filter-group">
+        <span class="filter-label">Genre</span>
+        <button class="chip active" data-genre="All">All</button>
+        <button class="chip" data-genre="Worship">Worship</button>
+        <button class="chip" data-genre="Praise">Praise</button>
+        <button class="chip" data-genre="Choir">Choir</button>
+        <button class="chip" data-genre="Yoruba">Yoruba</button>
+        <button class="chip" data-genre="Igbo">Igbo</button>
+      </div>
+      <select class="sort-select" id="sortSelect">
+        <option value="plays">Most played</option>
+        <option value="newest">Newest</option>
+        <option value="az">A–Z</option>
+      </select>
+    </div>
+
+    <div class="results-count" id="resultsCount"><strong>12</strong> tracks</div>
+
+    <div class="track-list" id="trackList"></div>
+    <div class="no-results" id="noResults" style="display:none;">
+      <div class="display">No tracks found</div>
+      <p>Try a different search term or clear your filters to see the full library.</p>
+    </div>
+  </section>
+
+  <!-- Sticky Now Playing bar -->
+  <div class="now-playing-bar">
+    <div class="np-track">
+      <div class="np-art"></div>
+      <div class="np-info">
+        <div class="np-title" id="npTitle">Nothing Is Impossible</div>
+        <div class="np-artist" id="npArtist">Mercy Chinwo</div>
+      </div>
+    </div>
+    <div class="np-controls">
+      <div class="np-buttons">
+        <button aria-label="Previous"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+        <button class="np-play" id="npPlay" aria-label="Play/Pause"><svg id="npPlayIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></button>
+        <button aria-label="Next"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6v12l8.5-6z"/></svg></button>
+      </div>
+      <div class="np-progress-row">
+        <span class="np-time">1:04</span>
+        <div class="np-progress"><div class="np-progress-fill"></div></div>
+        <span class="np-time right">4:52</span>
+      </div>
+    </div>
+    <div class="np-extra">
+      <button class="liked" aria-label="Like"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-6.7-4.35-9.3-8.1C.8 10.1 1.4 6.6 4.4 5.1c2.3-1.2 4.9-.4 6.3 1.4l1.3 1.6 1.3-1.6c1.4-1.8 4-2.6 6.3-1.4 3 1.5 3.6 5 1.7 7.8C18.7 16.65 12 21 12 21z"/></svg></button>
+      <button aria-label="Volume"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-1-3.29-2.5-4.03v8.05c1.5-.73 2.5-2.25 2.5-4.02z"/></svg></button>
+    </div>
+  </div>
+
+<script>
+  const tracks = [
+    { title: "Nothing Is Impossible", artist: "Mercy Chinwo", genre: "Worship", plays: 1200000, playsLabel: "1.2M", dur: "4:52", date: "2026-07-01" },
+    { title: "Way Maker", artist: "Sinach", genre: "Worship", plays: 980000, playsLabel: "980K", dur: "4:10", date: "2026-06-28" },
+    { title: "Onyeoma", artist: "Tope Alabi", genre: "Yoruba", plays: 640000, playsLabel: "640K", dur: "5:03", date: "2026-07-14" },
+    { title: "Great Is Your Faithfulness", artist: "Lagos Community Choir", genre: "Choir", plays: 210000, playsLabel: "210K", dur: "3:47", date: "2026-07-15" },
+    { title: "Egwu Ebube", artist: "Frank Edwards", genre: "Igbo", plays: 185000, playsLabel: "185K", dur: "4:38", date: "2026-07-10" },
+    { title: "Yahweh", artist: "Nathaniel Bassey", genre: "Worship", plays: 142000, playsLabel: "142K", dur: "6:02", date: "2026-07-05" },
+    { title: "Jesu Ni Mo Fe", artist: "Tope Alabi", genre: "Yoruba", plays: 118000, playsLabel: "118K", dur: "5:20", date: "2026-06-18" },
+    { title: "Ekwueme", artist: "Chinyere Udoma", genre: "Igbo", plays: 96000, playsLabel: "96K", dur: "4:44", date: "2026-06-10" },
+    { title: "You Are Good", artist: "Mercy Chinwo", genre: "Praise", plays: 88000, playsLabel: "88K", dur: "3:58", date: "2026-05-30" },
+    { title: "Halleluyah", artist: "Frank Edwards", genre: "Praise", plays: 71000, playsLabel: "71K", dur: "4:15", date: "2026-05-22" },
+    { title: "Choir Cover: Blessed Assurance", artist: "Lagos Community Choir", genre: "Choir", plays: 54000, playsLabel: "54K", dur: "4:02", date: "2026-05-14" },
+    { title: "I Know Who I Am", artist: "Sinach", genre: "Praise", plays: 512000, playsLabel: "512K", dur: "3:41", date: "2026-04-30" },
+  ];
+
+  const trackList = document.getElementById('trackList');
+  const noResults = document.getElementById('noResults');
+  const resultsCount = document.getElementById('resultsCount');
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearBtn');
+  const sortSelect = document.getElementById('sortSelect');
+  const chips = document.querySelectorAll('.chip');
+
+  let activeGenre = 'All';
+  let query = '';
+
+  function highlight(text, q) {
+    if (!q) return text;
+    const idx = text.toLowerCase().indexOf(q.toLowerCase());
+    if (idx === -1) return text;
+    return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + q.length) + '</mark>' + text.slice(idx + q.length);
+  }
+
+  function render() {
+    let filtered = tracks.filter(t => {
+      const matchesGenre = activeGenre === 'All' || t.genre === activeGenre;
+      const matchesQuery = !query || t.title.toLowerCase().includes(query.toLowerCase()) || t.artist.toLowerCase().includes(query.toLowerCase());
+      return matchesGenre && matchesQuery;
+    });
+
+    const sort = sortSelect.value;
+    if (sort === 'plays') filtered.sort((a,b) => b.plays - a.plays);
+    else if (sort === 'newest') filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+    else if (sort === 'az') filtered.sort((a,b) => a.title.localeCompare(b.title));
+
+    resultsCount.innerHTML = `<strong>${filtered.length}</strong> track${filtered.length !== 1 ? 's' : ''}`;
+
+    if (filtered.length === 0) {
+      trackList.innerHTML = '';
+      noResults.style.display = 'block';
+      return;
+    }
+    noResults.style.display = 'none';
+
+    trackList.innerHTML = filtered.map((t, i) => `
+      <div class="track-row" data-title="${t.title}" data-artist="${t.artist}">
+        <div class="track-num">${String(i+1).padStart(2,'0')}</div>
+        <div class="track-art"></div>
+        <div>
+          <div class="track-title">${highlight(t.title, query)}</div>
+          <div class="track-artist">${highlight(t.artist, query)}</div>
+        </div>
+        <div class="track-genre">${t.genre}</div>
+        <div class="track-dur">${t.dur}</div>
+      </div>
+    `).join('');
+
+    trackList.querySelectorAll('.track-row').forEach(row => {
+      row.addEventListener('click', () => {
+        document.querySelectorAll('.track-row').forEach(r => {
+          r.classList.remove('playing');
+          r.querySelector('.track-art').innerHTML = '';
+        });
+        row.classList.add('playing');
+        row.querySelector('.track-art').innerHTML = '<div class="eq"><span></span><span></span><span></span></div>';
+        document.getElementById('npTitle').textContent = row.dataset.title;
+        document.getElementById('npArtist').textContent = row.dataset.artist;
+      });
+    });
+  }
+
+  searchInput.addEventListener('input', (e) => {
+    query = e.target.value;
+    clearBtn.classList.toggle('show', query.length > 0);
+    render();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    query = '';
+    clearBtn.classList.remove('show');
+    searchInput.focus();
+    render();
+  });
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeGenre = chip.dataset.genre;
+      render();
+    });
+  });
+
+  sortSelect.addEventListener('change', render);
+
+  // play/pause toggle on sticky bar
+  const npPlay = document.getElementById('npPlay');
+  const npPlayIcon = document.getElementById('npPlayIcon');
+  let playing = true;
+  npPlay.addEventListener('click', () => {
+    playing = !playing;
+    npPlayIcon.innerHTML = playing
+      ? '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
+      : '<path d="M8 5v14l11-7z"/>';
+  });
+
+  render();
+</script>
+
+</body>
+</html>

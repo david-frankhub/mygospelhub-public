@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nothing Is Impossible — MyGospelHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B0D;
+    --bg-raised:#141416;
+    --bg-card:#18181B;
+    --text:#F2EFE9;
+    --text-dim:#8A8780;
+    --gold:#D9A441;
+    --wine:#7A1F2B;
+    --wine-bright:#9C2C3A;
+    --line: rgba(242,239,233,0.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--gold);color:#0B0B0D;}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  button{font-family:inherit; cursor:pointer;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
+  }
+
+  /* ===== Nav (shared) ===== */
+  nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:22px 5%;
+    position:sticky;
+    top:0;
+    background:rgba(11,11,13,0.85);
+    backdrop-filter:blur(10px);
+    z-index:100;
+    border-bottom:1px solid var(--line);
+  }
+  .logo{
+    font-family:'Fraunces',serif;
+    font-size:22px;
+    font-weight:700;
+    display:flex;
+    align-items:baseline;
+    gap:2px;
+  }
+  .logo .dot{color:var(--gold);}
+  .nav-links{display:flex; gap:36px; font-size:14px; font-weight:500;}
+  .nav-links a{color:var(--text-dim); transition:color 0.2s;}
+  .nav-links a:hover, .nav-links a.active{color:var(--text);}
+  .btn{
+    padding:10px 20px;
+    border-radius:100px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--text);
+    transition:all 0.2s;
+  }
+  .btn-gold{background:var(--gold); color:#0B0B0D; border:1px solid var(--gold);}
+  .btn-gold:hover{background:#E5B45C;}
+  .btn:not(.btn-gold):hover{border-color:var(--text-dim); background:var(--bg-raised);}
+
+  /* ===== Watch layout ===== */
+  .watch-wrap{
+    display:grid;
+    grid-template-columns:1fr 380px;
+    gap:40px;
+    max-width:1400px;
+    margin:0 auto;
+    padding:32px 5% 80px;
+  }
+
+  /* --- Player --- */
+  .player{
+    aspect-ratio:16/9;
+    border-radius:14px;
+    background:linear-gradient(160deg, var(--wine) 0%, #3A0E15 55%, #0B0B0D 100%);
+    position:relative;
+    overflow:hidden;
+    border:1px solid var(--line);
+    margin-bottom:22px;
+  }
+  .player::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(90deg, rgba(217,164,65,0.05) 0px, rgba(217,164,65,0.05) 1px, transparent 1px, transparent 44px);
+  }
+  .play-btn{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:74px; height:74px; border-radius:50%;
+    background:rgba(217,164,65,0.95);
+    display:flex; align-items:center; justify-content:center;
+    border:none;
+    transition:transform 0.2s, background 0.2s;
+  }
+  .play-btn:hover{transform:translate(-50%,-50%) scale(1.06); background:var(--gold);}
+  .play-btn svg{margin-left:4px;}
+  .player-bar{
+    position:absolute; bottom:0; left:0; right:0;
+    padding:16px 20px;
+    background:linear-gradient(to top, rgba(0,0,0,0.65), transparent);
+    display:flex; align-items:center; gap:12px;
+  }
+  .progress{
+    flex:1; height:4px; border-radius:2px;
+    background:rgba(242,239,233,0.2);
+    position:relative; overflow:hidden;
+  }
+  .progress::after{
+    content:""; position:absolute; left:0; top:0; bottom:0;
+    width:38%; background:var(--gold); border-radius:2px;
+  }
+  .player-time{font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#F2EFE9; white-space:nowrap;}
+
+  /* --- Video meta --- */
+  .video-title{font-size:26px; line-height:1.25; margin-bottom:14px;}
+  .video-meta-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding-bottom:18px; margin-bottom:18px;
+    border-bottom:1px solid var(--line);
+    flex-wrap:wrap; gap:14px;
+  }
+  .video-stats{font-size:13px; color:var(--text-dim); font-family:'JetBrains Mono',monospace;}
+  .video-actions{display:flex; gap:10px;}
+  .icon-btn{
+    display:flex; align-items:center; gap:7px;
+    padding:9px 16px; border-radius:100px;
+    border:1px solid var(--line); background:transparent; color:var(--text-dim);
+    font-size:13px; font-weight:500; transition:all 0.2s;
+  }
+  .icon-btn:hover{border-color:var(--gold); color:var(--gold);}
+  .icon-btn.liked{border-color:var(--gold); color:var(--gold); background:rgba(217,164,65,0.08);}
+
+  /* --- Artist card --- */
+  .artist-card{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 0; margin-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+  .artist-info{display:flex; align-items:center; gap:14px;}
+  .artist-avatar{
+    width:48px; height:48px; border-radius:50%;
+    background:linear-gradient(135deg,var(--gold),#B87A2E);
+    flex-shrink:0;
+  }
+  .artist-name{font-size:15px; font-weight:600;}
+  .artist-sub{font-size:12.5px; color:var(--text-dim); margin-top:2px;}
+  .follow-btn{padding:9px 20px; border-radius:100px; font-size:13px; font-weight:600;}
+
+  .video-desc{
+    font-size:14px; color:var(--text-dim); line-height:1.7;
+    margin-bottom:36px;
+  }
+
+  /* --- Comments --- */
+  .comments-head{
+    display:flex; align-items:center; gap:10px;
+    font-size:16px; font-weight:600; margin-bottom:20px;
+  }
+  .comments-head span{color:var(--text-dim); font-weight:500; font-size:14px;}
+  .comment-input{
+    display:flex; gap:12px; margin-bottom:28px;
+  }
+  .comment-avatar{
+    width:38px; height:38px; border-radius:50%;
+    background:var(--bg-raised); border:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .comment-input input{
+    flex:1; background:transparent; border:none; border-bottom:1px solid var(--line);
+    padding:8px 0; font-size:14px; color:var(--text); outline:none;
+    font-family:'Inter',sans-serif;
+  }
+  .comment-input input:focus{border-color:var(--gold);}
+  .comment-input input::placeholder{color:var(--text-dim);}
+
+  .comment{display:flex; gap:12px; margin-bottom:22px;}
+  .comment-body{flex:1;}
+  .comment-name{font-size:13.5px; font-weight:600; margin-bottom:3px;}
+  .comment-name span{color:var(--text-dim); font-weight:400; font-size:11.5px; margin-left:8px; font-family:'JetBrains Mono',monospace;}
+  .comment-text{font-size:13.5px; color:#D8D5CE; line-height:1.55;}
+  .comment-actions{display:flex; gap:14px; margin-top:6px;}
+  .comment-actions button{background:none; border:none; color:var(--text-dim); font-size:12px; display:flex; align-items:center; gap:4px; padding:0;}
+  .comment-actions button:hover{color:var(--gold);}
+
+  /* --- Sidebar / up next --- */
+  .sidebar-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--text-dim); margin-bottom:18px;
+  }
+  .up-next-item{
+    display:flex; gap:12px; padding:10px 8px; border-radius:10px;
+    margin-bottom:6px; cursor:pointer; transition:background 0.2s;
+  }
+  .up-next-item:hover{background:var(--bg-card);}
+  .up-next-thumb{
+    width:120px; height:72px; border-radius:8px; flex-shrink:0;
+    background:linear-gradient(135deg, var(--wine-bright), #2A0810);
+    position:relative;
+  }
+  .up-next-thumb .dur{
+    position:absolute; bottom:5px; right:5px;
+    font-family:'JetBrains Mono',monospace; font-size:10px;
+    background:rgba(0,0,0,0.75); padding:1px 5px; border-radius:4px;
+  }
+  .up-next-title{font-size:13.5px; font-weight:600; line-height:1.35; margin-bottom:5px;}
+  .up-next-meta{font-size:11.5px; color:var(--text-dim);}
+
+  /* ===== Responsive ===== */
+  @media (max-width:900px){
+    .nav-links{display:none;}
+    .watch-wrap{grid-template-columns:1fr; padding-top:20px;}
+    .video-title{font-size:21px;}
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">MyGospelHub<span class="dot">.</span></div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#videos" class="active">Videos</a>
+      <a href="music.html">Music</a>
+      <a href="index.html#gist">Gist</a>
+      <a href="index.html#genres">Genres</a>
+    </div>
+    <button class="btn btn-gold">Watch Live</button>
+  </nav>
+
+  <div class="watch-wrap">
+    <div>
+      <div class="player">
+        <button class="play-btn" aria-label="Play video">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#0B0B0D"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div class="player-bar">
+          <span class="player-time">2:41</span>
+          <div class="progress"></div>
+          <span class="player-time">4:52</span>
+        </div>
+      </div>
+
+      <h1 class="video-title">Nothing Is Impossible</h1>
+
+      <div class="video-meta-row">
+        <div class="video-stats">1.2M views · Uploaded July 1, 2026</div>
+        <div class="video-actions">
+          <button class="icon-btn liked" id="likeBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-6.7-4.35-9.3-8.1C.8 10.1 1.4 6.6 4.4 5.1c2.3-1.2 4.9-.4 6.3 1.4l1.3 1.6 1.3-1.6c1.4-1.8 4-2.6 6.3-1.4 3 1.5 3.6 5 1.7 7.8C18.7 16.65 12 21 12 21z"/></svg>
+            <span id="likeCount">48.2K</span>
+          </button>
+          <button class="icon-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+            Share
+          </button>
+          <button class="icon-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+            Save
+          </button>
+        </div>
+      </div>
+
+      <div class="artist-card">
+        <div class="artist-info">
+          <div class="artist-avatar"></div>
+          <div>
+            <div class="artist-name">Mercy Chinwo</div>
+            <div class="artist-sub">312K followers</div>
+          </div>
+        </div>
+        <button class="btn btn-gold follow-btn">Follow</button>
+      </div>
+
+      <p class="video-desc">Live worship session recorded at the Sound of Grace concert, Lagos. "Nothing Is Impossible" reminds us that no matter the mountain ahead, faith moves it. Recorded and uploaded by MyGospelHub.</p>
+
+      <div class="comments-head">142 Comments</div>
+
+      <div class="comment-input">
+        <div class="comment-avatar"></div>
+        <input type="text" placeholder="Add a comment...">
+      </div>
+
+      <div id="commentList">
+        <div class="comment">
+          <div class="comment-avatar"></div>
+          <div class="comment-body">
+            <div class="comment-name">Grace O. <span>2 hours ago</span></div>
+            <div class="comment-text">This blessed my morning so much, thank you 🙏</div>
+            <div class="comment-actions">
+              <button>Like</button>
+              <button>Reply</button>
+            </div>
+          </div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar"></div>
+          <div class="comment-body">
+            <div class="comment-name">Emeka N. <span>5 hours ago</span></div>
+            <div class="comment-text">The choir arrangement on this is incredible. On repeat all week.</div>
+            <div class="comment-actions">
+              <button>Like</button>
+              <button>Reply</button>
+            </div>
+          </div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar"></div>
+          <div class="comment-body">
+            <div class="comment-name">Blessing A. <span>1 day ago</span></div>
+            <div class="comment-text">Needed this today. God is truly able.</div>
+            <div class="comment-actions">
+              <button>Like</button>
+              <button>Reply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar-label">Up next</div>
+
+      <div class="up-next-item">
+        <div class="up-next-thumb"><span class="dur">6:14</span></div>
+        <div>
+          <div class="up-next-title">Way Maker (Live Session)</div>
+          <div class="up-next-meta">Sinach · 980K views</div>
+        </div>
+      </div>
+      <div class="up-next-item">
+        <div class="up-next-thumb"><span class="dur">5:03</span></div>
+        <div>
+          <div class="up-next-title">Onyeoma</div>
+          <div class="up-next-meta">Tope Alabi · 640K views</div>
+        </div>
+      </div>
+      <div class="up-next-item">
+        <div class="up-next-thumb"><span class="dur">3:47</span></div>
+        <div>
+          <div class="up-next-title">Choir Cover: Great Is Your Faithfulness</div>
+          <div class="up-next-meta">Lagos Community Choir · 210K views</div>
+        </div>
+      </div>
+      <div class="up-next-item">
+        <div class="up-next-thumb"><span class="dur">9:21</span></div>
+        <div>
+          <div class="up-next-title">Sound of Grace Concert Highlights</div>
+          <div class="up-next-meta">Various Artists · 158K views</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const likeBtn = document.getElementById('likeBtn');
+  const likeCount = document.getElementById('likeCount');
+  let liked = true;
+  likeBtn.addEventListener('click', () => {
+    liked = !liked;
+    likeBtn.classList.toggle('liked', liked);
+    likeCount.textContent = liked ? '48.2K' : '48.1K';
+  });
+
+  const input = document.querySelector('.comment-input input');
+  const commentList = document.getElementById('commentList');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && input.value.trim()) {
+      const div = document.createElement('div');
+      div.className = 'comment';
+      div.innerHTML = `
+        <div class="comment-avatar"></div>
+        <div class="comment-body">
+          <div class="comment-name">You <span>just now</span></div>
+          <div class="comment-text">${input.value.replace(/</g,"&lt;")}</div>
+          <div class="comment-actions"><button>Like</button><button>Reply</button></div>
+        </div>`;
+      commentList.prepend(div);
+      input.value = '';
+    }
+  });
+</script>
+
+</body>
+</html>

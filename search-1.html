@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search — MyGospelHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B0D;
+    --bg-raised:#141416;
+    --bg-card:#18181B;
+    --text:#F2EFE9;
+    --text-dim:#8A8780;
+    --gold:#D9A441;
+    --wine:#7A1F2B;
+    --wine-bright:#9C2C3A;
+    --line: rgba(242,239,233,0.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.01em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--gold);color:#0B0B0D;}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  button{font-family:inherit; cursor:pointer;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
+  }
+
+  /* ===== Nav ===== */
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 5%; position:sticky; top:0;
+    background:rgba(11,11,13,0.85); backdrop-filter:blur(10px);
+    z-index:100; border-bottom:1px solid var(--line);
+  }
+  .logo{font-family:'Fraunces',serif; font-size:22px; font-weight:700; display:flex; align-items:baseline; gap:2px;}
+  .logo .dot{color:var(--gold);}
+  .nav-links{display:flex; gap:36px; font-size:14px; font-weight:500;}
+  .nav-links a{color:var(--text-dim); transition:color 0.2s;}
+  .nav-links a:hover, .nav-links a.active{color:var(--text);}
+  .btn{padding:10px 20px; border-radius:100px; font-size:13px; font-weight:600; border:1px solid var(--line); background:transparent; color:var(--text); transition:all 0.2s;}
+  .btn-gold{background:var(--gold); color:#0B0B0D; border:1px solid var(--gold);}
+  .btn-gold:hover{background:#E5B45C;}
+
+  .nav-search-wrap{position:relative; flex:1; max-width:380px; margin:0 32px;}
+  .nav-search{
+    display:flex; align-items:center; gap:10px;
+    background:var(--bg-card); border:1px solid var(--line); border-radius:100px;
+    padding:9px 16px; transition:border-color 0.2s;
+  }
+  .nav-search:focus-within{border-color:var(--gold);}
+  .nav-search svg{color:var(--text-dim); flex-shrink:0;}
+  .nav-search input{
+    flex:1; background:none; border:none; outline:none;
+    font-family:'Inter',sans-serif; font-size:13.5px; color:var(--text);
+    min-width:0;
+  }
+  .nav-search input::placeholder{color:var(--text-dim);}
+  .search-clear{
+    background:none; border:none; color:var(--text-dim); display:none;
+    width:18px; height:18px; align-items:center; justify-content:center; border-radius:50%; flex-shrink:0;
+  }
+  .search-clear.show{display:flex;}
+  .search-clear:hover{color:var(--text);}
+
+  /* ===== Header ===== */
+  .results-header{
+    max-width:1200px; margin:0 auto; padding:40px 5% 0;
+  }
+  .results-header .label{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-dim); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;
+  }
+  .results-header h1{font-size:clamp(24px,3.4vw,34px); margin-bottom:24px; word-break:break-word;}
+  .results-header h1 span{color:var(--gold);}
+
+  /* ===== Tabs ===== */
+  .tabs{display:flex; gap:6px; border-bottom:1px solid var(--line); margin-bottom:8px;}
+  .tab{
+    padding:12px 18px; font-size:13.5px; font-weight:600; color:var(--text-dim);
+    border:none; background:none; border-bottom:2px solid transparent; margin-bottom:-1px;
+    transition:color 0.2s, border-color 0.2s;
+    display:flex; align-items:center; gap:8px;
+  }
+  .tab .count{
+    font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--bg-card);
+    padding:2px 7px; border-radius:100px; color:var(--text-dim);
+  }
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--gold); border-color:var(--gold);}
+  .tab.active .count{color:var(--gold); background:rgba(217,164,65,0.1);}
+
+  section{max-width:1200px; margin:0 auto; padding:0 5% 100px;}
+
+  /* ===== Result groups ===== */
+  .result-group{padding-top:32px;}
+  .group-head{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;
+  }
+  .group-head h2{font-size:18px;}
+  .group-head a{font-size:12.5px; color:var(--gold); font-weight:600;}
+
+  /* video/gist cards */
+  .card-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .media-card{
+    background:var(--bg-card); border-radius:14px; border:1px solid var(--line); overflow:hidden;
+    transition:transform 0.25s, border-color 0.25s; cursor:pointer;
+  }
+  .media-card:hover{transform:translateY(-4px); border-color:rgba(217,164,65,0.3);}
+  .media-cover{
+    aspect-ratio:16/9;
+    background:linear-gradient(135deg, var(--wine-bright), #2A0810);
+    position:relative;
+  }
+  .media-cover.gist{background:linear-gradient(135deg, #262629, #17171a);}
+  .media-cover .cat{
+    position:absolute; top:12px; left:12px;
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.05em;
+    background:var(--wine); color:#F2DCC9; padding:4px 9px; border-radius:100px;
+  }
+  .media-cover .dur{
+    position:absolute; bottom:8px; right:8px;
+    font-family:'JetBrains Mono',monospace; font-size:10.5px;
+    background:rgba(0,0,0,0.75); padding:2px 6px; border-radius:4px;
+  }
+  .media-body{padding:14px 16px;}
+  .media-body h3{font-size:14px; font-weight:600; line-height:1.35; margin-bottom:6px;}
+  .media-body h3 mark{background:rgba(217,164,65,0.28); color:var(--gold); border-radius:2px;}
+  .media-sub{font-size:12px; color:var(--text-dim);}
+
+  /* music rows */
+  .track-list{display:flex; flex-direction:column;}
+  .track-row{
+    display:grid; grid-template-columns:48px 1fr auto auto; align-items:center; gap:16px;
+    padding:11px 10px; border-radius:10px; cursor:pointer; transition:background 0.2s;
+  }
+  .track-row:hover{background:var(--bg-card);}
+  .track-art{width:48px; height:48px; border-radius:8px; background:linear-gradient(135deg, var(--wine-bright), #2A0810); flex-shrink:0;}
+  .track-title{font-size:14.5px; font-weight:600; margin-bottom:2px;}
+  .track-title mark{background:rgba(217,164,65,0.28); color:var(--gold); border-radius:2px;}
+  .track-artist{font-size:12px; color:var(--text-dim);}
+  .track-plays{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim);}
+  .track-dur{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim);}
+
+  /* empty state */
+  .empty-state{text-align:center; padding:90px 20px;}
+  .empty-state .display{font-size:24px; margin-bottom:12px;}
+  .empty-state p{color:var(--text-dim); font-size:14.5px; max-width:400px; margin:0 auto 24px; line-height:1.6;}
+
+  @media (max-width:900px){
+    .nav-links{display:none;}
+    .nav-search-wrap{max-width:none; margin:0 16px;}
+    .card-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:600px){
+    .card-grid{grid-template-columns:1fr;}
+    .track-row{grid-template-columns:40px 1fr auto;}
+    .track-plays{display:none;}
+    .tabs{overflow-x:auto; -ms-overflow-style:none; scrollbar-width:none;}
+    .tabs::-webkit-scrollbar{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">MyGospelHub<span class="dot">.</span></div>
+    <div class="nav-search-wrap">
+      <div class="nav-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="siteSearch" placeholder="Search music, videos, gist...">
+        <button class="search-clear" id="searchClear" aria-label="Clear search">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#videos">Videos</a>
+      <a href="music.html">Music</a>
+      <a href="index.html#gist">Gist</a>
+      <a href="index.html#genres">Genres</a>
+    </div>
+    <button class="btn btn-gold">Watch Live</button>
+  </nav>
+
+  <div class="results-header">
+    <div class="label">Search results</div>
+    <h1 id="resultsHeading">Results for <span id="queryText"></span></h1>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="all">All <span class="count" id="countAll">0</span></button>
+      <button class="tab" data-tab="video">Videos <span class="count" id="countVideo">0</span></button>
+      <button class="tab" data-tab="music">Music <span class="count" id="countMusic">0</span></button>
+      <button class="tab" data-tab="gist">Gist <span class="count" id="countGist">0</span></button>
+    </div>
+  </div>
+
+  <section id="resultsContainer"></section>
+
+<script>
+  const searchIndex = [
+    { type: 'video', title: 'Nothing Is Impossible', sub: 'Mercy Chinwo · 1.2M views', tag: 'Worship', dur: '4:52', url: 'watch.html' },
+    { type: 'video', title: 'Way Maker (Live Session)', sub: 'Sinach · 980K views', tag: 'Live', dur: '6:14', url: 'watch.html' },
+    { type: 'video', title: 'Onyeoma', sub: 'Tope Alabi · 640K views', tag: 'Yoruba', dur: '5:03', url: 'watch.html' },
+    { type: 'video', title: 'Choir Cover: Great Is Your Faithfulness', sub: 'Lagos Community Choir · 210K views', tag: 'Cover', dur: '3:47', url: 'watch.html' },
+    { type: 'video', title: 'Sound of Grace Concert Highlights', sub: 'Various Artists · 158K views', tag: 'Event', dur: '9:21', url: 'watch.html' },
+
+    { type: 'music', title: 'Nothing Is Impossible', sub: 'Mercy Chinwo', plays: '1.2M plays', dur: '4:52', url: 'music.html' },
+    { type: 'music', title: 'Way Maker', sub: 'Sinach', plays: '980K plays', dur: '4:10', url: 'music.html' },
+    { type: 'music', title: 'Onyeoma', sub: 'Tope Alabi', plays: '640K plays', dur: '5:03', url: 'music.html' },
+    { type: 'music', title: 'Great Is Your Faithfulness', sub: 'Lagos Community Choir', plays: '210K plays', dur: '3:47', url: 'music.html' },
+    { type: 'music', title: 'Yahweh', sub: 'Nathaniel Bassey', plays: '142K plays', dur: '6:02', url: 'music.html' },
+    { type: 'music', title: 'Egwu Ebube', sub: 'Frank Edwards', plays: '185K plays', dur: '4:38', url: 'music.html' },
+
+    { type: 'gist', title: 'Inside the Sound of Grace concert: what actually happened backstage', sub: '4.2K reads · 2 hrs ago', tag: 'Concert', url: 'gist-article.html' },
+    { type: 'gist', title: 'Is a joint album coming? Two top gospel acts spark speculation', sub: '3.1K reads · 5 hrs ago', tag: 'Rumor', url: 'gist-article.html' },
+    { type: 'gist', title: 'Meet the Lagos choir whose cover just crossed 200K views', sub: '2.6K reads · 1 day ago', tag: 'Community', url: 'gist-article.html' },
+  ];
+
+  function getQueryParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name) || '';
+  }
+
+  function highlight(text, q) {
+    if (!q) return text;
+    const idx = text.toLowerCase().indexOf(q.toLowerCase());
+    if (idx === -1) return text;
+    return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + q.length) + '</mark>' + text.slice(idx + q.length);
+  }
+
+  let currentQuery = getQueryParam('q');
+  let activeTab = 'all';
+
+  const queryText = document.getElementById('queryText');
+  const resultsContainer = document.getElementById('resultsContainer');
+  const tabs = document.querySelectorAll('.tab');
+
+  function getMatches(q) {
+    if (!q.trim()) return [];
+    return searchIndex.filter(item =>
+      item.title.toLowerCase().includes(q.toLowerCase()) || item.sub.toLowerCase().includes(q.toLowerCase())
+    );
+  }
+
+  function renderVideoCard(item, q) {
+    return `
+      <div class="media-card" onclick="window.location.href='${item.url}'">
+        <div class="media-cover"><span class="cat">${item.tag}</span><span class="dur">${item.dur}</span></div>
+        <div class="media-body"><h3>${highlight(item.title, q)}</h3><div class="media-sub">${item.sub}</div></div>
+      </div>`;
+  }
+
+  function renderGistCard(item, q) {
+    return `
+      <div class="media-card" onclick="window.location.href='${item.url}'">
+        <div class="media-cover gist"><span class="cat">${item.tag}</span></div>
+        <div class="media-body"><h3>${highlight(item.title, q)}</h3><div class="media-sub">${item.sub}</div></div>
+      </div>`;
+  }
+
+  function renderTrackRow(item, q) {
+    return `
+      <div class="track-row" onclick="window.location.href='${item.url}'">
+        <div class="track-art"></div>
+        <div>
+          <div class="track-title">${highlight(item.title, q)}</div>
+          <div class="track-artist">${item.sub}</div>
+        </div>
+        <div class="track-plays">${item.plays}</div>
+        <div class="track-dur">${item.dur}</div>
+      </div>`;
+  }
+
+  function render() {
+    queryText.textContent = `"${currentQuery}"`;
+    const matches = getMatches(currentQuery);
+    const videos = matches.filter(m => m.type === 'video');
+    const music = matches.filter(m => m.type === 'music');
+    const gist = matches.filter(m => m.type === 'gist');
+
+    document.getElementById('countAll').textContent = matches.length;
+    document.getElementById('countVideo').textContent = videos.length;
+    document.getElementById('countMusic').textContent = music.length;
+    document.getElementById('countGist').textContent = gist.length;
+
+    if (matches.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="display">No results for "${currentQuery}"</div>
+          <p>Try a different search term, or check the spelling of an artist or title.</p>
+        </div>`;
+      return;
+    }
+
+    let html = '';
+
+    if ((activeTab === 'all' || activeTab === 'video') && videos.length > 0) {
+      html += `<div class="result-group">
+        <div class="group-head"><h2>Videos</h2>${activeTab === 'all' ? '<a href="#" data-goto="video">See all videos →</a>' : ''}</div>
+        <div class="card-grid">${videos.slice(0, activeTab === 'all' ? 3 : 99).map(v => renderVideoCard(v, currentQuery)).join('')}</div>
+      </div>`;
+    }
+
+    if ((activeTab === 'all' || activeTab === 'music') && music.length > 0) {
+      html += `<div class="result-group">
+        <div class="group-head"><h2>Music</h2>${activeTab === 'all' ? '<a href="#" data-goto="music">See all music →</a>' : ''}</div>
+        <div class="track-list">${music.slice(0, activeTab === 'all' ? 4 : 99).map(m => renderTrackRow(m, currentQuery)).join('')}</div>
+      </div>`;
+    }
+
+    if ((activeTab === 'all' || activeTab === 'gist') && gist.length > 0) {
+      html += `<div class="result-group">
+        <div class="group-head"><h2>Gist</h2>${activeTab === 'all' ? '<a href="#" data-goto="gist">See all gist →</a>' : ''}</div>
+        <div class="card-grid">${gist.slice(0, activeTab === 'all' ? 3 : 99).map(g => renderGistCard(g, currentQuery)).join('')}</div>
+      </div>`;
+    }
+
+    resultsContainer.innerHTML = html;
+
+    resultsContainer.querySelectorAll('[data-goto]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        setTab(link.dataset.goto);
+      });
+    });
+  }
+
+  function setTab(tab) {
+    activeTab = tab;
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    render();
+  }
+
+  tabs.forEach(tab => tab.addEventListener('click', () => setTab(tab.dataset.tab)));
+
+  // nav search bar wired to reload this page with new query
+  const searchInput = document.getElementById('siteSearch');
+  const searchClear = document.getElementById('searchClear');
+  searchInput.value = currentQuery;
+  searchClear.classList.toggle('show', currentQuery.length > 0);
+
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && searchInput.value.trim()) {
+      window.location.href = 'search.html?q=' + encodeURIComponent(searchInput.value.trim());
+    }
+  });
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchClear.classList.remove('show');
+    searchInput.focus();
+  });
+
+  render();
+</script>
+
+</body>
+</html>
