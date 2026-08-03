@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video — MyGospelHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B0D;
+    --bg-raised:#141416;
+    --bg-card:#18181B;
+    --text:#F2EFE9;
+    --text-dim:#8A8780;
+    --gold:#D9A441;
+    --wine:#7A1F2B;
+    --wine-bright:#9C2C3A;
+    --green:#3FAE6A;
+    --line: rgba(242,239,233,0.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.01em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--gold);color:#0B0B0D;}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  button{font-family:inherit; cursor:pointer;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
+  }
+
+  /* ===== Nav ===== */
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 5%; position:sticky; top:0;
+    background:rgba(11,11,13,0.85); backdrop-filter:blur(10px);
+    z-index:100; border-bottom:1px solid var(--line);
+  }
+  .logo{font-family:'Fraunces',serif; font-size:22px; font-weight:700; display:flex; align-items:baseline; gap:2px;}
+  .logo .dot{color:var(--gold);}
+  .nav-links{display:flex; gap:36px; font-size:14px; font-weight:500;}
+  .nav-links a{color:var(--text-dim); transition:color 0.2s;}
+  .nav-links a:hover{color:var(--text);}
+  .btn{padding:10px 20px; border-radius:100px; font-size:13px; font-weight:600; border:1px solid var(--line); background:transparent; color:var(--text); transition:all 0.2s;}
+  .btn-gold{background:var(--gold); color:#0B0B0D; border:1px solid var(--gold);}
+  .btn-gold:hover{background:#E5B45C;}
+
+  /* ===== Video layout ===== */
+  .video-wrap{
+    max-width:900px;
+    margin:0 auto;
+    padding:32px 5% 100px;
+  }
+  .breadcrumb{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-dim);
+    margin-bottom:20px;
+  }
+  .breadcrumb a:hover{color:var(--gold);}
+
+  /* ===== Real inline video player ===== */
+  .video-player{
+    width:100%;
+    aspect-ratio:16/9;
+    border-radius:14px;
+    background:#000;
+    border:1px solid var(--line);
+    margin-bottom:22px;
+    overflow:hidden;
+  }
+  .video-player video{width:100%; height:100%; display:block; background:#000;}
+
+  /* ===== External video placeholder (no file, only a link) ===== */
+  .video-placeholder{
+    width:100%;
+    aspect-ratio:16/9;
+    border-radius:14px;
+    background:linear-gradient(150deg, var(--wine) 0%, #2A0810 100%);
+    border:1px solid var(--line);
+    margin-bottom:22px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px;
+    overflow:hidden;
+    position:relative;
+  }
+  .video-placeholder img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0.35;}
+  .video-placeholder-content{position:relative; text-align:center; padding:20px;}
+  .video-placeholder .watch-btn{
+    background:var(--gold); color:#0B0B0D; font-weight:700; font-size:14px;
+    padding:13px 26px; border-radius:100px; border:none;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .video-placeholder .watch-btn:hover{background:#E5B45C;}
+  .video-placeholder p{color:#F2DCC9; font-size:13px; margin-bottom:14px;}
+
+  .video-tags{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+  .video-tag{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase;
+    padding:5px 11px; border-radius:100px; background:var(--bg-raised); color:var(--gold);
+    border:1px solid var(--line);
+  }
+  .video-title{font-size:clamp(22px,3.6vw,32px); line-height:1.2; margin-bottom:8px;}
+  .video-artist{font-size:15px; color:var(--text-dim); font-weight:500; margin-bottom:22px;}
+
+  .video-desc{
+    font-size:14.5px; color:#D8D5CE; line-height:1.7;
+    margin-bottom:26px;
+    padding-bottom:26px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .stats-row{display:flex; gap:36px; margin-bottom:22px;}
+  .stat{text-align:left;}
+  .stat-value{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--gold);}
+  .stat-label{font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-dim); margin-top:2px;}
+
+  .actions-row{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:32px;}
+  .action-btn{
+    display:flex; align-items:center; gap:9px;
+    padding:12px 20px; border-radius:100px;
+    font-size:13.5px; font-weight:700; border:none;
+    transition:all 0.2s;
+  }
+  .action-btn svg{width:15px; height:15px;}
+  .action-download{background:var(--gold); color:#0B0B0D;}
+  .action-download:hover{background:#E5B45C;}
+  .action-like, .action-share{
+    background:var(--bg-card); color:var(--text); border:1px solid var(--line);
+  }
+  .action-like:hover, .action-share:hover{border-color:var(--gold);}
+  .action-like.liked{color:var(--gold); border-color:var(--gold); background:rgba(217,164,65,0.08);}
+
+  /* ===== Related videos ===== */
+  .related-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-dim); margin-bottom:16px;
+  }
+  .related-list{display:flex; flex-direction:column; margin-bottom:44px;}
+  .related-row{
+    display:grid; grid-template-columns:96px 1fr auto; align-items:center; gap:14px;
+    padding:10px 8px; border-radius:10px; cursor:pointer; transition:background 0.2s;
+  }
+  .related-row:hover{background:var(--bg-card);}
+  .related-thumb{width:96px; height:56px; border-radius:8px; background:linear-gradient(135deg, var(--wine-bright), #2A0810); background-size:cover; background-position:center; flex-shrink:0;}
+  .related-title{font-size:14px; font-weight:600; margin-bottom:2px;}
+  .related-artist{font-size:12px; color:var(--text-dim);}
+  .related-views{font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-dim); white-space:nowrap;}
+
+  /* ===== Comments (identical pattern to song.html / gist-post.html) ===== */
+  .comments-section{padding-top:8px;}
+  .comments-head{font-size:18px; font-weight:600; margin-bottom:20px; display:flex; align-items:center; gap:10px;}
+  .comments-head .count{font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-dim); font-weight:500;}
+
+  .comment-form{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:14px;
+    padding:18px; margin-bottom:28px;
+  }
+  .comment-form-row{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;}
+  .comment-form input, .comment-form textarea{
+    width:100%; background:var(--bg-raised); border:1px solid var(--line); border-radius:9px;
+    padding:11px 13px; font-size:13.5px; color:var(--text); outline:none;
+    font-family:'Inter',sans-serif; transition:border-color 0.2s;
+  }
+  .comment-form input:focus, .comment-form textarea:focus{border-color:var(--gold);}
+  .comment-form input::placeholder, .comment-form textarea::placeholder{color:var(--text-dim);}
+  .comment-form textarea{resize:vertical; min-height:80px; margin-bottom:14px;}
+  .comment-form-foot{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .comment-hint{font-size:11.5px; color:var(--text-dim);}
+  .comment-submit{
+    background:var(--gold); color:#0B0B0D; font-size:13.5px; font-weight:700;
+    padding:10px 22px; border-radius:100px; border:none; transition:background 0.2s;
+  }
+  .comment-submit:hover{background:#E5B45C;}
+  .comment-submit:disabled{opacity:0.6; cursor:default;}
+  .comment-error{font-size:12.5px; color:#E8697A; margin-bottom:12px;}
+  .comment-success{font-size:12.5px; color:var(--green); margin-bottom:12px;}
+
+  .comment-list{display:flex; flex-direction:column; gap:18px;}
+  .comment{display:flex; gap:12px;}
+  .comment-avatar{
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--gold), #B87A2E);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:#0B0B0D;
+  }
+  .comment-body{flex:1; min-width:0;}
+  .comment-name{font-size:13.5px; font-weight:700;}
+  .comment-name span{color:var(--text-dim); font-weight:400; font-size:11px; margin-left:8px; font-family:'JetBrains Mono',monospace;}
+  .comment-text{font-size:13.5px; color:#D8D5CE; line-height:1.55; margin-top:3px; word-wrap:break-word;}
+
+  .state-block{
+    text-align:center; padding:32px 20px; color:var(--text-dim); font-size:13.5px;
+    background:var(--bg-card); border:1px solid var(--line); border-radius:12px;
+  }
+  .page-empty{ text-align:center; padding:100px 20px; }
+  .page-empty h2{font-size:22px; margin-bottom:10px;}
+  .page-empty p{color:var(--text-dim); font-size:14px;}
+
+  @media (max-width:640px){
+    .nav-links{display:none;}
+    .stats-row{gap:28px;}
+    .actions-row{flex-direction:column;}
+    .comment-form-row{grid-template-columns:1fr;}
+    .related-thumb{width:80px; height:48px;}
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">MyGospelHub<span class="dot">.</span></div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#videos">Videos</a>
+      <a href="music.html">Music</a>
+      <a href="index.html#gist">Gist</a>
+    </div>
+    <a href="index.html" class="btn btn-gold">Home</a>
+  </nav>
+
+  <div class="video-wrap" id="videoWrap">
+    <div class="state-block">Loading video…</div>
+  </div>
+
+<script>
+  const SUPABASE_URL = "https://kqgnpryubgdtmtcjtasi.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZ25wcnl1YmdkdG10Y2p0YXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTQ1NjQsImV4cCI6MjA5OTczMDU2NH0.T0y1CVCzIvfmK4vgczmlpiAFZP63MRLZT5eymu8R6jY";
+
+  async function supabaseQuery(table, params) {
+    const url = `${SUPABASE_URL}/rest/v1/${table}?${params}`;
+    const res = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+    });
+    if (!res.ok) throw new Error(`Failed to load ${table}`);
+    return res.json();
+  }
+
+  async function supabaseInsert(table, body) {
+    const url = `${SUPABASE_URL}/rest/v1/${table}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Failed to save to ${table}`);
+    return res.json();
+  }
+
+  async function supabaseRpc(fn, args) {
+    const url = `${SUPABASE_URL}/rest/v1/rpc/${fn}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(args),
+    });
+    return res.ok;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
+
+  function formatCount(n) {
+    n = n || 0;
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+    return String(n);
+  }
+
+  function timeAgo(dateString) {
+    if (!dateString) return "";
+    const diff = Date.now() - new Date(dateString).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return mins + "m ago";
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + "h ago";
+    const days = Math.floor(hrs / 24);
+    return days + "d ago";
+  }
+
+  function initials(name) {
+    return (name || "?").trim().charAt(0).toUpperCase();
+  }
+
+  const ICON_DOWNLOAD = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>`;
+  const ICON_PLAY = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+  const ICON_HEART = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-6.7-4.35-9.3-8.1C.8 10.1 1.4 6.6 4.4 5.1c2.3-1.2 4.9-.4 6.3 1.4l1.3 1.6 1.3-1.6c1.4-1.8 4-2.6 6.3-1.4 3 1.5 3.6 5 1.7 7.8C18.7 16.65 12 21 12 21z"/></svg>`;
+  const ICON_SHARE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>`;
+
+  const params = new URLSearchParams(window.location.search);
+  const videoId = params.get("id");
+  const wrap = document.getElementById("videoWrap");
+  let currentVideo = null;
+  let liked = false;
+
+  function renderNotFound() {
+    wrap.innerHTML = `
+      <div class="page-empty">
+        <h2>Video not found</h2>
+        <p>This video may have been removed, or the link is incorrect.</p>
+      </div>`;
+  }
+
+  function renderVideo(v) {
+    currentVideo = v;
+    document.title = `${v.title} — MyGospelHub`;
+
+    const hasFile = Boolean(v.file_url);
+    const externalUrl = v.video_url || v.streaming_link || "";
+    const hasExternal = !hasFile && Boolean(externalUrl);
+
+    wrap.innerHTML = `
+      <div class="breadcrumb"><a href="index.html">Home</a> / <a href="index.html#videos">Videos</a> / ${escapeHtml(v.title)}</div>
+
+      ${hasFile ? `
+        <div class="video-player">
+          <video id="videoEl" src="${escapeHtml(v.file_url)}" controls preload="metadata" playsinline></video>
+        </div>
+      ` : hasExternal ? `
+        <div class="video-placeholder" id="videoPlaceholder">
+          ${v.cover_url ? `<img src="${escapeHtml(v.cover_url)}" alt="">` : ""}
+          <div class="video-placeholder-content">
+            <p>This video plays on an external platform</p>
+            <button class="watch-btn" id="externalWatchBtn">${ICON_PLAY} Watch Now</button>
+          </div>
+        </div>
+      ` : `
+        <div class="video-placeholder">
+          <div class="video-placeholder-content"><p>No video source available yet</p></div>
+        </div>
+      `}
+
+      <div class="video-tags">
+        ${v.genre ? `<span class="video-tag">${escapeHtml(v.genre)}</span>` : ""}
+        ${v.year ? `<span class="video-tag">${escapeHtml(String(v.year))}</span>` : ""}
+      </div>
+      <h1 class="video-title">${escapeHtml(v.title)}</h1>
+      <div class="video-artist">${escapeHtml(v.artist)}</div>
+
+      ${v.description ? `<p class="video-desc">${escapeHtml(v.description)}</p>` : ""}
+
+      <div class="stats-row">
+        <div class="stat"><div class="stat-value">${formatCount(v.views)}</div><div class="stat-label">Views</div></div>
+        <div class="stat"><div class="stat-value">${formatCount(v.downloads)}</div><div class="stat-label">Downloads</div></div>
+        <div class="stat"><div class="stat-value" id="likeCount">${formatCount(v.likes)}</div><div class="stat-label">Likes</div></div>
+      </div>
+
+      <div class="actions-row">
+        ${hasFile ? `<button class="action-btn action-download" id="downloadBtn">${ICON_DOWNLOAD} Download</button>` : ""}
+        <button class="action-btn action-like" id="likeBtn">${ICON_HEART} <span id="likeBtnCount">${formatCount(v.likes)}</span></button>
+        <button class="action-btn action-share" id="shareBtn">${ICON_SHARE} Share</button>
+      </div>
+
+      <div id="relatedWrap"></div>
+
+      <div class="comments-section">
+        <div class="comments-head">Comments <span class="count" id="commentCount"></span></div>
+
+        <div class="comment-form">
+          <div id="commentMsg"></div>
+          <div class="comment-form-row">
+            <input type="text" id="commentName" placeholder="Your name" maxlength="60">
+            <input type="email" id="commentEmail" placeholder="Email (optional)" maxlength="120">
+          </div>
+          <textarea id="commentText" placeholder="Share your thoughts on this video…" maxlength="600"></textarea>
+          <div class="comment-form-foot">
+            <span class="comment-hint">No account needed</span>
+            <button class="comment-submit" id="commentSubmit">Post comment</button>
+          </div>
+        </div>
+
+        <div class="comment-list" id="commentList">
+          <div class="state-block">Loading comments…</div>
+        </div>
+      </div>
+    `;
+
+    wireActions(v, hasFile, hasExternal, externalUrl);
+    loadRelated(v);
+    loadComments(v.id);
+    wireCommentForm(v.id);
+  }
+
+  function wireActions(v, hasFile, hasExternal, externalUrl) {
+    if (hasFile) {
+      const videoEl = document.getElementById("videoEl");
+      let hasCountedView = false;
+      videoEl.addEventListener("play", () => {
+        if (!hasCountedView) {
+          hasCountedView = true;
+          supabaseRpc("increment_views", { row_id: v.id });
+        }
+      });
+    }
+
+    if (hasExternal) {
+      document.getElementById("externalWatchBtn").addEventListener("click", () => {
+        supabaseRpc("increment_views", { row_id: v.id });
+        window.open(externalUrl, "_blank", "noopener,noreferrer");
+      });
+    }
+
+    const downloadBtn = document.getElementById("downloadBtn");
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", async () => {
+        supabaseRpc("increment_downloads", { row_id: v.id });
+        try {
+          const res = await fetch(v.file_url);
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = `${v.title} - ${v.artist}`.replace(/[^\w\s-]/g, "") || "video";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+          window.open(v.file_url, "_blank");
+        }
+      });
+    }
+
+    document.getElementById("likeBtn").addEventListener("click", async (e) => {
+      if (liked) return; // one like per page visit, keeps it simple and honest
+      liked = true;
+      e.currentTarget.classList.add("liked");
+      const newCount = (v.likes || 0) + 1;
+      v.likes = newCount;
+      document.getElementById("likeCount").textContent = formatCount(newCount);
+      document.getElementById("likeBtnCount").textContent = formatCount(newCount);
+      await supabaseRpc("increment_likes", { row_id: v.id });
+    });
+
+    document.getElementById("shareBtn").addEventListener("click", async () => {
+      const url = window.location.href;
+      const shareData = { title: v.title, text: `${v.title} — ${v.artist} on MyGospelHub`, url };
+      if (navigator.share) {
+        try { await navigator.share(shareData); } catch (e) {}
+      } else {
+        await navigator.clipboard.writeText(url);
+        const btn = document.getElementById("shareBtn");
+        const original = btn.innerHTML;
+        btn.textContent = "✓ Link copied";
+        setTimeout(() => { btn.innerHTML = original; }, 1800);
+      }
+    });
+  }
+
+  async function loadRelated(v) {
+    const relWrap = document.getElementById("relatedWrap");
+    try {
+      const results = await supabaseQuery(
+        "content",
+        `status=eq.Published&type=eq.Video&id=neq.${v.id}&order=views.desc&limit=4`
+      );
+      if (!results || results.length === 0) { relWrap.innerHTML = ""; return; }
+      relWrap.innerHTML = `
+        <div class="related-label">More videos</div>
+        <div class="related-list">
+          ${results.map(r => `
+            <div class="related-row" onclick="window.location.href='video.html?id=${r.id}'">
+              <div class="related-thumb" style="${r.cover_url ? `background-image:url('${escapeHtml(r.cover_url)}')` : ""}"></div>
+              <div>
+                <div class="related-title">${escapeHtml(r.title)}</div>
+                <div class="related-artist">${escapeHtml(r.artist)}</div>
+              </div>
+              <div class="related-views">${formatCount(r.views)} views</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    } catch (e) {
+      relWrap.innerHTML = "";
+    }
+  }
+
+  async function loadComments(contentId) {
+    const list = document.getElementById("commentList");
+    const countEl = document.getElementById("commentCount");
+    try {
+      const comments = await supabaseQuery(
+        "comments",
+        `content_id=eq.${contentId}&status=eq.Visible&order=created_at.desc`
+      );
+      countEl.textContent = comments.length ? `(${comments.length})` : "";
+      if (!comments || comments.length === 0) {
+        list.innerHTML = `<div class="state-block">Be the first to comment on this video.</div>`;
+        return;
+      }
+      list.innerHTML = comments.map(c => `
+        <div class="comment">
+          <div class="comment-avatar">${escapeHtml(initials(c.guest_name))}</div>
+          <div class="comment-body">
+            <div class="comment-name">${escapeHtml(c.guest_name || "Anonymous")} <span>${timeAgo(c.created_at)}</span></div>
+            <div class="comment-text">${escapeHtml(c.text)}</div>
+          </div>
+        </div>
+      `).join("");
+    } catch (e) {
+      list.innerHTML = `<div class="state-block">Couldn't load comments right now.</div>`;
+    }
+  }
+
+  function wireCommentForm(contentId) {
+    const submitBtn = document.getElementById("commentSubmit");
+    const nameInput = document.getElementById("commentName");
+    const emailInput = document.getElementById("commentEmail");
+    const textInput = document.getElementById("commentText");
+    const msg = document.getElementById("commentMsg");
+
+    submitBtn.addEventListener("click", async () => {
+      msg.innerHTML = "";
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const text = textInput.value.trim();
+
+      if (!name || !text) {
+        msg.innerHTML = `<div class="comment-error">Please add your name and a comment.</div>`;
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Posting…";
+
+      try {
+        await supabaseInsert("comments", {
+          content_id: contentId,
+          guest_name: name,
+          guest_email: email || null,
+          text: text,
+          status: "Visible",
+        });
+        nameInput.value = "";
+        emailInput.value = "";
+        textInput.value = "";
+        msg.innerHTML = `<div class="comment-success">Comment posted!</div>`;
+        loadComments(contentId);
+      } catch (e) {
+        msg.innerHTML = `<div class="comment-error">Couldn't post your comment. Please try again.</div>`;
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Post comment";
+    });
+  }
+
+  async function init() {
+    if (!videoId) {
+      renderNotFound();
+      return;
+    }
+    try {
+      const results = await supabaseQuery("content", `id=eq.${videoId}&status=eq.Published&type=eq.Video&limit=1`);
+      if (!results || results.length === 0) {
+        renderNotFound();
+        return;
+      }
+      renderVideo(results[0]);
+    } catch (e) {
+      renderNotFound();
+    }
+  }
+
+  init();
+</script>
+
+</body>
+</html>
