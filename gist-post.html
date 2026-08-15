@@ -403,7 +403,7 @@
     });
 
     document.getElementById("shareBtn").addEventListener("click", async () => {
-      const url = `${window.location.origin}/api/gist-post?id=${post.id}`;
+      const url = post.slug ? `${window.location.origin}/api/gist-post?slug=${post.slug}` : `${window.location.origin}/api/gist-post?id=${post.id}`;
       const shareData = { title: post.title, text: post.title, url };
       if (navigator.share) {
         try { await navigator.share(shareData); } catch (e) {}
