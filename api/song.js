@@ -1,10 +1,11 @@
 // This is a Vercel serverless function. It runs on Vercel's servers, not in
 // the visitor's browser, and runs fresh on every request to /api/song.
 //
-// Purpose: when a link like /api/song?id=xyz is requested, this looks up the
-// real song in Supabase and returns HTML with the correct title, description,
-// and cover image already baked into the <head> — so link previews on
-// WhatsApp, Facebook, etc. show the real song instead of a generic blank card.
+// Purpose: when a link like /api/song?slug=on-god (or the older ?id=xyz
+// format) is requested, this looks up the real song in Supabase and returns
+// HTML with the correct title, description, and cover image already baked
+// into the <head> — so link previews on WhatsApp, Facebook, etc. show the
+// real song instead of a generic blank card.
 //
 // Real visitors (in an actual browser) still get the full working song page —
 // this function's HTML includes the same content as song.html, plus a
@@ -26,10 +27,11 @@ function escapeHtml(str) {
 }
 
 module.exports = async (req, res) => {
+  const slug = req.query.slug;
   const id = req.query.id;
 
-  // No id given — just send them to the real page, nothing to look up.
-  if (!id) {
+  // Neither given — just send them to the real page, nothing to look up.
+  if (!slug && !id) {
     res.writeHead(302, { Location: `${SITE_URL}/song.html` });
     res.end();
     return;
@@ -37,7 +39,12 @@ module.exports = async (req, res) => {
 
   let song = null;
   try {
-    const apiUrl = `${SUPABASE_URL}/rest/v1/content?id=eq.${encodeURIComponent(id)}&status=eq.Published&select=*&limit=1`;
+    // Prefer the clean slug when present; fall back to id for older links
+    // that were shared before slugs existed, so nothing breaks.
+    const filter = slug
+      ? `slug=eq.${encodeURIComponent(slug)}`
+      : `id=eq.${encodeURIComponent(id)}`;
+    const apiUrl = `${SUPABASE_URL}/rest/v1/content?${filter}&status=eq.Published&select=*&limit=1`;
     const response = await fetch(apiUrl, {
       headers: {
         apikey: SUPABASE_ANON_KEY,
@@ -59,7 +66,11 @@ module.exports = async (req, res) => {
     ? (song.description || `Listen to "${song.title}" by ${song.artist} on MyGospelHub.`)
     : "Your home for gospel music, videos, and entertainment gist.";
   const image = (song && song.cover_url) ? song.cover_url : DEFAULT_IMAGE;
-  const pageUrl = `${SITE_URL}/song.html?id=${encodeURIComponent(id)}`;
+  // Real song.html page still identifies items by id, so the redirect target
+  // keeps using id even though the shareable /api/song link now uses slug.
+  const pageUrl = song
+    ? `${SITE_URL}/song.html?id=${encodeURIComponent(song.id)}`
+    : `${SITE_URL}/song.html`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -96,3 +107,4 @@ module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
   res.status(200).send(html);
 };
+        
