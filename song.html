@@ -577,7 +577,7 @@
     });
 
     document.getElementById("shareBtn").addEventListener("click", async () => {
-      const shareUrl = `${window.location.origin}/api/song?id=${s.id}`;
+  const url = s.slug ? `${window.location.origin}/api/song?slug=${s.slug}` : `${window.location.origin}/api/song?id=${s.id}`;
       const shareData = { title: s.title, text: `${s.title} — ${s.artist} on MyGospelHub`, url: shareUrl };
       if (navigator.share) {
         try { await navigator.share(shareData); } catch (e) {}
