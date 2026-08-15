@@ -17,9 +17,10 @@ function escapeHtml(str) {
 }
 
 module.exports = async (req, res) => {
+  const slug = req.query.slug;
   const id = req.query.id;
 
-  if (!id) {
+  if (!slug && !id) {
     res.writeHead(302, { Location: `${SITE_URL}/video.html` });
     res.end();
     return;
@@ -27,7 +28,10 @@ module.exports = async (req, res) => {
 
   let video = null;
   try {
-    const apiUrl = `${SUPABASE_URL}/rest/v1/content?id=eq.${encodeURIComponent(id)}&status=eq.Published&type=eq.Video&select=*&limit=1`;
+    const filter = slug
+      ? `slug=eq.${encodeURIComponent(slug)}`
+      : `id=eq.${encodeURIComponent(id)}`;
+    const apiUrl = `${SUPABASE_URL}/rest/v1/content?${filter}&status=eq.Published&type=eq.Video&select=*&limit=1`;
     const response = await fetch(apiUrl, {
       headers: {
         apikey: SUPABASE_ANON_KEY,
@@ -47,7 +51,9 @@ module.exports = async (req, res) => {
     ? (video.description || `Watch "${video.title}" by ${video.artist} on MyGospelHub.`)
     : "Your home for gospel music, videos, and entertainment gist.";
   const image = (video && video.cover_url) ? video.cover_url : DEFAULT_IMAGE;
-  const pageUrl = `${SITE_URL}/video.html?id=${encodeURIComponent(id)}`;
+  const pageUrl = video
+    ? `${SITE_URL}/video.html?id=${encodeURIComponent(video.id)}`
+    : `${SITE_URL}/video.html`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -81,3 +87,4 @@ module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
   res.status(200).send(html);
 };
+    
