@@ -18,9 +18,10 @@ function escapeHtml(str) {
 }
 
 module.exports = async (req, res) => {
+  const slug = req.query.slug;
   const id = req.query.id;
 
-  if (!id) {
+  if (!slug && !id) {
     res.writeHead(302, { Location: `${SITE_URL}/gist-post.html` });
     res.end();
     return;
@@ -28,7 +29,10 @@ module.exports = async (req, res) => {
 
   let post = null;
   try {
-    const apiUrl = `${SUPABASE_URL}/rest/v1/gist_articles?id=eq.${encodeURIComponent(id)}&status=eq.Published&select=*&limit=1`;
+    const filter = slug
+      ? `slug=eq.${encodeURIComponent(slug)}`
+      : `id=eq.${encodeURIComponent(id)}`;
+    const apiUrl = `${SUPABASE_URL}/rest/v1/gist_articles?${filter}&status=eq.Published&select=*&limit=1`;
     const response = await fetch(apiUrl, {
       headers: {
         apikey: SUPABASE_ANON_KEY,
@@ -48,7 +52,9 @@ module.exports = async (req, res) => {
     ? ((post.body || "").slice(0, 160) || `Read "${post.title}" on MyGospelHub.`)
     : "Your home for gospel music, videos, and entertainment gist.";
   const image = (post && post.cover_url) ? post.cover_url : DEFAULT_IMAGE;
-  const pageUrl = `${SITE_URL}/gist-post.html?id=${encodeURIComponent(id)}`;
+  const pageUrl = post
+    ? `${SITE_URL}/gist-post.html?id=${encodeURIComponent(post.id)}`
+    : `${SITE_URL}/gist-post.html`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -82,3 +88,4 @@ module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
   res.status(200).send(html);
 };
+  
