@@ -286,15 +286,6 @@
   .mobile-menu-overlay.open{display:block;}
 
   /* ===== Hero ===== */
-  .hero{
-    padding:90px 5% 60px;
-    display:grid;
-    grid-template-columns:1.1fr 0.9fr;
-    gap:60px;
-    align-items:center;
-    max-width:1400px;
-    margin:0 auto;
-  }
   .eyebrow{
     font-family:'JetBrains Mono',monospace;
     font-size:12px;
@@ -311,68 +302,86 @@
     animation:pulse 1.6s ease-in-out infinite;
   }
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-  .hero h1{
-    font-size:clamp(40px,5.2vw,72px);
-    line-height:1.04;
-    margin-bottom:24px;
-  }
-  .hero h1 em{font-style:italic; color:var(--gold); font-weight:500;}
-  .hero p{
-    font-size:17px;
-    color:var(--text-dim);
-    max-width:480px;
-    line-height:1.65;
-    margin-bottom:34px;
-  }
-  .hero-cta{display:flex; gap:14px;}
   .btn-lg{padding:15px 28px; font-size:14px;}
 
-  .hero-visual{
+  /* ===== Hero carousel ===== */
+  .hero-carousel{
     position:relative;
-    aspect-ratio:4/5;
-    border-radius:18px;
+    max-width:1400px;
+    margin:0 auto;
+    padding:32px 5% 0;
+  }
+  .hero-slides{
+    position:relative;
+    aspect-ratio:16/8;
+    border-radius:20px;
     overflow:hidden;
-    background:linear-gradient(160deg, var(--wine) 0%, #3A0E15 55%, #0B0B0D 100%);
     border:1px solid var(--line);
   }
-  .hero-visual img.hero-cover{
+  @media (max-width:900px){ .hero-slides{aspect-ratio:4/5;} }
+
+  .hero-slide{
+    position:absolute; inset:0;
+    display:flex; align-items:flex-end;
+    background:linear-gradient(160deg, var(--wine) 0%, #3A0E15 55%, #0B0B0D 100%);
+    opacity:0; visibility:hidden;
+    transition:opacity 0.6s ease;
+    cursor:pointer;
+  }
+  .hero-slide.active{opacity:1; visibility:visible;}
+  .hero-slide img{
     position:absolute; inset:0;
     width:100%; height:100%;
     object-fit:cover;
-    opacity:0.4;
+    opacity:0.45;
   }
-  .hero-visual::before{
+  .hero-slide::before{
     content:"";
     position:absolute; inset:0;
-    background-image:
-      repeating-linear-gradient(90deg, rgba(217,164,65,0.06) 0px, rgba(217,164,65,0.06) 1px, transparent 1px, transparent 40px);
+    background:linear-gradient(to top, rgba(11,11,13,0.92) 10%, rgba(11,11,13,0.1) 65%);
   }
-  .now-playing-card{
-    position:absolute; bottom:24px; left:24px; right:24px;
-    background:rgba(11,11,13,0.7);
-    backdrop-filter:blur(8px);
-    border-radius:12px;
-    padding:14px 16px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    border:1px solid rgba(242,239,233,0.1);
-    cursor:pointer;
+  .hero-slide-body{
+    position:relative; z-index:1;
+    padding:32px 5%;
+    max-width:720px;
   }
-  .np-thumb{
-    width:40px;height:40px;border-radius:8px;
-    background:linear-gradient(135deg,var(--gold),#B87A2E);
-    flex-shrink:0;
-    background-size:cover;
-    background-position:center;
+  .hero-slide-tag{
+    display:inline-flex; align-items:center; gap:7px;
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    background:rgba(217,164,65,0.15); color:var(--gold);
+    padding:6px 12px; border-radius:100px; margin-bottom:14px;
+    border:1px solid rgba(217,164,65,0.3);
   }
-  .np-info .title{font-size:13px; font-weight:600;}
-  .np-info .artist{font-size:11px; color:var(--text-dim);}
-  .hero-empty{
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:13px;
+  .hero-slide-title{
+    font-size:clamp(22px,3.6vw,38px);
+    line-height:1.15;
+    margin-bottom:10px;
+    max-width:600px;
   }
+  .hero-slide-sub{font-size:14px; color:var(--text-dim); margin-bottom:18px;}
+  .hero-slide-actions{display:flex; gap:12px; flex-wrap:wrap;}
+
+  .hero-slide-empty{
+    position:relative;
+    display:flex; flex-direction:column; justify-content:center;
+    height:100%;
+    padding:5% 6%;
+    background:linear-gradient(160deg, var(--wine) 0%, #3A0E15 55%, #0B0B0D 100%);
+  }
+  .hero-slide-empty h1{font-size:clamp(28px,4.2vw,52px); line-height:1.08; margin-bottom:16px;}
+  .hero-slide-empty h1 em{font-style:italic; color:var(--gold); font-weight:500;}
+  .hero-slide-empty p{font-size:15px; color:var(--text-dim); max-width:460px; line-height:1.6;}
+
+  .hero-dots{
+    display:flex; justify-content:center; gap:8px;
+    padding:18px 0 6px;
+  }
+  .hero-dot{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--line); border:none; padding:0;
+    transition:all 0.25s;
+  }
+  .hero-dot.active{background:var(--gold); width:22px; border-radius:4px;}
 
   /* ===== Section shared ===== */
   section{padding:70px 5%; max-width:1400px; margin:0 auto;}
@@ -714,24 +723,20 @@
     </div>
     <a href="#" class="active">Home</a>
     <a href="#videos">Videos</a>
-    <a href="#tracks">Music</a>
+    <a href="music.html">Music</a>
     <a href="#gist">Gist</a>
     <a href="#genres">Genres</a>
   </nav>
 
-  <div class="hero">
-    <div>
-      <div class="eyebrow"><span class="rec"></span> LIVE ON MYGOSPELHUB NOW</div>
-      <h1>Where the <em>music</em> testifies<br>and the <em>gist</em> spreads.</h1>
-      <p>Watch new gospel videos, stream worship sessions, and catch the latest gist from the gospel scene — all in one place, updated by the community every day.</p>
-      <div class="hero-cta">
-        <button class="btn btn-gold btn-lg" id="heroPlayBtn2" disabled>Start Watching</button>
-        <a href="#gist" class="btn btn-lg">Browse Gist</a>
+  <div class="hero-carousel" id="heroCarousel">
+    <div class="hero-slides" id="heroSlides">
+      <div class="hero-slide-empty" id="heroEmpty">
+        <div class="eyebrow"><span class="rec"></span> LIVE ON MYGOSPELHUB NOW</div>
+        <h1>Where the <em>music</em> testifies<br>and the <em>gist</em> spreads.</h1>
+        <p>Watch new gospel videos, stream worship sessions, and catch the latest gist from the gospel scene — all in one place, updated by the community every day.</p>
       </div>
     </div>
-    <div class="hero-visual" id="heroVisual">
-      <div class="hero-empty" id="heroEmpty">No content live yet</div>
-    </div>
+    <div class="hero-dots" id="heroDots"></div>
   </div>
 
   <section id="videos">
@@ -1069,7 +1074,7 @@
   });
 
   [
-    "heroPlayBtn2", "ctaPlayBtn"
+    "ctaPlayBtn"
   ].forEach(id => {
     document.getElementById(id).addEventListener("click", () => {
       if (allContent.length > 0) playTrack(allContent[0]);
@@ -1092,28 +1097,75 @@
     ).join("");
   }
 
+  let heroSlideIndex = 0;
+  let heroTimer = null;
+
+  function heroSlideDest(item) {
+    if (item.kind === "gist") return `gist-post.html?${item.slug ? "slug=" + item.slug : "id=" + item.id}`;
+    const page = item.type === "Video" ? "video.html" : "song.html";
+    return `${page}?${item.slug ? "slug=" + item.slug : "id=" + item.id}`;
+  }
+
   function renderHero() {
-    const track = allContent[0];
-    const visual = document.getElementById("heroVisual");
-    const emptyEl = document.getElementById("heroEmpty");
-    ["heroPlayBtn2", "ctaPlayBtn"].forEach(id => {
-      document.getElementById(id).disabled = !track;
-    });
-    if (!track) {
-      if (emptyEl) emptyEl.style.display = "flex";
+    // Mix the most recent gist posts with the most recent songs/videos into
+    // one list of slides, newest first, capped at 6 so the carousel stays snappy.
+    const gistSlides = allGist.slice(0, 4).map(g => ({ kind: "gist", ...g }));
+    const contentSlides = allContent.slice(0, 4).map(c => ({ kind: "content", ...c }));
+    const slides = [...gistSlides, ...contentSlides]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 6);
+
+    const wrap = document.getElementById("heroSlides");
+    const dotsWrap = document.getElementById("heroDots");
+
+    if (slides.length === 0) {
+      // Leave the default "no content live yet" slide in place — nothing to do.
       return;
     }
-    visual.innerHTML = `
-      ${track.cover_url ? `<img class="hero-cover" src="${escapeHtml(track.cover_url)}" alt="">` : ""}
-      <div class="now-playing-card" id="heroNowPlaying">
-        <div class="np-thumb" style="${track.cover_url ? `background-image:url(${escapeHtml(track.cover_url)})` : ""}"></div>
-        <div class="np-info">
-          <div class="title">${escapeHtml(track.title)}</div>
-          <div class="artist">${escapeHtml(track.artist || "")} · Tap to play</div>
+
+    wrap.innerHTML = slides.map((item, i) => {
+      const tag = item.kind === "gist" ? (item.category || "Gist") : (item.type === "Video" ? "Video" : "Music");
+      const sub = item.kind === "gist" ? "MyGospelHub Gist" : (item.artist || "");
+      return `
+        <div class="hero-slide ${i === 0 ? "active" : ""}" data-index="${i}" data-url="${escapeHtml(heroSlideDest(item))}">
+          ${item.cover_url ? `<img src="${escapeHtml(item.cover_url)}" alt="">` : ""}
+          <div class="hero-slide-body">
+            <span class="hero-slide-tag">${escapeHtml(tag)}</span>
+            <h2 class="hero-slide-title">${escapeHtml(item.title)}</h2>
+            <div class="hero-slide-sub">${escapeHtml(sub)}</div>
+            <div class="hero-slide-actions">
+              <span class="btn btn-gold btn-lg">${item.kind === "gist" ? "Read Story" : "Listen / Watch"}</span>
+            </div>
+          </div>
         </div>
-      </div>
-    `;
-    document.getElementById("heroNowPlaying").addEventListener("click", () => playTrack(track));
+      `;
+    }).join("");
+
+    dotsWrap.innerHTML = slides.map((_, i) => `<button class="hero-dot ${i === 0 ? "active" : ""}" data-index="${i}" aria-label="Slide ${i + 1}"></button>`).join("");
+
+    wrap.querySelectorAll(".hero-slide").forEach(el => {
+      el.addEventListener("click", () => { window.location.href = el.dataset.url; });
+    });
+    dotsWrap.querySelectorAll(".hero-dot").forEach(dot => {
+      dot.addEventListener("click", () => goToHeroSlide(Number(dot.dataset.index)));
+    });
+
+    heroSlideIndex = 0;
+    if (heroTimer) clearInterval(heroTimer);
+    if (slides.length > 1) {
+      heroTimer = setInterval(() => {
+        goToHeroSlide((heroSlideIndex + 1) % slides.length);
+      }, 6000);
+    }
+  }
+
+  function goToHeroSlide(index) {
+    const slides = document.querySelectorAll(".hero-slide");
+    const dots = document.querySelectorAll(".hero-dot");
+    if (!slides.length) return;
+    heroSlideIndex = index;
+    slides.forEach((s, i) => s.classList.toggle("active", i === index));
+    dots.forEach((d, i) => d.classList.toggle("active", i === index));
   }
 
   function trackRowHtml(track, index) {
