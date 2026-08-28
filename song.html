@@ -387,17 +387,21 @@
   const ICON_SHARE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
 
   const params = new URLSearchParams(window.location.search);
+  const songSlug = params.get("slug");
   const songId = params.get("id");
   let currentSong = null;
   let liked = false;
 
   async function loadSong() {
-    if (!songId) {
+    if (!songSlug && !songId) {
       document.getElementById("songContent").innerHTML = `<div class="state-block">No song specified.</div>`;
       return;
     }
     try {
-      const rows = await supabaseQuery("content", `id=eq.${songId}&status=eq.Published&select=*`);
+      // Prefer the clean slug when present; fall back to id for older links
+      // that were shared before slugs existed, so nothing breaks.
+      const filter = songSlug ? `slug=eq.${encodeURIComponent(songSlug)}` : `id=eq.${songId}`;
+      const rows = await supabaseQuery("content", `${filter}&status=eq.Published&select=*`);
       if (!rows || rows.length === 0) {
         document.getElementById("songContent").innerHTML = `<div class="state-block">This song couldn't be found — it may have been removed.</div>`;
         return;

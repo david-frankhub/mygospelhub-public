@@ -1134,7 +1134,8 @@
             <h2 class="hero-slide-title">${escapeHtml(item.title)}</h2>
             <div class="hero-slide-sub">${escapeHtml(sub)}</div>
             <div class="hero-slide-actions">
-              <span class="btn btn-gold btn-lg">${item.kind === "gist" ? "Read Story" : "Listen / Watch"}</span>
+              <span class="btn btn-gold btn-lg">Read Full Post</span>
+              <button class="btn btn-lg hero-share-btn" data-share-url="${escapeHtml(heroSlideDest(item))}" data-share-title="${escapeHtml(item.title)}">Share</button>
             </div>
           </div>
         </div>
@@ -1145,6 +1146,22 @@
 
     wrap.querySelectorAll(".hero-slide").forEach(el => {
       el.addEventListener("click", () => { window.location.href = el.dataset.url; });
+    });
+
+    wrap.querySelectorAll(".hero-share-btn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation(); // don't also trigger the slide's own click-to-navigate
+        const fullUrl = `${window.location.origin}/${btn.dataset.shareUrl}`;
+        const shareData = { title: btn.dataset.shareTitle, url: fullUrl };
+        if (navigator.share) {
+          try { await navigator.share(shareData); } catch (err) {}
+        } else {
+          await navigator.clipboard.writeText(fullUrl);
+          const original = btn.textContent;
+          btn.textContent = "Link copied!";
+          setTimeout(() => { btn.textContent = original; }, 1800);
+        }
+      });
     });
     dotsWrap.querySelectorAll(".hero-dot").forEach(dot => {
       dot.addEventListener("click", () => goToHeroSlide(Number(dot.dataset.index)));

@@ -337,6 +337,7 @@
   const ICON_SHARE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>`;
 
   const params = new URLSearchParams(window.location.search);
+  const videoSlug = params.get("slug");
   const videoId = params.get("id");
   const wrap = document.getElementById("videoWrap");
   let currentVideo = null;
@@ -648,12 +649,13 @@ const url = v.slug ? `${window.location.origin}/api/video?slug=${v.slug}` : `${w
   }
 
   async function init() {
-    if (!videoId) {
+    if (!videoSlug && !videoId) {
       renderNotFound();
       return;
     }
     try {
-      const results = await supabaseQuery("content", `id=eq.${videoId}&status=eq.Published&type=eq.Video&limit=1`);
+      const filter = videoSlug ? `slug=eq.${encodeURIComponent(videoSlug)}` : `id=eq.${videoId}`;
+      const results = await supabaseQuery("content", `${filter}&status=eq.Published&type=eq.Video&limit=1`);
       if (!results || results.length === 0) {
         renderNotFound();
         return;

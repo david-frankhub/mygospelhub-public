@@ -315,7 +315,8 @@
   const ICON_SHARE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>`;
 
   const params = new URLSearchParams(window.location.search);
-  const gistId = params.get("id");
+  const gistSlug = params.get("slug");
+  const gistIdParam = params.get("id");
   const wrap = document.getElementById("articleWrap");
   let currentPost = null;
   let liked = false;
@@ -562,18 +563,19 @@
   }
 
   async function init() {
-    if (!gistId) {
+    if (!gistSlug && !gistIdParam) {
       renderNotFound();
       return;
     }
     try {
-      const results = await supabaseQuery("gist_articles", `id=eq.${gistId}&status=eq.Published&limit=1`);
+      const filter = gistSlug ? `slug=eq.${encodeURIComponent(gistSlug)}` : `id=eq.${gistIdParam}`;
+      const results = await supabaseQuery("gist_articles", `${filter}&status=eq.Published&limit=1`);
       if (!results || results.length === 0) {
         renderNotFound();
         return;
       }
       renderArticle(results[0]);
-      supabaseRpc("increment_gist_reads", { row_id: gistId }); // count the visit as a read
+      supabaseRpc("increment_gist_reads", { row_id: results[0].id }); // count the visit as a read
     } catch (e) {
       renderNotFound();
     }

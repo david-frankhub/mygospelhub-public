@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-  <link rel="icon" type="image/png" href="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
+<link rel="icon" type="image/png" href="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Music — MyGospelHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +27,7 @@
     font-family:'Inter',sans-serif;
     -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
-    padding-bottom:88px; /* space for sticky player */
+    padding-bottom:88px;
   }
   h1,h2,h3,.display{font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.01em;}
   .mono{font-family:'JetBrains Mono',monospace;}
@@ -40,7 +40,6 @@
     *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
   }
 
-  /* ===== Nav ===== */
   nav{
     display:flex; align-items:center; justify-content:space-between;
     padding:22px 5%; position:sticky; top:0;
@@ -56,7 +55,6 @@
   .btn-gold{background:var(--gold); color:#0B0B0D; border:1px solid var(--gold);}
   .btn-gold:hover{background:#E5B45C;}
 
-  /* ===== Hero ===== */
   .music-hero{
     padding:56px 5% 40px;
     max-width:1400px; margin:0 auto;
@@ -68,7 +66,6 @@
   .music-hero h1{font-size:clamp(32px,4.5vw,52px); line-height:1.05; margin-bottom:14px;}
   .music-hero p{font-size:15.5px; color:var(--text-dim); max-width:520px; line-height:1.6;}
 
-  /* ===== Genre chips ===== */
   section{padding:0 5%; max-width:1400px; margin:0 auto;}
   .genre-strip{display:flex; gap:12px; flex-wrap:wrap; padding:24px 0 40px;}
   .genre-pill{
@@ -77,7 +74,6 @@
   }
   .genre-pill:hover, .genre-pill.active{border-color:var(--gold); color:var(--gold); background:rgba(217,164,65,0.08);}
 
-  /* ===== Section shared ===== */
   .section-head{
     display:flex; justify-content:space-between; align-items:flex-end;
     margin-bottom:28px; border-bottom:1px solid var(--line); padding-bottom:18px;
@@ -85,7 +81,6 @@
   .section-head .label{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;}
   .section-head h2{font-size:26px;}
 
-  /* ===== Track list ===== */
   .track-list{display:flex; flex-direction:column; margin-bottom:56px;}
   .track-row{
     display:grid;
@@ -105,6 +100,7 @@
   .track-art{
     width:52px; height:52px; border-radius:8px; flex-shrink:0;
     background:linear-gradient(135deg, var(--wine-bright), #2A0810);
+    background-size:cover; background-position:center;
     position:relative;
   }
   .track-art.playing::after{
@@ -125,21 +121,11 @@
   .track-plays{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim); white-space:nowrap;}
   .track-dur{font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--text-dim);}
 
-  /* ===== Album grid ===== */
-  .album-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:20px; margin-bottom:56px;}
-  .album-card{cursor:pointer;}
-  .album-cover{
-    aspect-ratio:1; border-radius:12px; margin-bottom:12px;
-    background:linear-gradient(135deg, var(--gold), #7A1F2B 130%);
-    border:1px solid var(--line);
-    position:relative; overflow:hidden;
-    transition:transform 0.25s;
+  .state-block{
+    padding:40px 20px; text-align:center; color:var(--text-dim); font-size:13.5px;
+    background:var(--bg-card); border:1px solid var(--line); border-radius:14px; margin-bottom:56px;
   }
-  .album-card:hover .album-cover{transform:translateY(-4px);}
-  .album-title{font-size:13.5px; font-weight:600; margin-bottom:2px;}
-  .album-artist{font-size:12px; color:var(--text-dim);}
 
-  /* ===== Sticky Now Playing bar ===== */
   .now-playing-bar{
     position:fixed; bottom:0; left:0; right:0;
     background:rgba(15,15,17,0.92); backdrop-filter:blur(14px);
@@ -148,8 +134,8 @@
     display:flex; align-items:center; gap:20px;
     z-index:200;
   }
-  .np-track{display:flex; align-items:center; gap:12px; width:260px; min-width:0;}
-  .np-art{width:44px; height:44px; border-radius:7px; background:linear-gradient(135deg, var(--wine-bright), #2A0810); flex-shrink:0;}
+  .np-track{display:flex; align-items:center; gap:12px; width:260px; min-width:0; cursor:pointer;}
+  .np-art{width:44px; height:44px; border-radius:7px; background:linear-gradient(135deg, var(--wine-bright), #2A0810); background-size:cover; background-position:center; flex-shrink:0;}
   .np-info{min-width:0;}
   .np-title{font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .np-artist{font-size:11.5px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
@@ -167,16 +153,14 @@
   .np-time{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-dim); width:34px;}
   .np-time.right{text-align:right;}
   .np-progress{flex:1; height:3px; border-radius:2px; background:rgba(242,239,233,0.15); position:relative; cursor:pointer;}
-  .np-progress-fill{position:absolute; left:0; top:0; bottom:0; width:22%; background:var(--gold); border-radius:2px;}
+  .np-progress-fill{position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--gold); border-radius:2px;}
 
   .np-extra{width:120px; display:flex; justify-content:flex-end; gap:14px;}
   .np-extra button{background:none; border:none; color:var(--text-dim); transition:color 0.2s;}
   .np-extra button:hover{color:var(--gold);}
-  .np-extra button.liked{color:var(--gold);}
 
   @media (max-width:900px){
     .nav-links{display:none;}
-    .album-grid{grid-template-columns:repeat(2,1fr);}
     .track-row{grid-template-columns:26px 44px 1fr 32px; }
     .track-plays, .track-dur{display:none;}
     .np-track{width:150px;}
@@ -193,9 +177,8 @@
       <a href="index.html#videos">Videos</a>
       <a href="music.html" class="active">Music</a>
       <a href="index.html#gist">Gist</a>
-      <a href="index.html#genres">Genres</a>
     </div>
-    <button class="btn btn-gold">Watch Live</button>
+    <a href="index.html" class="btn btn-gold">Home</a>
   </nav>
 
   <div class="music-hero">
@@ -205,15 +188,8 @@
   </div>
 
   <section>
-    <div class="genre-strip">
-      <div class="genre-pill active">All</div>
-      <div class="genre-pill">Worship</div>
-      <div class="genre-pill">Praise</div>
-      <div class="genre-pill">Choir</div>
-      <div class="genre-pill">Yoruba</div>
-      <div class="genre-pill">Igbo</div>
-      <div class="genre-pill">Hausa</div>
-      <div class="genre-pill">Instrumentals</div>
+    <div class="genre-strip" id="genreStrip">
+      <div class="genre-pill active" data-genre="All">All</div>
     </div>
   </section>
 
@@ -226,92 +202,16 @@
       <a href="browse-music.html" style="font-size:13px; color:var(--gold); font-weight:600; white-space:nowrap;">Browse all music →</a>
     </div>
     <div class="track-list" id="trackList">
-      <div class="track-row playing" data-title="Nothing Is Impossible" data-artist="Mercy Chinwo">
-        <div class="track-num">01</div>
-        <div class="track-art playing"><div class="eq"><span></span><span></span><span></span></div></div>
-        <div>
-          <div class="track-title">Nothing Is Impossible</div>
-          <div class="track-artist">Mercy Chinwo</div>
-        </div>
-        <div class="track-plays">1.2M plays</div>
-        <div class="track-dur">4:52</div>
-      </div>
-      <div class="track-row" data-title="Way Maker" data-artist="Sinach">
-        <div class="track-num">02</div>
-        <div class="track-art"></div>
-        <div>
-          <div class="track-title">Way Maker</div>
-          <div class="track-artist">Sinach</div>
-        </div>
-        <div class="track-plays">980K plays</div>
-        <div class="track-dur">4:10</div>
-      </div>
-      <div class="track-row" data-title="Onyeoma" data-artist="Tope Alabi">
-        <div class="track-num">03</div>
-        <div class="track-art"></div>
-        <div>
-          <div class="track-title">Onyeoma</div>
-          <div class="track-artist">Tope Alabi</div>
-        </div>
-        <div class="track-plays">640K plays</div>
-        <div class="track-dur">5:03</div>
-      </div>
-      <div class="track-row" data-title="Great Is Your Faithfulness" data-artist="Lagos Community Choir">
-        <div class="track-num">04</div>
-        <div class="track-art"></div>
-        <div>
-          <div class="track-title">Great Is Your Faithfulness</div>
-          <div class="track-artist">Lagos Community Choir</div>
-        </div>
-        <div class="track-plays">210K plays</div>
-        <div class="track-dur">3:47</div>
-      </div>
-      <div class="track-row" data-title="Egwu Ebube" data-artist="Frank Edwards">
-        <div class="track-num">05</div>
-        <div class="track-art"></div>
-        <div>
-          <div class="track-title">Egwu Ebube</div>
-          <div class="track-artist">Frank Edwards</div>
-        </div>
-        <div class="track-plays">185K plays</div>
-        <div class="track-dur">4:38</div>
-      </div>
-      <div class="track-row" data-title="Yahweh" data-artist="Nathaniel Bassey">
-        <div class="track-num">06</div>
-        <div class="track-art"></div>
-        <div>
-          <div class="track-title">Yahweh</div>
-          <div class="track-artist">Nathaniel Bassey</div>
-        </div>
-        <div class="track-plays">142K plays</div>
-        <div class="track-dur">6:02</div>
-      </div>
+      <div class="state-block">Loading tracks…</div>
     </div>
   </section>
 
-  <section>
-    <div class="section-head">
-      <div>
-        <div class="label">Full length</div>
-        <h2>New Albums &amp; EPs</h2>
-      </div>
-    </div>
-    <div class="album-grid">
-      <div class="album-card"><div class="album-cover"></div><div class="album-title">Grace Abounds</div><div class="album-artist">Mercy Chinwo</div></div>
-      <div class="album-card"><div class="album-cover"></div><div class="album-title">Way Maker Live</div><div class="album-artist">Sinach</div></div>
-      <div class="album-card"><div class="album-cover"></div><div class="album-title">Ijoba Orun</div><div class="album-artist">Tope Alabi</div></div>
-      <div class="album-card"><div class="album-cover"></div><div class="album-title">Chants of Zion</div><div class="album-artist">Lagos Community Choir</div></div>
-      <div class="album-card"><div class="album-cover"></div><div class="album-title">Overflow</div><div class="album-artist">Nathaniel Bassey</div></div>
-    </div>
-  </section>
-
-  <!-- Sticky Now Playing bar -->
   <div class="now-playing-bar">
-    <div class="np-track">
-      <div class="np-art"></div>
+    <div class="np-track" id="npTrackLink">
+      <div class="np-art" id="npArt"></div>
       <div class="np-info">
-        <div class="np-title" id="npTitle">Nothing Is Impossible</div>
-        <div class="np-artist" id="npArtist">Mercy Chinwo</div>
+        <div class="np-title" id="npTitle">Nothing playing yet</div>
+        <div class="np-artist" id="npArtist">Tap a track to preview</div>
       </div>
     </div>
     <div class="np-controls">
@@ -327,63 +227,183 @@
         </button>
       </div>
       <div class="np-progress-row">
-        <span class="np-time">1:04</span>
-        <div class="np-progress"><div class="np-progress-fill"></div></div>
-        <span class="np-time right">4:52</span>
+        <span class="np-time" id="npCurrentTime">0:00</span>
+        <div class="np-progress" id="npProgress"><div class="np-progress-fill" id="npProgressFill"></div></div>
+        <span class="np-time right" id="npDuration">0:00</span>
       </div>
     </div>
     <div class="np-extra">
-      <button class="liked" aria-label="Like">
+      <button aria-label="Like">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-6.7-4.35-9.3-8.1C.8 10.1 1.4 6.6 4.4 5.1c2.3-1.2 4.9-.4 6.3 1.4l1.3 1.6 1.3-1.6c1.4-1.8 4-2.6 6.3-1.4 3 1.5 3.6 5 1.7 7.8C18.7 16.65 12 21 12 21z"/></svg>
-      </button>
-      <button aria-label="Volume">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-1-3.29-2.5-4.03v8.05c1.5-.73 2.5-2.25 2.5-4.02z"/></svg>
       </button>
     </div>
   </div>
 
+  <audio id="audioEl" preload="none"></audio>
+
 <script>
-  // genre pills
-  document.querySelectorAll('.genre-pill').forEach(pill=>{
-    pill.addEventListener('click', ()=>{
-      document.querySelectorAll('.genre-pill').forEach(p=>p.classList.remove('active'));
-      pill.classList.add('active');
+  const SUPABASE_URL = "https://kqgnpryubgdtmtcjtasi.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZ25wcnl1YmdkdG10Y2p0YXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTQ1NjQsImV4cCI6MjA5OTczMDU2NH0.T0y1CVCzIvfmK4vgczmlpiAFZP63MRLZT5eymu8R6jY";
+
+  async function supabaseQuery(table, params) {
+    const url = `${SUPABASE_URL}/rest/v1/${table}?${params}`;
+    const res = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
     });
-  });
+    if (!res.ok) throw new Error(`Failed to load ${table}`);
+    return res.json();
+  }
 
-  // track selection -> updates now playing bar
-  const rows = document.querySelectorAll('.track-row');
-  const npTitle = document.getElementById('npTitle');
-  const npArtist = document.getElementById('npArtist');
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
 
-  rows.forEach(row=>{
-    row.addEventListener('click', ()=>{
-      rows.forEach(r=>{
-        r.classList.remove('playing');
-        const art = r.querySelector('.track-art');
-        art.classList.remove('playing');
-        art.innerHTML = '';
+  function formatCount(n) {
+    n = n || 0;
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+    return String(n);
+  }
+
+  function formatTime(sec) {
+    if (!isFinite(sec) || sec == null) return "0:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  let allTracks = [];
+  let activeGenre = "All";
+  let currentTrack = null;
+
+  function trackDest(t) {
+    return t.type === "Video" ? "video.html" : "song.html";
+  }
+
+  function renderGenres() {
+    const genres = Array.from(new Set(allTracks.map(t => (t.genre || "").trim()).filter(Boolean)));
+    const strip = document.getElementById("genreStrip");
+    strip.innerHTML = `<div class="genre-pill active" data-genre="All">All</div>` +
+      genres.map(g => `<div class="genre-pill" data-genre="${escapeHtml(g)}">${escapeHtml(g)}</div>`).join("");
+
+    strip.querySelectorAll(".genre-pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        strip.querySelectorAll(".genre-pill").forEach(p => p.classList.remove("active"));
+        pill.classList.add("active");
+        activeGenre = pill.dataset.genre;
+        renderTrackList();
       });
-      row.classList.add('playing');
-      const art = row.querySelector('.track-art');
-      art.classList.add('playing');
-      art.innerHTML = '<div class="eq"><span></span><span></span><span></span></div>';
-      npTitle.textContent = row.dataset.title;
-      npArtist.textContent = row.dataset.artist;
-      npPlayIcon.innerHTML = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>';
     });
+  }
+
+  function renderTrackList() {
+    const list = document.getElementById("trackList");
+    const filtered = activeGenre === "All" ? allTracks : allTracks.filter(t => (t.genre || "").trim() === activeGenre);
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="state-block">No tracks in ${escapeHtml(activeGenre)} yet.</div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map((t, i) => `
+      <div class="track-row" data-id="${t.id}">
+        <div class="track-num">${String(i + 1).padStart(2, "0")}</div>
+        <div class="track-art" style="${t.cover_url ? `background-image:url('${escapeHtml(t.cover_url)}')` : ""}"></div>
+        <div>
+          <div class="track-title">${escapeHtml(t.title)}</div>
+          <div class="track-artist">${escapeHtml(t.artist)}</div>
+        </div>
+        <div class="track-plays">${formatCount(t.views)} plays</div>
+        <div class="track-dur"></div>
+      </div>
+    `).join("");
+
+    list.querySelectorAll(".track-row").forEach(row => {
+      row.addEventListener("click", () => {
+        const track = allTracks.find(t => String(t.id) === row.dataset.id);
+        if (!track) return;
+        if (track.file_url) {
+          playPreview(track, row);
+        } else {
+          window.location.href = `${trackDest(track)}?${track.slug ? "slug=" + track.slug : "id=" + track.id}`;
+        }
+      });
+    });
+  }
+
+  const audio = document.getElementById("audioEl");
+  const npPlay = document.getElementById("npPlay");
+  const npPlayIcon = document.getElementById("npPlayIcon");
+  const npTitle = document.getElementById("npTitle");
+  const npArtist = document.getElementById("npArtist");
+  const npArt = document.getElementById("npArt");
+  const npTrackLink = document.getElementById("npTrackLink");
+  const npProgress = document.getElementById("npProgress");
+  const npProgressFill = document.getElementById("npProgressFill");
+  const npCurrentTime = document.getElementById("npCurrentTime");
+  const npDuration = document.getElementById("npDuration");
+
+  function setPlayingRow(id) {
+    document.querySelectorAll(".track-row").forEach(r => {
+      const active = r.dataset.id === String(id);
+      r.classList.toggle("playing", active);
+      const art = r.querySelector(".track-art");
+      art.classList.toggle("playing", active);
+      art.innerHTML = active ? `<div class="eq"><span></span><span></span><span></span></div>` : "";
+    });
+  }
+
+  function playPreview(track, row) {
+    currentTrack = track;
+    audio.src = track.file_url;
+    audio.play();
+    npTitle.textContent = track.title;
+    npArtist.textContent = track.artist;
+    npArt.style.backgroundImage = track.cover_url ? `url('${track.cover_url}')` : "";
+    setPlayingRow(track.id);
+  }
+
+  npTrackLink.addEventListener("click", () => {
+    if (currentTrack) window.location.href = `${trackDest(currentTrack)}?${currentTrack.slug ? "slug=" + currentTrack.slug : "id=" + currentTrack.id}`;
   });
 
-  // play/pause toggle
-  const npPlay = document.getElementById('npPlay');
-  const npPlayIcon = document.getElementById('npPlayIcon');
-  let playing = true;
-  npPlay.addEventListener('click', ()=>{
-    playing = !playing;
-    npPlayIcon.innerHTML = playing
-      ? '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
-      : '<path d="M8 5v14l11-7z"/>';
+  npPlay.addEventListener("click", () => {
+    if (!audio.src) return;
+    if (audio.paused) audio.play(); else audio.pause();
   });
+  audio.addEventListener("play", () => {
+    npPlayIcon.innerHTML = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>';
+  });
+  audio.addEventListener("pause", () => {
+    npPlayIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+  });
+  audio.addEventListener("loadedmetadata", () => { npDuration.textContent = formatTime(audio.duration); });
+  audio.addEventListener("timeupdate", () => {
+    npCurrentTime.textContent = formatTime(audio.currentTime);
+    if (audio.duration) npProgressFill.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+  });
+  npProgress.addEventListener("click", (e) => {
+    if (!audio.duration) return;
+    const rect = npProgress.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+  });
+
+  async function loadTracks() {
+    const list = document.getElementById("trackList");
+    try {
+      const rows = await supabaseQuery("content", "status=eq.Published&order=views.desc&select=*");
+      allTracks = rows || [];
+      renderGenres();
+      renderTrackList();
+    } catch (err) {
+      console.error(err);
+      list.innerHTML = `<div class="state-block">Couldn't load music right now. Refresh to try again.</div>`;
+    }
+  }
+
+  loadTracks();
 </script>
 
 </body>
