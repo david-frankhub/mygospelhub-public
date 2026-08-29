@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse Videos — MyGospelHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B0D;
+    --bg-raised:#141416;
+    --bg-card:#18181B;
+    --text:#F2EFE9;
+    --text-dim:#8A8780;
+    --gold:#D9A441;
+    --wine:#7A1F2B;
+    --wine-bright:#9C2C3A;
+    --line: rgba(242,239,233,0.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.01em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--gold);color:#0B0B0D;}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  button{font-family:inherit; cursor:pointer;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
+  }
+
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 5%; position:sticky; top:0;
+    background:rgba(11,11,13,0.85); backdrop-filter:blur(10px);
+    z-index:100; border-bottom:1px solid var(--line);
+  }
+  .logo{font-family:'Fraunces',serif; font-size:22px; font-weight:700; display:flex; align-items:baseline; gap:2px;}
+  .logo .dot{color:var(--gold);}
+  .btn{padding:10px 20px; border-radius:100px; font-size:13px; font-weight:600; border:1px solid var(--line); background:transparent; color:var(--text); transition:all 0.2s;}
+  .btn-gold{background:var(--gold); color:#0B0B0D; border:1px solid var(--gold);}
+  .btn-gold:hover{background:#E5B45C;}
+
+  .browse-header{padding:44px 5% 0; max-width:1100px; margin:0 auto;}
+  .browse-header h1{font-size:clamp(28px,4vw,40px); margin-bottom:24px;}
+
+  .search-bar{position:relative; margin-bottom:24px;}
+  .search-bar svg{position:absolute; left:18px; top:50%; transform:translateY(-50%); color:var(--text-dim); pointer-events:none;}
+  .search-bar input{
+    width:100%; background:var(--bg-card); border:1px solid var(--line); border-radius:100px;
+    padding:15px 20px 15px 46px; font-size:14.5px; color:var(--text); outline:none;
+    font-family:'Inter',sans-serif; transition:border-color 0.2s;
+  }
+  .search-bar input:focus{border-color:var(--gold);}
+  .search-bar input::placeholder{color:var(--text-dim);}
+
+  .filter-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+  .filter-label{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-dim); margin-right:2px;}
+  .chip{
+    padding:9px 18px; border-radius:100px; border:1px solid var(--line);
+    font-size:12.5px; font-weight:500; color:var(--text-dim); transition:all 0.2s; cursor:pointer; background:transparent;
+  }
+  .chip:hover, .chip.active{border-color:var(--gold); color:var(--gold); background:rgba(217,164,65,0.08);}
+
+  .sort-select{
+    background:var(--bg-card); border:1px solid var(--line); color:var(--text-dim);
+    font-size:12.5px; padding:10px 14px; border-radius:100px; font-family:'Inter',sans-serif;
+    outline:none; cursor:pointer; margin-bottom:20px;
+  }
+
+  .results-count{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim);
+    padding-bottom:16px; border-bottom:1px solid var(--line); margin-bottom:24px;
+    max-width:1100px; margin-left:auto; margin-right:auto; padding-left:5%; padding-right:5%;
+  }
+  .results-count strong{color:var(--text); font-weight:600;}
+
+  .video-grid{
+    max-width:1100px; margin:0 auto; padding:0 5% 20px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:22px;
+  }
+  .video-card{
+    background:var(--bg-card); border-radius:14px; border:1px solid var(--line); overflow:hidden;
+    cursor:pointer; transition:transform 0.2s, border-color 0.2s;
+  }
+  .video-card:hover{transform:translateY(-3px); border-color:rgba(217,164,65,0.3);}
+  .video-thumb{aspect-ratio:16/10; background:linear-gradient(135deg, var(--wine-bright), #2A0810); position:relative;}
+  .video-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .video-thumb .genre-tag{
+    position:absolute; top:12px; left:12px;
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.05em;
+    background:var(--wine); color:#F2DCC9; padding:4px 9px; border-radius:100px;
+  }
+  .video-thumb .play-icon{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 0.2s;
+  }
+  .video-card:hover .play-icon{opacity:1;}
+  .play-icon svg{width:44px; height:44px; color:var(--gold); filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5));}
+  .video-body{padding:16px;}
+  .video-body h3{font-size:14.5px; font-weight:600; line-height:1.35; margin-bottom:6px;}
+  .video-body h3 mark{background:rgba(217,164,65,0.28); color:var(--gold); border-radius:2px;}
+  .video-artist{font-size:12.5px; color:var(--text-dim); margin-bottom:8px;}
+  .video-meta{display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-dim); font-family:'JetBrains Mono',monospace;}
+
+  .state-block{max-width:1100px; margin:0 auto; padding:0 5%;}
+  .state-block-inner{
+    text-align:center; padding:48px 20px; color:var(--text-dim); font-size:13.5px;
+    background:var(--bg-card); border:1px solid var(--line); border-radius:14px;
+  }
+
+  .load-more-wrap{max-width:1100px; margin:0 auto; padding:24px 5% 40px; text-align:center;}
+  .load-more-btn{
+    padding:13px 30px; border-radius:100px; border:1px solid var(--line);
+    background:var(--bg-card); color:var(--text); font-size:13.5px; font-weight:600; transition:all 0.2s;
+  }
+  .load-more-btn:hover{border-color:var(--gold); color:var(--gold);}
+
+  @media (max-width:900px){
+    .video-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:600px){
+    .video-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">MyGospelHub<span class="dot">.</span></div>
+    <a href="index.html" class="btn btn-gold">Home</a>
+  </nav>
+
+  <div class="browse-header">
+    <h1>Browse all videos</h1>
+    <div class="search-bar">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Search videos, artists...">
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Genre</span>
+      <div id="genreChips" style="display:contents;">
+        <button class="chip active" data-genre="All">All</button>
+      </div>
+    </div>
+    <select class="sort-select" id="sortSelect">
+      <option value="views">Most viewed</option>
+      <option value="newest">Newest</option>
+      <option value="az">A–Z</option>
+    </select>
+  </div>
+
+  <div class="results-count" id="resultsCount">Loading…</div>
+  <div class="video-grid" id="videoGrid"></div>
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+    <button class="load-more-btn" id="loadMoreBtn">Load more</button>
+  </div>
+
+<script>
+  const SUPABASE_URL = "https://kqgnpryubgdtmtcjtasi.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZ25wcnl1YmdkdG10Y2p0YXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTQ1NjQsImV4cCI6MjA5OTczMDU2NH0.T0y1CVCzIvfmK4vgczmlpiAFZP63MRLZT5eymu8R6jY";
+
+  async function supabaseQuery(table, params) {
+    const url = `${SUPABASE_URL}/rest/v1/${table}?${params}`;
+    const res = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+    });
+    if (!res.ok) throw new Error(`Failed to load ${table}`);
+    return res.json();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
+
+  function formatCount(n) {
+    n = n || 0;
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+    return String(n);
+  }
+
+  function highlight(text, q) {
+    const safe = escapeHtml(text);
+    if (!q) return safe;
+    const idx = safe.toLowerCase().indexOf(q.toLowerCase());
+    if (idx === -1) return safe;
+    return safe.slice(0, idx) + "<mark>" + safe.slice(idx, idx + q.length) + "</mark>" + safe.slice(idx + q.length);
+  }
+
+  function videoDest(v) {
+    return `video.html?${v.slug ? "slug=" + v.slug : "id=" + v.id}`;
+  }
+
+  const ICON_PLAY = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+
+  const PAGE_SIZE = 9;
+  let allVideos = [];
+  let query = "";
+  let activeGenre = "All";
+  let sort = "views";
+  let visibleCount = PAGE_SIZE;
+
+  function getFiltered() {
+    let list = allVideos.filter(v => {
+      const matchesGenre = activeGenre === "All" || (v.genre || "").trim() === activeGenre;
+      const q = query.trim().toLowerCase();
+      const matchesQuery = !q || v.title.toLowerCase().includes(q) || (v.artist || "").toLowerCase().includes(q);
+      return matchesGenre && matchesQuery;
+    });
+    if (sort === "views") list.sort((a, b) => (b.views || 0) - (a.views || 0));
+    else if (sort === "newest") list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    else if (sort === "az") list.sort((a, b) => a.title.localeCompare(b.title));
+    return list;
+  }
+
+  function render() {
+    const filtered = getFiltered();
+    const visible = filtered.slice(0, visibleCount);
+    const countEl = document.getElementById("resultsCount");
+    const grid = document.getElementById("videoGrid");
+    const loadMoreWrap = document.getElementById("loadMoreWrap");
+
+    countEl.innerHTML = `<strong>${filtered.length}</strong> video${filtered.length !== 1 ? "s" : ""}`;
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="state-block-inner" style="grid-column:1/-1;">No videos found. Try a different search or filter.</div>`;
+      loadMoreWrap.style.display = "none";
+      return;
+    }
+
+    grid.innerHTML = visible.map(v => `
+      <div class="video-card" data-id="${v.id}">
+        <div class="video-thumb">
+          ${v.cover_url ? `<img src="${escapeHtml(v.cover_url)}" alt="">` : ""}
+          ${v.genre ? `<span class="genre-tag">${escapeHtml(v.genre)}</span>` : ""}
+          <div class="play-icon">${ICON_PLAY}</div>
+        </div>
+        <div class="video-body">
+          <h3>${highlight(v.title, query)}</h3>
+          <div class="video-artist">${escapeHtml(v.artist || "")}</div>
+          <div class="video-meta"><span>${formatCount(v.views)} views</span></div>
+        </div>
+      </div>
+    `).join("");
+
+    grid.querySelectorAll(".video-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const video = allVideos.find(v => String(v.id) === card.dataset.id);
+        if (video) window.location.href = videoDest(video);
+      });
+    });
+
+    loadMoreWrap.style.display = visibleCount < filtered.length ? "block" : "none";
+  }
+
+  function renderGenreChips() {
+    const genres = Array.from(new Set(allVideos.map(v => (v.genre || "").trim()).filter(Boolean)));
+    const wrap = document.getElementById("genreChips");
+    wrap.innerHTML = `<button class="chip active" data-genre="All">All</button>` +
+      genres.map(g => `<button class="chip" data-genre="${escapeHtml(g)}">${escapeHtml(g)}</button>`).join("");
+
+    wrap.querySelectorAll(".chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        wrap.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        activeGenre = chip.dataset.genre;
+        visibleCount = PAGE_SIZE;
+        render();
+      });
+    });
+  }
+
+  document.getElementById("searchInput").addEventListener("input", (e) => {
+    query = e.target.value;
+    visibleCount = PAGE_SIZE;
+    render();
+  });
+
+  document.getElementById("sortSelect").addEventListener("change", (e) => {
+    sort = e.target.value;
+    render();
+  });
+
+  document.getElementById("loadMoreBtn").addEventListener("click", () => {
+    visibleCount += PAGE_SIZE;
+    render();
+  });
+
+  async function loadVideos() {
+    try {
+      const rows = await supabaseQuery("content", "status=eq.Published&type=eq.Video&select=*");
+      allVideos = rows || [];
+      renderGenreChips();
+      render();
+    } catch (err) {
+      console.error(err);
+      document.getElementById("resultsCount").textContent = "";
+      document.getElementById("videoGrid").innerHTML = `<div class="state-block-inner" style="grid-column:1/-1;">Couldn't load videos right now. Refresh to try again.</div>`;
+    }
+  }
+
+  loadVideos();
+</script>
+
+</body>
+</html>
