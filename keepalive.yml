@@ -1,0 +1,29 @@
+name: Supabase Keepalive
+
+# Pings Supabase every 3 days (safe margin under the 7-day pause limit).
+# Runs entirely on GitHub's free tier — no cost, no server needed.
+
+on:
+  schedule:
+    - cron: '0 3 */3 * *'   # 03:00 UTC, every 3 days
+  workflow_dispatch:         # lets you trigger it manually from the Actions tab to test
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/content?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+
+          echo "Supabase responded with HTTP $response"
+
+          if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
+            echo "✅ Keepalive successful"
+          else
+            echo "⚠️ Unexpected response code — check if the project got paused anyway"
+            exit 1
+          fi
