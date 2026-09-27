@@ -302,6 +302,47 @@
 
   loadTracks();
 </script>
+<!-- Floating Submit Button -->
+<a href="submit.html" class="submit-fab" aria-label="Submit a song, video or gist">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 5v14M5 12h14"/>
+  </svg>
+  <span class="submit-fab-label">Submit</span>
+</a>
 
+<style>
+.submit-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #D9A441, #B8842E);
+  color: #0a0a0a;
+  padding: 14px 18px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 16px rgba(217, 164, 65, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.submit-fab:hover,
+.submit-fab:active {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(217, 164, 65, 0.55);
+}
+.submit-fab svg { flex-shrink: 0; }
+
+@media (max-width: 480px) {
+  .submit-fab-label { display: none; }
+  .submit-fab {
+    padding: 14px;
+    border-radius: 50%;
+  }
+}
+</style>
 </body>
 </html>
