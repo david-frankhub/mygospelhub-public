@@ -162,6 +162,14 @@
     border:none; transition:all 0.2s;
   }
   .action-btn svg{width:17px; height:17px;}
+  .release-box{border:1px solid rgba(217,164,65,0.35); background:rgba(217,164,65,0.07); border-radius:16px; padding:20px; margin-bottom:18px; text-align:center;}
+  .release-label{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:12px;}
+  .countdown{display:flex; justify-content:center; gap:10px;}
+  .cd-unit{min-width:62px; padding:10px 6px; border-radius:12px; background:var(--bg-raised); border:1px solid var(--line);}
+  .cd-num{font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:500; color:var(--text);}
+  .cd-lbl{font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-top:2px;}
+  .release-date-text{font-size:12.5px; color:var(--text-dim); margin-top:12px;}
+  .action-locked{background:var(--bg-raised); color:var(--text-dim); border:1px dashed var(--line); cursor:not-allowed;}
   .action-download{background:var(--gold); color:#0B0B0D;}
   .action-download:hover{background:#E5B45C;}
   .action-stream{background:rgba(63,174,90,0.12); color:var(--green); border:1px solid rgba(63,174,90,0.3);}
@@ -425,8 +433,10 @@
 
   function renderSong() {
     const s = currentSong;
-    const hasFile = Boolean(s.file_url);
-    const streamUrl = s.file_url || s.streaming_link || s.video_url || "";
+    const releaseAt = s.release_date ? new Date(s.release_date).getTime() : 0;
+    const locked = releaseAt > Date.now();
+    const hasFile = !locked && Boolean(s.file_url);
+    const streamUrl = locked ? "" : (s.file_url || s.streaming_link || s.video_url || "");
     const isExternalStream = !hasFile && Boolean(streamUrl);
 
     document.getElementById("songContent").innerHTML = `
@@ -452,8 +462,395 @@
         <div class="stat"><div class="stat-value" id="likeCount">${formatCount(s.likes)}</div><div class="stat-label">Likes</div></div>
       </div>
 
+      ${locked ? `
+      <div class="release-box">
+        <div class="release-label">Releases in</div>
+        <div class="countdown" id="countdown">
+          <div class="cd-unit"><div class="cd-num" id="cdD">0</div><div class="cd-lbl">Days</div></div>
+          <div class="cd-unit"><div class="cd-num" id="cdH">00</div><div class="cd-lbl">Hrs</div></div>
+          <div class="cd-unit"><div class="cd-num" id="cdM">00</div><div class="cd-lbl">Min</div></div>
+          <div class="cd-unit"><div class="cd-num" id="cdS">00</div><div class="cd-lbl">Sec</div></div>
+        </div>
+        <div class="release-date-text">${escapeHtml(new Date(releaseAt).toLocaleString([], {dateStyle:"full", timeStyle:"short"}))}</div>
+      </div>
+      ` : ""}
+
       ${hasFile ? `
       <div class="inline-player" id="inlinePlayer">
         <button class="inline-play-btn" id="inlinePlayBtn">${ICON_STREAM}</button>
         <div class="inline-player-body">
-          <div class="inline-progress" id="inlineProgress"><div class="inline-progress-fill" id="inlineProgressFill"></div></di
+          <div class="inline-progress" id="inlineProgress"><div class="inline-progress-fill" id="inlineProgressFill"></div></div>
+          <div class="inline-time"><span id="inlineCurrentTime">0:00</span><span id="inlineDuration">0:00</span></div>
+        </div>
+      </div>
+      <audio id="audioEl" src="${escapeHtml(s.file_url)}" preload="none"></audio>
+      ` : ""}
+
+      <div class="actions-row">
+        ${locked ? `<button class="action-btn action-locked" disabled>${ICON_DOWNLOAD} Download unlocks on release</button>` : ""}
+        ${hasFile ? `<button class="action-btn action-download" id="downloadBtn">${ICON_DOWNLOAD} Download</button>` : ""}
+        ${streamUrl ? `<button class="action-btn action-stream" id="streamBtn">${ICON_STREAM} ${hasFile ? "Play" : "Stream Externally"}</button>` : ""}
+        <button class="action-like" id="likeBtn">${ICON_HEART} <span id="likeBtnCount">${formatCount(s.likes)}</span></button>
+        <button class="action-share" id="shareBtn">${ICON_SHARE} Share</button>
+      </div>
+
+      ${s.lyrics ? `
+      <div class="lyrics-section">
+        <button class="lyrics-toggle" id="lyricsToggle">
+          <span>Lyrics</span>
+          <svg id="lyricsChevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lyrics-body" id="lyricsBody">${escapeHtml(s.lyrics)}</div>
+      </div>
+      ` : ""}
+    `;
+
+    if (locked) {
+      const pad = n => String(n).padStart(2, "0");
+      const tick = () => {
+        const left = releaseAt - Date.now();
+        if (left <= 0) { clearInterval(window.__cd); renderSong(); return; }
+        document.getElementById("cdD").textContent = Math.floor(left / 86400000);
+        document.getElementById("cdH").textContent = pad(Math.floor(left / 3600000) % 24);
+        document.getElementById("cdM").textContent = pad(Math.floor(left / 60000) % 60);
+        document.getElementById("cdS").textContent = pad(Math.floor(left / 1000) % 60);
+      };
+      clearInterval(window.__cd);
+      tick();
+      window.__cd = setInterval(tick, 1000);
+    }
+
+    if (s.lyrics) {
+      const lyricsToggle = document.getElementById("lyricsToggle");
+      const lyricsBody = document.getElementById("lyricsBody");
+      const lyricsChevron = document.getElementById("lyricsChevron");
+      lyricsToggle.addEventListener("click", () => {
+        const isOpen = lyricsBody.classList.toggle("open");
+        lyricsChevron.style.transform = isOpen ? "rotate(180deg)" : "rotate(0deg)";
+      });
+    }
+
+    // ---------- Real audio playback (only when a real file exists) ----------
+    if (hasFile) {
+      const audio = document.getElementById("audioEl");
+      const playBtn = document.getElementById("inlinePlayBtn");
+      const progress = document.getElementById("inlineProgress");
+      const progressFill = document.getElementById("inlineProgressFill");
+      const currentTimeEl = document.getElementById("inlineCurrentTime");
+      const durationEl = document.getElementById("inlineDuration");
+      let hasCountedPlay = false;
+
+      function formatTime(sec) {
+        if (!isFinite(sec)) return "0:00";
+        const m = Math.floor(sec / 60);
+        const s2 = Math.floor(sec % 60).toString().padStart(2, "0");
+        return `${m}:${s2}`;
+      }
+
+      function togglePlay() {
+        if (audio.paused) {
+          audio.play();
+        } else {
+          audio.pause();
+        }
+      }
+
+      playBtn.addEventListener("click", togglePlay);
+      document.getElementById("streamBtn").addEventListener("click", () => {
+        document.getElementById("inlinePlayer").scrollIntoView({ behavior: "smooth", block: "center" });
+        togglePlay();
+      });
+
+      audio.addEventListener("play", () => {
+        playBtn.innerHTML = ICON_PAUSE;
+        if (!hasCountedPlay) {
+          hasCountedPlay = true;
+          supabaseRpc("increment_views", { row_id: s.id });
+        }
+      });
+      audio.addEventListener("pause", () => { playBtn.innerHTML = ICON_STREAM; });
+      audio.addEventListener("ended", () => { playBtn.innerHTML = ICON_STREAM; });
+      audio.addEventListener("loadedmetadata", () => { durationEl.textContent = formatTime(audio.duration); });
+      audio.addEventListener("timeupdate", () => {
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+        if (audio.duration) progressFill.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+      });
+      progress.addEventListener("click", (e) => {
+        const rect = progress.getBoundingClientRect();
+        const ratio = (e.clientX - rect.left) / rect.width;
+        if (audio.duration) audio.currentTime = ratio * audio.duration;
+      });
+    } else if (isExternalStream) {
+      document.getElementById("streamBtn").addEventListener("click", () => {
+        supabaseRpc("increment_views", { row_id: s.id });
+        window.open(streamUrl, "_blank", "noopener,noreferrer");
+      });
+    }
+
+    const downloadBtn = document.getElementById("downloadBtn");
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", async () => {
+        supabaseRpc("increment_downloads", { row_id: s.id });
+        // Force an actual file download instead of opening it in a new tab
+        try {
+          const res = await fetch(s.file_url);
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = `${s.title} - ${s.artist}`.replace(/[^\w\s-]/g, "") || "song";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+          // Fallback: if the fetch/blob approach fails (e.g. CORS), open the file directly
+          window.open(s.file_url, "_blank");
+        }
+      });
+    }
+
+    document.getElementById("likeBtn").addEventListener("click", async (e) => {
+      if (liked) return; // one like per page visit, keeps it simple and honest
+      liked = true;
+      const btn = e.currentTarget;
+      btn.classList.add("liked");
+      const newCount = (s.likes || 0) + 1;
+      document.getElementById("likeCount").textContent = formatCount(newCount);
+      document.getElementById("likeBtnCount").textContent = formatCount(newCount);
+      s.likes = newCount;
+      await supabaseRpc("increment_likes", { row_id: s.id });
+    });
+
+    document.getElementById("shareBtn").addEventListener("click", async () => {
+      const shareUrl = s.slug ? `${window.location.origin}/api/song?slug=${s.slug}` : `${window.location.origin}/api/song?id=${s.id}`;
+      const shareData = { title: s.title, text: `${s.title} — ${s.artist} on MyGospelHub`, url: shareUrl };
+      if (navigator.share) {
+        try { await navigator.share(shareData); } catch (e) {}
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        const btn = document.getElementById("shareBtn");
+        const original = btn.innerHTML;
+        btn.innerHTML = "Link copied!";
+        setTimeout(() => { btn.innerHTML = original; }, 1800);
+      }
+    });
+  }
+
+  async function loadRelated() {
+    try {
+      const rows = await supabaseQuery(
+        "content",
+        `status=eq.Published&id=neq.${currentSong.id}&type=eq.${encodeURIComponent(currentSong.type || "Audio")}&genre=eq.${encodeURIComponent(currentSong.genre || "")}&order=views.desc&limit=4`
+      );
+      const wrap = document.createElement("section");
+      wrap.className = "related";
+      if (!rows || rows.length === 0) {
+        wrap.innerHTML = `<div class="section-label">More like this</div><div class="state-block">No related tracks yet.</div>`;
+      } else {
+        wrap.innerHTML = `
+          <div class="section-label">More like this</div>
+          <div class="related-list">
+            ${rows.map(r => `
+              <div class="related-row" onclick="window.location.href='${r.type === "Video" ? "video.html" : "song.html"}?id=${r.id}'">
+                <div class="related-art">${r.cover_url ? `<img src="${escapeHtml(r.cover_url)}" alt="">` : ""}</div>
+                <div>
+                  <div class="related-title">${escapeHtml(r.title)}</div>
+                  <div class="related-artist">${escapeHtml(r.artist)}</div>
+                </div>
+                <div class="related-plays">${formatCount(r.views)} plays</div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+      document.getElementById("songContent").appendChild(wrap);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function loadFollowSection() {
+    const wrap = document.createElement("section");
+    wrap.className = "follow-section";
+    wrap.innerHTML = `
+      <div class="section-label">Recent Posts</div>
+      <div id="recentPostsList"><div class="state-block">Loading…</div></div>
+
+      <div class="follow-us">
+        <div class="section-label">Follow Us On</div>
+        <div class="follow-icons">
+          <a href="https://www.facebook.com/share/1DyGHVpWsx/" target="_blank" rel="noopener noreferrer" class="follow-icon" aria-label="Facebook">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/iam_davidfrank?igsh=cGlra3Rpb3FubW94" target="_blank" rel="noopener noreferrer" class="follow-icon" aria-label="Instagram">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://vm.tiktok.com/ZS9hfCLFCGack-otoG1/" target="_blank" rel="noopener noreferrer" class="follow-icon" aria-label="TikTok">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 2h-3v13.5a2.5 2.5 0 11-2.5-2.5c.17 0 .34.02.5.05V10a5.5 5.5 0 105.5 5.5V9.2a6.5 6.5 0 003.5 1.02V7.2A4.5 4.5 0 0116.5 2z"/></svg>
+          </a>
+        </div>
+      </div>
+    `;
+    document.getElementById("songContent").appendChild(wrap);
+
+    try {
+      const rows = await supabaseQuery(
+        "content",
+        `status=eq.Published&id=neq.${currentSong.id}&order=created_at.desc&limit=4&select=*`
+      );
+      const list = document.getElementById("recentPostsList");
+      if (!rows || rows.length === 0) {
+        list.innerHTML = `<div class="state-block">Nothing else posted yet.</div>`;
+        return;
+      }
+      list.innerHTML = `
+        <div class="recent-posts-list">
+          ${rows.map(r => `
+            <div class="recent-post-row" onclick="window.location.href='${r.type === "Video" ? "video.html" : "song.html"}?id=${r.id}'">
+              <div class="recent-post-art">${r.cover_url ? `<img src="${escapeHtml(r.cover_url)}" alt="">` : ""}</div>
+              <div>
+                <div class="recent-post-title">${escapeHtml(r.title)}</div>
+                <div class="recent-post-date">${timeAgo(r.created_at)}</div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    } catch (err) {
+      console.error(err);
+      document.getElementById("recentPostsList").innerHTML = `<div class="state-block">Couldn't load recent posts.</div>`;
+    }
+  }
+
+
+  async function loadComments() {
+    const wrap = document.createElement("section");
+    wrap.className = "comments";
+    wrap.innerHTML = `
+      <div class="section-label">Comments <span class="comments-count" id="commentsCount"></span></div>
+      <div class="comment-form">
+        <div class="comment-form-row">
+          <input type="text" id="commentName" placeholder="Your name" maxlength="60">
+          <input type="email" id="commentEmail" placeholder="Email (optional)" maxlength="120">
+        </div>
+        <textarea id="commentText" rows="3" placeholder="Share your thoughts…" maxlength="600"></textarea>
+        <div class="comment-form-foot">
+          <span class="comment-form-hint">Your email is never shown publicly.</span>
+          <button class="comment-submit" id="commentSubmit">Post comment</button>
+        </div>
+        <div id="commentMsg"></div>
+      </div>
+      <div id="commentsList"><div class="state-block">Loading comments…</div></div>
+    `;
+    document.getElementById("songContent").appendChild(wrap);
+
+    document.getElementById("commentSubmit").addEventListener("click", submitComment);
+    refreshComments();
+  }
+
+  async function refreshComments() {
+    try {
+      const rows = await supabaseQuery("comments", `content_id=eq.${currentSong.id}&status=eq.Visible&order=created_at.desc`);
+      document.getElementById("commentsCount").textContent = `(${rows.length})`;
+      const list = document.getElementById("commentsList");
+      if (!rows || rows.length === 0) {
+        list.innerHTML = `<div class="state-block">Be the first to comment on this one.</div>`;
+        return;
+      }
+      list.innerHTML = rows.map(c => `
+        <div class="comment-item">
+          <div class="comment-avatar">${escapeHtml(initials(c.guest_name || "?"))}</div>
+          <div>
+            <span class="comment-name">${escapeHtml(c.guest_name || "Anonymous")}</span>
+            <span class="comment-time">${timeAgo(c.created_at)}</span>
+            <div class="comment-text">${escapeHtml(c.text)}</div>
+          </div>
+        </div>
+      `).join("");
+    } catch (err) {
+      console.error(err);
+      document.getElementById("commentsList").innerHTML = `<div class="state-block">Couldn't load comments right now.</div>`;
+    }
+  }
+
+  async function submitComment() {
+    const nameEl = document.getElementById("commentName");
+    const emailEl = document.getElementById("commentEmail");
+    const textEl = document.getElementById("commentText");
+    const msgEl = document.getElementById("commentMsg");
+    const btn = document.getElementById("commentSubmit");
+
+    const name = nameEl.value.trim();
+    const email = emailEl.value.trim();
+    const text = textEl.value.trim();
+
+    msgEl.innerHTML = "";
+    if (!name) { msgEl.innerHTML = `<div class="comment-error">Please add your name.</div>`; return; }
+    if (!text) { msgEl.innerHTML = `<div class="comment-error">Write a comment before posting.</div>`; return; }
+
+    btn.disabled = true;
+    btn.textContent = "Posting…";
+
+    try {
+      await supabaseInsert("comments", {
+        content_id: currentSong.id,
+        guest_name: name,
+        guest_email: email || null,
+        text: text,
+        status: "Visible",
+      });
+      nameEl.value = ""; emailEl.value = ""; textEl.value = "";
+      msgEl.innerHTML = `<div class="comment-success">Comment posted!</div>`;
+      refreshComments();
+    } catch (err) {
+      console.error(err);
+      msgEl.innerHTML = `<div class="comment-error">Couldn't post your comment — try again in a moment.</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Post comment";
+    }
+  }
+
+  loadSong();
+</script>
+<a href="submit.html" class="submit-fab" aria-label="Click here to upload your song, video or gist on MyGospelHub">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 5v14M5 12h14"/>
+  </svg>
+  <span>CLICK HERE TO UPLOAD YOUR SONG/VIDEO/GIST ON MYGOSPELHUB</span>
+</a>
+
+<style>
+.submit-fab {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #D9A441, #B8842E);
+  color: #0a0a0a;
+  padding: 12px 14px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  line-height: 1.3;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+}
+.submit-fab svg { flex-shrink: 0; }
+
+@media (max-width: 420px) {
+  .submit-fab {
+    font-size: 10.5px;
+    padding: 10px 10px;
+  }
+}
+</style>
+</body>
+</html>
