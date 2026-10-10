@@ -436,8 +436,7 @@
     const releaseAt = s.release_date ? new Date(s.release_date).getTime() : 0;
     const locked = releaseAt > Date.now();
     const hasFile = !locked && Boolean(s.file_url);
-    const streamUrl = locked ? "" : (s.file_url || s.streaming_link || s.video_url || "");
-    const isExternalStream = !hasFile && Boolean(streamUrl);
+    const streamUrl = locked ? "" : (s.streaming_link || s.video_url || "");
 
     document.getElementById("songContent").innerHTML = `
       <div class="song-header">
@@ -489,7 +488,7 @@
       <div class="actions-row">
         ${locked ? `<button class="action-btn action-locked" disabled>${ICON_DOWNLOAD} Download unlocks on release</button>` : ""}
         ${hasFile ? `<button class="action-btn action-download" id="downloadBtn">${ICON_DOWNLOAD} Download</button>` : ""}
-        ${streamUrl ? `<button class="action-btn action-stream" id="streamBtn">${ICON_STREAM} ${hasFile ? "Play" : "Stream Externally"}</button>` : ""}
+        ${streamUrl ? `<button class="action-btn action-stream" id="streamBtn">${ICON_STREAM} Stream</button>` : ""}
         <button class="action-like" id="likeBtn">${ICON_HEART} <span id="likeBtnCount">${formatCount(s.likes)}</span></button>
         <button class="action-share" id="shareBtn">${ICON_SHARE} Share</button>
       </div>
@@ -498,9 +497,9 @@
       <div class="lyrics-section">
         <button class="lyrics-toggle" id="lyricsToggle">
           <span>Lyrics</span>
-          <svg id="lyricsChevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          <svg id="lyricsChevron" style="transform:rotate(180deg)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        <div class="lyrics-body" id="lyricsBody">${escapeHtml(s.lyrics)}</div>
+        <div class="lyrics-body open" id="lyricsBody">${escapeHtml(s.lyrics)}</div>
       </div>
       ` : ""}
     `;
@@ -556,11 +555,6 @@
       }
 
       playBtn.addEventListener("click", togglePlay);
-      document.getElementById("streamBtn").addEventListener("click", () => {
-        document.getElementById("inlinePlayer").scrollIntoView({ behavior: "smooth", block: "center" });
-        togglePlay();
-      });
-
       audio.addEventListener("play", () => {
         playBtn.innerHTML = ICON_PAUSE;
         if (!hasCountedPlay) {
@@ -580,8 +574,11 @@
         const ratio = (e.clientX - rect.left) / rect.width;
         if (audio.duration) audio.currentTime = ratio * audio.duration;
       });
-    } else if (isExternalStream) {
-      document.getElementById("streamBtn").addEventListener("click", () => {
+    }
+
+    const streamBtnEl = document.getElementById("streamBtn");
+    if (streamBtnEl) {
+      streamBtnEl.addEventListener("click", () => {
         supabaseRpc("increment_views", { row_id: s.id });
         window.open(streamUrl, "_blank", "noopener,noreferrer");
       });
