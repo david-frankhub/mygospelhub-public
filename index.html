@@ -251,9 +251,15 @@
     background:var(--bg-raised);
     border-left:1px solid var(--line);
     z-index:300;
-    padding:22px 24px;
+    padding:22px 24px 40px;
     flex-direction:column;
-    gap:4px;
+    justify-content:flex-start;
+    align-items:stretch;
+    gap:0;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
     transform:translateX(100%);
     transition:transform 0.28s ease;
     box-shadow:-20px 0 50px rgba(0,0,0,0.4);
@@ -268,7 +274,9 @@
     border:1px solid var(--line); background:transparent; color:var(--text);
     display:flex; align-items:center; justify-content:center; font-size:16px;
   }
+  .mobile-menu-head{flex-shrink:0;}
   .mobile-menu a{
+    flex:0 0 auto;
     padding:14px 4px;
     font-size:16px; font-weight:600;
     color:var(--text-dim);
@@ -700,6 +708,7 @@
     <div class="nav-links">
       <a href="#" class="active">Home</a>
       <a href="browse-video.html">Videos</a>
+      <a href="music.html">Music</a>
       <a href="browse-gist.html">Gist</a>
       <a href="#genres">Genres</a>
       <a href="about.html">About</a>
@@ -741,6 +750,7 @@
     <a href="#genres">Genres</a>
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
+    <a href="submit.html" style="color:var(--gold)">Upload Song/Video/Gist</a>
   </nav>
 
   <div class="hero-carousel" id="heroCarousel">
@@ -1466,6 +1476,7 @@
   const navToggleBtn = document.querySelector(".nav-toggle");
 
   function openMobileMenu() {
+    mobileMenu.scrollTop = 0;
     mobileMenu.classList.add("open");
     mobileMenuOverlay.classList.add("open");
     mobileMenu.setAttribute("aria-hidden", "false");
