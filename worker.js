@@ -47,6 +47,9 @@ async function preview(route, url) {
   const image = row && row.cover_url ? row.cover_url : DEFAULT_IMAGE;
   const pageUrl = row ? `${origin}/${route.page}?id=${encodeURIComponent(row.id)}` : `${origin}/${route.page}`;
 
+  // Facebook treats og:url as the page to scrape, so it must be THIS link, not the song page.
+  const shareUrl = url.origin + url.pathname + (slug ? `?slug=${encodeURIComponent(slug)}` : `?id=${encodeURIComponent(id)}`);
+
   const html = `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8">
@@ -56,14 +59,15 @@ async function preview(route, url) {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:image" content="${esc(image)}">
-<meta property="og:url" content="${esc(pageUrl)}">
+<meta property="og:url" content="${esc(shareUrl)}">
+<link rel="canonical" href="${esc(shareUrl)}">
 <meta property="og:type" content="${route.ogType}">
 <meta property="og:site_name" content="MyGospelHub">
+<meta property="og:image:alt" content="${esc(title)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 <meta name="twitter:image" content="${esc(image)}">
-<meta http-equiv="refresh" content="0; url=${esc(pageUrl)}">
 <script>window.location.replace(${JSON.stringify(pageUrl)});</script>
 </head><body><p>Redirecting to <a href="${esc(pageUrl)}">${esc(title)}</a>…</p></body></html>`;
 
@@ -80,3 +84,4 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+    
