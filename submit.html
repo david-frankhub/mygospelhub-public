@@ -287,11 +287,11 @@
       headers: {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        "Content-Type": file.type
+        "Content-Type": file.type || "application/octet-stream"
       },
       body: file
     });
-    if (!res.ok) throw new Error("Upload failed");
+    if (!res.ok) { const t = await res.text().catch(() => ""); throw new Error(`Upload to "${bucket}" failed (${res.status}): ${t.slice(0, 200)}`); }
     return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
   }
 
@@ -369,7 +369,7 @@
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error("Submit failed");
+      if (!res.ok) { const t = await res.text().catch(() => ""); throw new Error(`Saving submission failed (${res.status}): ${t.slice(0, 200)}`); }
 
       const amount = PRICES[currentType];
       document.getElementById("confirmAmount").textContent = `₦${amount.toLocaleString()}`;
@@ -381,7 +381,7 @@
 
     } catch (err) {
       console.error(err);
-      errEl.textContent = "Something went wrong. Please try again.";
+      errEl.textContent = "Something went wrong. Please try again. (" + (err && err.message ? err.message : "unknown error") + ")";
       errEl.style.display = "block";
       btn.disabled = false;
       btn.textContent = "Submit";
