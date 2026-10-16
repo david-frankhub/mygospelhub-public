@@ -782,8 +782,8 @@
   <section id="tracks">
     <div class="section-head">
       <div>
-        <div class="label">On repeat</div>
-        <h2>Trending Tracks</h2>
+        <div class="label">Just dropped</div>
+        <h2>Latest Songs</h2>
       </div>
     </div>
     <div class="setlist" id="setlistTracks">
@@ -1272,13 +1272,13 @@
       attachTrackRowHandlers(videoList);
     }
 
-    // Trending Tracks (top 5 by views, type = Audio)
+    // Latest Songs (5 most recently uploaded, type = Audio)
     const trackList = document.getElementById("setlistTracks");
     const tracks = allContent.filter(c => c.type === "Audio");
     if (tracks.length === 0) {
       trackList.innerHTML = `<div class="empty-state">No tracks published yet — check back soon.</div>`;
     } else {
-      const trendingTracks = [...tracks].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
+      const trendingTracks = [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
       trackList.innerHTML = trendingTracks.map((t, i) => trackRowHtml(t, i)).join("");
       attachTrackRowHandlers(trackList);
     }
