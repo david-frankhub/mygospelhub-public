@@ -339,7 +339,7 @@
       <span class="article-cat">${escapeHtml(post.category || "Gist")}</span>
       <h1 class="article-title">${escapeHtml(post.title)}</h1>
       <div class="article-meta">
-        <span>By ${escapeHtml(post.uploaded_by || "MyGospelHub Gist Desk")}</span>
+        <span>Posted By: ${escapeHtml(post.uploaded_by || "MyGospelHub")}</span>
         <span class="dot-sep">·</span>
         <span>${timeAgo(post.created_at)}</span>
       </div>
@@ -621,5 +621,6 @@
   }
 }
 </style>
+<script src="site-nav.js"></script>
 </body>
 </html>

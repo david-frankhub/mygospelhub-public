@@ -166,6 +166,40 @@
     .np-track{width:150px;}
     .np-extra{display:none;}
   }
+
+  /* ===== Track cards (play + download) ===== */
+  .track-list{gap:12px; margin-bottom:24px;}
+  .track-card{
+    display:grid; grid-template-columns:86px 1fr auto; align-items:center; gap:16px;
+    padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--bg-raised);
+    transition:border-color .2s, background .2s; cursor:pointer;
+  }
+  .track-card:hover{border-color:rgba(217,164,65,0.35);}
+  .track-card.playing{border-color:var(--gold); background:rgba(217,164,65,0.06);}
+  .tc-art{width:86px; height:86px; border-radius:12px; background:linear-gradient(135deg, var(--wine-bright), #2A0810); background-size:cover; background-position:center; position:relative; overflow:hidden;}
+  .tc-body{min-width:0;}
+  .tc-title{font-size:16px; font-weight:600; margin-bottom:4px; line-height:1.25; overflow-wrap:anywhere;}
+  .tc-artist{font-size:13.5px; font-weight:700; color:var(--gold); margin-bottom:4px; overflow-wrap:anywhere;}
+  .tc-meta{font-size:12.5px; color:var(--text-dim);}
+  .tc-desc{font-size:12px; color:rgba(138,135,128,.7); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tc-lock{font-size:12px; color:var(--gold); margin-top:4px; font-family:'JetBrains Mono',monospace;}
+  .tc-actions{display:flex; gap:10px;}
+  .tc-btn{width:50px; height:50px; border-radius:12px; border:1px solid var(--line); background:var(--bg-card); color:var(--text); display:flex; align-items:center; justify-content:center; transition:all .2s; padding:0;}
+  .tc-btn svg{width:20px; height:20px;}
+  .tc-btn:hover{border-color:var(--gold); color:var(--gold);}
+  .tc-btn.dl{border-color:rgba(217,164,65,0.45); color:var(--gold); background:rgba(217,164,65,0.07);}
+  .tc-btn.dl:hover{background:rgba(217,164,65,0.16);}
+  .tc-btn.is-playing{background:var(--gold); color:#0B0B0D; border-color:var(--gold);}
+  .tc-btn[disabled]{opacity:.35; cursor:not-allowed;}
+  .see-more-wrap{display:flex; justify-content:center; margin:8px 0 56px;}
+  .see-more-btn{width:min(100%,470px); padding:18px 24px; border-radius:16px; border:1px solid rgba(217,164,65,0.45); background:rgba(217,164,65,0.07); color:var(--gold); font-family:'Fraunces',serif; font-size:19px; font-weight:600; transition:background .2s;}
+  .see-more-btn:hover{background:rgba(217,164,65,0.16);}
+  @media (max-width:560px){
+    .track-card{grid-template-columns:72px 1fr; row-gap:12px; padding:12px;}
+    .tc-art{width:72px; height:72px;}
+    .tc-actions{grid-column:1/-1; justify-content:flex-end;}
+    .tc-btn{width:54px; height:44px;}
+  }
 </style>
 </head>
 <body>
@@ -196,14 +230,17 @@
   <section>
     <div class="section-head">
       <div>
-        <div class="label">This week's setlist</div>
-        <h2>Trending Tracks</h2>
+        <div class="label">Newest first</div>
+        <h2>All Tracks</h2>
       </div>
-      <a href="browse-music.html" style="font-size:13px; color:var(--gold); font-weight:600; white-space:nowrap;">Browse all music →</a>
     </div>
     <div class="track-list" id="trackList">
       <div class="state-block">Loading tracks…</div>
     </div>
+    <div class="see-more-wrap" id="seeMoreWrap" style="display:none;">
+      <button class="see-more-btn" id="seeMoreBtn"></button>
+    </div>
+    <audio id="sharedAudio" preload="none"></audio>
   </section>
 
 <script>
@@ -239,12 +276,33 @@
     return `${m}:${s}`;
   }
 
+  const PAGE_SIZE = 10;
+  const ICON_PLAY = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+  const ICON_PAUSE = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>`;
+  const ICON_DL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+
   let allTracks = [];
   let activeGenre = "All";
-  let currentTrack = null;
+  let shown = PAGE_SIZE;
+  let playingId = null;
+  const audio = document.getElementById("sharedAudio");
 
-  function trackDest(t) {
-    return t.type === "Video" ? "video.html" : "song.html";
+  function supabaseRpc(fn, args) {
+    return fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify(args),
+    }).catch(() => {});
+  }
+
+  function trackUrl(t) {
+    return `${t.type === "Video" ? "video.html" : "song.html"}?${t.slug ? "slug=" + t.slug : "id=" + t.id}`;
+  }
+  function isLocked(t) {
+    return t.release_date && new Date(t.release_date).getTime() > Date.now();
+  }
+  function filteredTracks() {
+    return activeGenre === "All" ? allTracks : allTracks.filter(t => (t.genre || "").trim() === activeGenre);
   }
 
   function renderGenres() {
@@ -252,52 +310,125 @@
     const strip = document.getElementById("genreStrip");
     strip.innerHTML = `<div class="genre-pill active" data-genre="All">All</div>` +
       genres.map(g => `<div class="genre-pill" data-genre="${escapeHtml(g)}">${escapeHtml(g)}</div>`).join("");
-
     strip.querySelectorAll(".genre-pill").forEach(pill => {
       pill.addEventListener("click", () => {
         strip.querySelectorAll(".genre-pill").forEach(p => p.classList.remove("active"));
         pill.classList.add("active");
         activeGenre = pill.dataset.genre;
+        shown = PAGE_SIZE;
         renderTrackList();
       });
     });
   }
 
+  function cardHtml(t) {
+    const locked = isLocked(t);
+    const hasFile = Boolean(t.file_url);
+    const canPlay = !locked && (hasFile || t.streaming_link);
+    const meta = [t.year, `${formatCount(t.views)} plays`].filter(Boolean).join(" • ");
+    return `
+      <div class="track-card${String(t.id) === String(playingId) ? " playing" : ""}" data-id="${t.id}">
+        <div class="tc-art" style="${t.cover_url ? `background-image:url('${escapeHtml(t.cover_url)}')` : ""}"></div>
+        <div class="tc-body">
+          <div class="tc-title">${escapeHtml(t.title)}</div>
+          <div class="tc-artist">${escapeHtml(t.artist)}</div>
+          <div class="tc-meta">${escapeHtml(meta)}</div>
+          ${locked ? `<div class="tc-lock">Releases ${escapeHtml(new Date(t.release_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }))}</div>`
+                   : (t.description ? `<div class="tc-desc">${escapeHtml(t.description)}</div>` : "")}
+        </div>
+        <div class="tc-actions">
+          <button class="tc-btn play${String(t.id) === String(playingId) && !audio.paused ? " is-playing" : ""}" data-act="play" aria-label="Play ${escapeHtml(t.title)}" ${canPlay ? "" : "disabled"}>${String(t.id) === String(playingId) && !audio.paused ? ICON_PAUSE : ICON_PLAY}</button>
+          <button class="tc-btn dl" data-act="download" aria-label="Download ${escapeHtml(t.title)}" ${hasFile && !locked ? "" : "disabled"}>${ICON_DL}</button>
+        </div>
+      </div>`;
+  }
+
   function renderTrackList() {
     const list = document.getElementById("trackList");
-    const filtered = activeGenre === "All" ? allTracks : allTracks.filter(t => (t.genre || "").trim() === activeGenre);
-
+    const wrap = document.getElementById("seeMoreWrap");
+    const btn = document.getElementById("seeMoreBtn");
+    const filtered = filteredTracks();
     if (filtered.length === 0) {
       list.innerHTML = `<div class="state-block">No tracks in ${escapeHtml(activeGenre)} yet.</div>`;
+      wrap.style.display = "none";
       return;
     }
-
-    list.innerHTML = filtered.map((t, i) => `
-      <div class="track-row" data-id="${t.id}">
-        <div class="track-num">${String(i + 1).padStart(2, "0")}</div>
-        <div class="track-art" style="${t.cover_url ? `background-image:url('${escapeHtml(t.cover_url)}')` : ""}"></div>
-        <div>
-          <div class="track-title">${escapeHtml(t.title)}</div>
-          <div class="track-artist">${escapeHtml(t.artist)}</div>
-        </div>
-        <div class="track-plays">${formatCount(t.views)} plays</div>
-        <div class="track-dur"></div>
-      </div>
-    `).join("");
-
-    list.querySelectorAll(".track-row").forEach(row => {
-      row.addEventListener("click", () => {
-        const track = allTracks.find(t => String(t.id) === row.dataset.id);
-        if (!track) return;
-        window.location.href = `${trackDest(track)}?${track.slug ? "slug=" + track.slug : "id=" + track.id}`;
-      });
-    });
+    list.innerHTML = filtered.slice(0, shown).map(cardHtml).join("");
+    const remaining = filtered.length - shown;
+    if (remaining > 0) {
+      btn.textContent = `See More (${remaining} remaining)`;
+      wrap.style.display = "flex";
+    } else {
+      wrap.style.display = "none";
+    }
   }
+
+  document.getElementById("seeMoreBtn").addEventListener("click", () => {
+    shown += PAGE_SIZE;
+    renderTrackList();
+  });
+
+  async function downloadTrack(t) {
+    supabaseRpc("increment_downloads", { row_id: t.id });
+    try {
+      const res = await fetch(t.file_url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `${t.title} - ${t.artist}`.replace(/[^\w\s-]/g, "") || "song";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      window.open(t.file_url, "_blank");
+    }
+  }
+
+  function playTrack(t) {
+    if (!t.file_url) {
+      if (t.streaming_link) {
+        supabaseRpc("increment_views", { row_id: t.id });
+        window.open(t.streaming_link, "_blank", "noopener,noreferrer");
+      }
+      return;
+    }
+    if (String(playingId) === String(t.id)) {
+      if (audio.paused) audio.play(); else audio.pause();
+      return;
+    }
+    playingId = t.id;
+    audio.src = t.file_url;
+    audio.play().catch(() => {});
+    supabaseRpc("increment_views", { row_id: t.id });
+    t.views = (t.views || 0) + 1;
+    renderTrackList();
+  }
+  audio.addEventListener("play", renderTrackList);
+  audio.addEventListener("pause", renderTrackList);
+  audio.addEventListener("ended", () => { playingId = null; renderTrackList(); });
+
+  document.getElementById("trackList").addEventListener("click", (e) => {
+    const card = e.target.closest(".track-card");
+    if (!card) return;
+    const t = allTracks.find(x => String(x.id) === card.dataset.id);
+    if (!t) return;
+    const btn = e.target.closest(".tc-btn");
+    if (btn) {
+      e.stopPropagation();
+      if (btn.disabled) return;
+      if (btn.dataset.act === "play") playTrack(t);
+      else if (btn.dataset.act === "download") downloadTrack(t);
+      return;
+    }
+    window.location.href = trackUrl(t);
+  });
 
   async function loadTracks() {
     const list = document.getElementById("trackList");
     try {
-      const rows = await supabaseQuery("content", "status=eq.Published&order=views.desc&select=*");
+      const rows = await supabaseQuery("content", "status=eq.Published&type=eq.Audio&order=created_at.desc&select=*");
       allTracks = rows || [];
       renderGenres();
       renderTrackList();
@@ -306,7 +437,6 @@
       list.innerHTML = `<div class="state-block">Couldn't load music right now. Refresh to try again.</div>`;
     }
   }
-
   loadTracks();
 </script>
 <a href="submit.html" class="submit-fab" aria-label="Click here to upload your song, video or gist on MyGospelHub">
@@ -347,5 +477,6 @@
   }
 }
 </style>
+<script src="site-nav.js"></script>
 </body>
 </html>

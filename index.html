@@ -240,7 +240,7 @@
   .btn-gold:hover{background:#E5B45C;}
   .btn:not(.btn-gold):hover{border-color:var(--text-dim); background:var(--bg-raised);}
   .btn:disabled{opacity:0.5; cursor:not-allowed;}
-  .nav-toggle{display:none; background:none; border:none; color:var(--text); font-size:22px;}
+  .nav-toggle{display:none; background:none; border:none; color:var(--text); font-size:22px; cursor:pointer;}
 
   /* ===== Mobile menu panel ===== */
   .mobile-menu{
@@ -675,8 +675,10 @@
   @media (max-width:900px){
     .nav-links{display:none;}
     .nav-toggle{display:block;}
-    .nav-search-wrap{display:none;}
-    .nav-icon-btn{display:flex;}
+    .nav-search-wrap{display:flex; margin:0 0 0 auto; max-width:none;}
+    .nav-icon-btn{display:none;}
+    nav{gap:12px; padding:14px 5%;}
+    .nav-toggle{display:flex; width:46px; height:46px; flex-shrink:0; align-items:center; justify-content:center; padding:0; border-radius:12px; border:1px solid var(--line); background:var(--bg-raised); color:var(--text);}
     .hero{grid-template-columns:1fr; padding-top:50px;}
     .hero-visual{order:-1; aspect-ratio:16/10;}
     .gist-grid{grid-template-columns:1fr 1fr;}
@@ -717,14 +719,14 @@
     <div class="nav-search-wrap" id="navSearchWrap">
       <div class="nav-search">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" id="searchInput" placeholder="Search songs, videos, gist…" autocomplete="off">
+        <input type="text" id="searchInput" placeholder="Search post" autocomplete="off">
       </div>
       <div class="search-results" id="searchResults"></div>
     </div>
     <button class="nav-icon-btn" id="mobileSearchToggle" aria-label="Search">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
     </button>
-    <button class="nav-toggle" aria-label="Open menu">☰</button>
+    <button class="nav-toggle" aria-label="Open menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   </nav>
 
   <!-- Mobile search bar: hidden until the search icon is tapped -->

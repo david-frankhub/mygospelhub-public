@@ -87,8 +87,14 @@
   }
   .song-title{font-size:clamp(24px,3.6vw,36px); line-height:1.15; margin-bottom:10px;}
   .song-artist{font-size:16px; color:var(--gold); font-weight:600; margin-bottom:16px;}
-  .song-by{font-size:13px; color:var(--text-dim); margin-bottom:16px;}
-  .song-by strong{color:var(--gold); font-weight:600;}
+  .posted-by{font-size:13px; color:var(--text-dim); margin-bottom:16px; display:flex; flex-wrap:wrap; align-items:center; gap:8px;}
+  .posted-by strong{color:var(--gold); font-weight:600;}
+  .posted-by .pb-dot{opacity:.5;}
+  .details-card{margin:0 0 26px; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--bg-raised);}
+  .details-head{padding:14px 18px; border-left:3px solid var(--gold); font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text);}
+  .detail-row{display:flex; gap:14px; padding:12px 18px; border-top:1px solid var(--line); font-size:14px;}
+  .detail-label{flex:0 0 118px; color:var(--text-dim);}
+  .detail-value{color:var(--text); font-weight:500; min-width:0; overflow-wrap:anywhere;}
   .song-producer{font-size:13px; color:var(--text-dim); margin-top:-10px; margin-bottom:16px;}
   .song-desc{font-size:14px; color:var(--text-dim); line-height:1.65; max-width:520px;}
 
@@ -431,6 +437,7 @@
     }
   }
 
+  const postedDate = (iso) => iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
   function renderSong() {
     const s = currentSong;
     const releaseAt = s.release_date ? new Date(s.release_date).getTime() : 0;
@@ -450,7 +457,7 @@
           <h1 class="song-title">${escapeHtml(s.title)}</h1>
           <div class="song-artist">${escapeHtml(s.artist)}</div>
           ${s.producer ? `<div class="song-producer">Produced by ${escapeHtml(s.producer)}</div>` : ""}
-          ${s.uploaded_by ? `<div class="song-by">By <strong>${escapeHtml(s.uploaded_by)}</strong></div>` : ""}
+          <div class="posted-by">Posted By: <strong>${escapeHtml(s.uploaded_by || "MyGospelHub")}</strong>${s.created_at ? `<span class="pb-dot">•</span><span>${postedDate(s.created_at)}</span>` : ""}</div>
           ${s.description ? `<p class="song-desc">${escapeHtml(s.description)}</p>` : ""}
         </div>
       </div>
@@ -491,6 +498,18 @@
         ${streamUrl ? `<button class="action-btn action-stream" id="streamBtn">${ICON_STREAM} Stream</button>` : ""}
         <button class="action-like" id="likeBtn">${ICON_HEART} <span id="likeBtnCount">${formatCount(s.likes)}</span></button>
         <button class="action-share" id="shareBtn">${ICON_SHARE} Share</button>
+      </div>
+
+      <div class="details-card">
+        <div class="details-head">Track Details</div>
+        ${[
+          ["Artist", s.artist],
+          ["Title", s.title],
+          ["Producer", s.producer],
+          ["Genre", s.genre],
+          ["Released", s.year],
+          ["Category", s.type || "Audio"],
+        ].filter(r => r[1]).map(r => `<div class="detail-row"><div class="detail-label">${r[0]}</div><div class="detail-value">${escapeHtml(String(r[1]))}</div></div>`).join("")}
       </div>
 
       ${s.lyrics ? `
@@ -849,5 +868,6 @@
   }
 }
 </style>
+<script src="site-nav.js"></script>
 </body>
 </html>
