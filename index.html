@@ -455,6 +455,9 @@
     .skel-row{grid-template-columns:26px 44px 1fr;}
   }
 
+  .all-tracks-wrap{display:flex; justify-content:center; margin-top:22px;}
+  .all-tracks-btn{width:min(100%,470px); text-align:center; padding:16px 24px; border-radius:16px; border:1px solid rgba(217,164,65,0.45); background:rgba(217,164,65,0.07); color:var(--gold); font-family:'Fraunces',serif; font-size:19px; font-weight:600; transition:background .2s;}
+  .all-tracks-btn:hover{background:rgba(217,164,65,0.16);}
   /* ===== Setlist (video rows) ===== */
   .setlist{display:flex; flex-direction:column;}
   .track-row{
@@ -793,6 +796,7 @@
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
     </div>
+    <div class="all-tracks-wrap"><a href="music.html" class="all-tracks-btn">All Tracks</a></div>
   </section>
 
   <section id="trending-gist">
