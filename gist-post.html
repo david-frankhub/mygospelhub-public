@@ -89,14 +89,13 @@
 
   .article-cover{
     width:100%;
-    aspect-ratio:16/9;
     border-radius:14px;
-    background:linear-gradient(150deg, var(--wine) 0%, #2A0810 100%);
+    background:#0f0f11;
     margin-bottom:28px;
     border:1px solid var(--line);
     overflow:hidden;
   }
-  .article-cover img{width:100%; height:100%; object-fit:cover; display:block;}
+  .article-cover img{width:100%; height:auto; max-height:80vh; object-fit:contain; display:block; margin:0 auto;}
 
   .article-body{
     font-size:16px; line-height:1.85; color:#E4E1DA;

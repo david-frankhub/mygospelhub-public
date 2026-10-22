@@ -458,6 +458,50 @@
   .all-tracks-wrap{display:flex; justify-content:center; margin-top:22px;}
   .all-tracks-btn{width:min(100%,470px); text-align:center; padding:16px 24px; border-radius:16px; border:1px solid rgba(217,164,65,0.45); background:rgba(217,164,65,0.07); color:var(--gold); font-family:'Fraunces',serif; font-size:19px; font-weight:600; transition:background .2s;}
   .all-tracks-btn:hover{background:rgba(217,164,65,0.16);}
+  /* ===== Latest Gist compact list ===== */
+  .gist-list{display:flex; flex-direction:column; gap:12px;}
+  .gist-row{display:grid; grid-template-columns:96px 1fr auto; align-items:center; gap:16px; padding:12px; border:1px solid var(--line); border-radius:16px; background:var(--bg-raised); cursor:pointer; transition:border-color .2s;}
+  .gist-row:hover{border-color:rgba(217,164,65,0.35);}
+  .gr-art{width:96px; height:80px; border-radius:12px; background:linear-gradient(135deg, var(--wine-bright,#9C2C3A), #2A0810); background-size:cover; background-position:center;}
+  .gr-body{min-width:0;}
+  .gr-cat{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); border:1px solid rgba(217,164,65,0.4); border-radius:100px; padding:3px 9px; margin-bottom:7px;}
+  .gr-title{font-size:15.5px; font-weight:600; line-height:1.3; margin-bottom:5px; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .gr-meta{font-size:11.5px; color:var(--text-dim); font-family:'JetBrains Mono',monospace;}
+  .gr-go{width:40px; height:40px; border-radius:12px; border:1px solid rgba(217,164,65,0.45); background:rgba(217,164,65,0.07); color:var(--gold); display:flex; align-items:center; justify-content:center;}
+  .gr-go svg{width:18px; height:18px;}
+  @media (max-width:560px){
+    .gist-row{grid-template-columns:84px 1fr; padding:10px;}
+    .gr-art{width:84px; height:72px;}
+    .gr-go{display:none;}
+  }
+
+  /* ===== Latest Songs cards (play + download) ===== */
+  .tc-list{display:flex; flex-direction:column; gap:12px;}
+  .track-card{display:grid; grid-template-columns:86px 1fr auto; align-items:center; gap:16px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--bg-raised); transition:border-color .2s, background .2s; cursor:pointer;}
+  .track-card:hover{border-color:rgba(217,164,65,0.35);}
+  .track-card.playing{border-color:var(--gold); background:rgba(217,164,65,0.06);}
+  .tc-art{width:86px; height:86px; border-radius:12px; background:linear-gradient(135deg, var(--wine-bright,#9C2C3A), #2A0810); background-size:cover; background-position:center;}
+  .tc-body{min-width:0;}
+  .tc-title{font-size:16px; font-weight:600; margin-bottom:4px; line-height:1.25; overflow-wrap:anywhere;}
+  .tc-artist{font-size:13.5px; font-weight:700; color:var(--gold); margin-bottom:4px; overflow-wrap:anywhere;}
+  .tc-meta{font-size:12.5px; color:var(--text-dim);}
+  .tc-desc{font-size:12px; color:rgba(138,135,128,.7); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tc-lock{font-size:12px; color:var(--gold); margin-top:4px; font-family:'JetBrains Mono',monospace;}
+  .tc-actions{display:flex; gap:10px;}
+  .tc-btn{width:50px; height:50px; border-radius:12px; border:1px solid var(--line); background:var(--bg-card,#18181B); color:var(--text); display:flex; align-items:center; justify-content:center; transition:all .2s; padding:0; cursor:pointer;}
+  .tc-btn svg{width:20px; height:20px;}
+  .tc-btn:hover{border-color:var(--gold); color:var(--gold);}
+  .tc-btn.dl{border-color:rgba(217,164,65,0.45); color:var(--gold); background:rgba(217,164,65,0.07);}
+  .tc-btn.dl:hover{background:rgba(217,164,65,0.16);}
+  .tc-btn.is-playing{background:var(--gold); color:#0B0B0D; border-color:var(--gold);}
+  .tc-btn[disabled]{opacity:.35; cursor:not-allowed;}
+  @media (max-width:560px){
+    .track-card{grid-template-columns:72px 1fr; row-gap:12px; padding:12px;}
+    .tc-art{width:72px; height:72px;}
+    .tc-actions{grid-column:1/-1; justify-content:flex-end;}
+    .tc-btn{width:54px; height:44px;}
+  }
+
   /* ===== Setlist (video rows) ===== */
   .setlist{display:flex; flex-direction:column;}
   .track-row{
@@ -772,16 +816,16 @@
   <section id="videos">
     <div class="section-head">
       <div>
-        <div class="label">This week's setlist</div>
-        <h2>Trending Videos</h2>
+        <div class="label">Just dropped</div>
+        <h2>Latest Videos</h2>
       </div>
-      <a href="browse-video.html" style="font-size:13px; color:var(--gold); font-weight:600; white-space:nowrap;">Browse all videos →</a>
     </div>
-    <div class="setlist" id="setlistVideos">
+    <div class="tc-list" id="setlistVideos">
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
     </div>
+    <div class="all-tracks-wrap"><a href="browse-video.html" class="all-tracks-btn">All Videos</a></div>
   </section>
 
   <section id="tracks">
@@ -791,26 +835,12 @@
         <h2>Latest Songs</h2>
       </div>
     </div>
-    <div class="setlist" id="setlistTracks">
+    <div class="tc-list" id="setlistTracks">
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
     </div>
     <div class="all-tracks-wrap"><a href="music.html" class="all-tracks-btn">All Tracks</a></div>
-  </section>
-
-  <section id="trending-gist">
-    <div class="section-head">
-      <div>
-        <div class="label">Most read</div>
-        <h2>Trending Gist</h2>
-      </div>
-    </div>
-    <div class="gist-grid" id="trendingGistGrid">
-      <div class="skel-card"><div class="skel skel-cover"></div><div class="skel-card-body"><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
-      <div class="skel-card"><div class="skel skel-cover"></div><div class="skel-card-body"><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
-      <div class="skel-card"><div class="skel skel-cover"></div><div class="skel-card-body"><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
-    </div>
   </section>
 
   <section id="gist">
@@ -819,13 +849,13 @@
         <div class="label">Fresh off the grapevine</div>
         <h2>Latest Gist</h2>
       </div>
-      <a href="browse-gist.html" style="font-size:13px; color:var(--gold); font-weight:600; white-space:nowrap;">Browse all gist →</a>
     </div>
-    <div class="gist-grid" id="gistGrid">
+    <div class="gist-list" id="gistGrid">
       <div class="skel-card"><div class="skel skel-cover"></div><div class="skel-card-body"><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
       <div class="skel-card"><div class="skel skel-cover"></div><div class="skel-card-body"><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
       <div class="skel-card"><div class="skel skel-cover"></div><div class="skel-card-body"><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
     </div>
+    <div class="all-tracks-wrap"><a href="browse-gist.html" class="all-tracks-btn">All Gist</a></div>
   </section>
 
   <section id="genres">
@@ -1061,6 +1091,7 @@
       isPlaying = true;
     }
     updatePlayerUI();
+    renderTrackLists();
   }
 
   function closePlayer() {
@@ -1098,6 +1129,7 @@
       if (activeMediaEl() !== el) return;
       isPlaying = false;
       updatePlayerUI();
+      renderTrackLists();
     });
   });
 
@@ -1220,6 +1252,89 @@
     dots.forEach((d, i) => d.classList.toggle("active", i === index));
   }
 
+  const ICON_PLAY_SM = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+  const ICON_PAUSE_SM = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>`;
+
+  function rpc(fn, args) {
+    return fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify(args),
+    }).catch(() => {});
+  }
+  function trackLocked(t) {
+    return t.release_date && new Date(t.release_date).getTime() > Date.now();
+  }
+
+  function trackCardHtml(t) {
+    const locked = trackLocked(t);
+    const hasFile = Boolean(t.file_url);
+    const canPlay = !locked && (hasFile || t.streaming_link);
+    const active = currentTrack && currentTrack.id === t.id;
+    const playing = active && isPlaying;
+    const meta = [t.year, `${formatCount(t.views)} plays`].filter(Boolean).join(" • ");
+    return `
+      <div class="track-card${active ? " playing" : ""}" data-track-id="${t.id}" id="track-${t.id}">
+        <div class="tc-art" style="${t.cover_url ? `background-image:url('${escapeHtml(t.cover_url)}')` : ""}"></div>
+        <div class="tc-body">
+          <div class="tc-title">${escapeHtml(t.title)}</div>
+          <div class="tc-artist">${escapeHtml(t.artist || "")}</div>
+          <div class="tc-meta">${escapeHtml(meta)}</div>
+          ${locked ? `<div class="tc-lock">Releases ${escapeHtml(new Date(t.release_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }))}</div>`
+                   : (t.description ? `<div class="tc-desc">${escapeHtml(t.description)}</div>` : "")}
+        </div>
+        <div class="tc-actions">
+          <button class="tc-btn${playing ? " is-playing" : ""}" data-act="play" aria-label="Play ${escapeHtml(t.title)}" ${canPlay ? "" : "disabled"}>${playing ? ICON_PAUSE_SM : ICON_PLAY_SM}</button>
+          <button class="tc-btn dl" data-act="download" aria-label="Download ${escapeHtml(t.title)}" ${hasFile && !locked ? "" : "disabled"}>${ICON_DOWNLOAD}</button>
+        </div>
+      </div>`;
+  }
+
+  async function downloadTrackFile(t) {
+    rpc("increment_downloads", { row_id: t.id });
+    try {
+      const res = await fetch(t.file_url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `${t.title} - ${t.artist || ""}`.replace(/[^\w\s-]/g, "") || "song";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      window.open(t.file_url, "_blank");
+    }
+  }
+
+  function attachTrackCardHandlers(container) {
+    container.addEventListener("click", (e) => {
+      const card = e.target.closest(".track-card");
+      if (!card) return;
+      const t = allContent.find(c => String(c.id) === card.dataset.trackId);
+      if (!t) return;
+      const btn = e.target.closest(".tc-btn");
+      if (btn) {
+        e.stopPropagation();
+        if (btn.disabled) return;
+        if (btn.dataset.act === "play") {
+          if (t.file_url) {
+            if (!(currentTrack && currentTrack.id === t.id)) { rpc("increment_views", { row_id: t.id }); t.views = (t.views || 0) + 1; }
+            playTrack(t);
+          } else if (t.streaming_link) {
+            rpc("increment_views", { row_id: t.id });
+            window.open(t.streaming_link, "_blank", "noopener,noreferrer");
+          }
+        } else if (btn.dataset.act === "download") {
+          downloadTrackFile(t);
+        }
+        return;
+      }
+      window.location.href = `song.html?${t.slug ? "slug=" + t.slug : "id=" + t.id}`;
+    });
+  }
+
   function trackRowHtml(track, index) {
     const isActive = currentTrack && currentTrack.id === track.id;
     const num = isActive && isPlaying ? "▶" : String(index + 1).padStart(2, "0");
@@ -1266,16 +1381,70 @@
     });
   }
 
+  attachTrackCardHandlers(document.getElementById("setlistTracks"));
+  attachVideoCardHandlers(document.getElementById("setlistVideos"));
+
+  function videoCardHtml(t) {
+    const locked = trackLocked(t);
+    const hasFile = Boolean(t.file_url);
+    const meta = [t.year, `${formatCount(t.views)} views`].filter(Boolean).join(" • ");
+    return `
+      <div class="track-card" data-track-id="${t.id}" data-kind="video" id="track-${t.id}">
+        <div class="tc-art" style="${t.cover_url ? `background-image:url('${escapeHtml(t.cover_url)}')` : ""}"></div>
+        <div class="tc-body">
+          <div class="tc-title">${escapeHtml(t.title)}</div>
+          <div class="tc-artist">${escapeHtml(t.artist || "")}</div>
+          <div class="tc-meta">${escapeHtml(meta)}</div>
+          ${locked ? `<div class="tc-lock">Releases ${escapeHtml(new Date(t.release_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }))}</div>`
+                   : (t.description ? `<div class="tc-desc">${escapeHtml(t.description)}</div>` : "")}
+        </div>
+        <div class="tc-actions">
+          <button class="tc-btn" data-act="watch" aria-label="Watch ${escapeHtml(t.title)}" ${locked ? "disabled" : ""}>${ICON_PLAY_SM}</button>
+          <button class="tc-btn dl" data-act="download" aria-label="Download ${escapeHtml(t.title)}" ${hasFile && !locked ? "" : "disabled"}>${ICON_DOWNLOAD}</button>
+        </div>
+      </div>`;
+  }
+
+  function attachVideoCardHandlers(container) {
+    container.addEventListener("click", (e) => {
+      const card = e.target.closest(".track-card");
+      if (!card) return;
+      const t = allContent.find(c => String(c.id) === card.dataset.trackId);
+      if (!t) return;
+      const go = () => { window.location.href = `video.html?${t.slug ? "slug=" + t.slug : "id=" + t.id}`; };
+      const btn = e.target.closest(".tc-btn");
+      if (btn) {
+        e.stopPropagation();
+        if (btn.disabled) return;
+        if (btn.dataset.act === "download") downloadTrackFile(t); else go();
+        return;
+      }
+      go();
+    });
+  }
+
+  function gistRowHtml(p) {
+    return `
+      <div class="gist-row" onclick="window.location.href='gist-post.html?${p.slug ? "slug=" + p.slug : "id=" + p.id}'">
+        <div class="gr-art" style="${p.cover_url ? `background-image:url('${escapeHtml(p.cover_url)}')` : ""}"></div>
+        <div class="gr-body">
+          <span class="gr-cat">${escapeHtml(p.category || "Gist")}</span>
+          <div class="gr-title">${escapeHtml(p.title)}</div>
+          <div class="gr-meta">${timeAgo(p.created_at)} · ${formatCount(p.reads)} reads</div>
+        </div>
+        <div class="gr-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      </div>`;
+  }
+
   function renderTrackLists() {
-    // Trending Videos (top 5 by views, type = Video)
+    // Latest Videos (5 most recently uploaded, type = Video)
     const videoList = document.getElementById("setlistVideos");
     const videos = allContent.filter(c => c.type === "Video");
     if (videos.length === 0) {
       videoList.innerHTML = `<div class="empty-state">No videos published yet — check back soon.</div>`;
     } else {
-      const trendingVideos = [...videos].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
-      videoList.innerHTML = trendingVideos.map((t, i) => trackRowHtml(t, i)).join("");
-      attachTrackRowHandlers(videoList);
+      const latestVideos = [...videos].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+      videoList.innerHTML = latestVideos.map(videoCardHtml).join("");
     }
 
     // Latest Songs (5 most recently uploaded, type = Audio)
@@ -1285,8 +1454,7 @@
       trackList.innerHTML = `<div class="empty-state">No tracks published yet — check back soon.</div>`;
     } else {
       const trendingTracks = [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
-      trackList.innerHTML = trendingTracks.map((t, i) => trackRowHtml(t, i)).join("");
-      attachTrackRowHandlers(trackList);
+      trackList.innerHTML = trendingTracks.map(trackCardHtml).join("");
     }
 
     // Genre-filtered results (searches across both videos and tracks)
@@ -1333,23 +1501,13 @@
     `;
   }
 
-  function renderTrendingGist() {
-    const grid = document.getElementById("trendingGistGrid");
-    if (allGist.length === 0) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">No gist posted yet — check back soon.</div>`;
-      return;
-    }
-    const trending = [...allGist].sort((a, b) => (b.reads || 0) - (a.reads || 0)).slice(0, 3);
-    grid.innerHTML = trending.map(gistCardHtml).join("");
-  }
-
   function renderGist() {
-    const grid = document.getElementById("gistGrid");
+    const list = document.getElementById("gistGrid");
     if (allGist.length === 0) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">No gist posted yet — check back soon.</div>`;
+      list.innerHTML = `<div class="empty-state">No gist posted yet — check back soon.</div>`;
       return;
     }
-    grid.innerHTML = allGist.map(gistCardHtml).join("");
+    list.innerHTML = [...allGist].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5).map(gistRowHtml).join("");
   }
 
   // ==================================================================
@@ -1369,7 +1527,6 @@
       const errMsgGrid = `<div class="empty-state" style="grid-column:1/-1;">Couldn't load gist right now.</div>`;
       document.getElementById("setlistVideos").innerHTML = errMsg;
       document.getElementById("setlistTracks").innerHTML = errMsg;
-      document.getElementById("trendingGistGrid").innerHTML = errMsgGrid;
       document.getElementById("gistGrid").innerHTML = errMsgGrid;
       return;
     }
@@ -1377,7 +1534,6 @@
     renderHero();
     renderTrackLists();
     renderGenres();
-    renderTrendingGist();
     renderGist();
   }
 
