@@ -871,16 +871,6 @@
     <div class="setlist" id="genreResults" style="margin-top:28px;"></div>
   </section>
 
-  <section>
-    <div class="community-cta">
-      <div>
-        <h2>New videos and gist, every day.</h2>
-        <p>MyGospelHub is updated daily with fresh worship sessions, covers, and the stories behind the music.</p>
-      </div>
-      <button class="btn btn-gold" id="ctaPlayBtn" disabled>Start Watching</button>
-    </div>
-  </section>
-
   <footer>
     <div class="footer-inner">
       <div class="footer-grid">
@@ -1140,13 +1130,6 @@
     el.currentTime = Number(e.target.value);
   });
 
-  [
-    "ctaPlayBtn"
-  ].forEach(id => {
-    document.getElementById(id).addEventListener("click", () => {
-      if (allContent.length > 0) playTrack(allContent[0]);
-    });
-  });
 
   // ==================================================================
   // Rendering
