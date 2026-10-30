@@ -565,6 +565,8 @@
         return `${m}:${s2}`;
       }
 
+      audio.addEventListener("play", () => MGH.setMediaSession(s, audio));
+
       function togglePlay() {
         if (audio.paused) {
           audio.play();
@@ -609,16 +611,7 @@
         supabaseRpc("increment_downloads", { row_id: s.id });
         // Force an actual file download instead of opening it in a new tab
         try {
-          const res = await fetch(s.file_url);
-          const blob = await res.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = blobUrl;
-          a.download = `${s.title} - ${s.artist}`.replace(/[^\w\s-]/g, "") || "song";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(blobUrl);
+          await MGH.downloadSong(s);
         } catch (err) {
           // Fallback: if the fetch/blob approach fails (e.g. CORS), open the file directly
           window.open(s.file_url, "_blank");
@@ -869,5 +862,6 @@
 }
 </style>
 <script src="site-nav.js"></script>
+<script src="media-tools.js"></script>
 </body>
 </html>

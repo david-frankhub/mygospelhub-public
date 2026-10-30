@@ -371,16 +371,7 @@
   async function downloadTrack(t) {
     supabaseRpc("increment_downloads", { row_id: t.id });
     try {
-      const res = await fetch(t.file_url);
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = `${t.title} - ${t.artist}`.replace(/[^\w\s-]/g, "") || "song";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(blobUrl);
+      await MGH.downloadSong(t);
     } catch (err) {
       window.open(t.file_url, "_blank");
     }
@@ -400,6 +391,7 @@
     }
     playingId = t.id;
     audio.src = t.file_url;
+    MGH.setMediaSession(t, audio);
     audio.play().catch(() => {});
     supabaseRpc("increment_views", { row_id: t.id });
     t.views = (t.views || 0) + 1;
@@ -478,5 +470,6 @@
 }
 </style>
 <script src="site-nav.js"></script>
+<script src="media-tools.js"></script>
 </body>
 </html>

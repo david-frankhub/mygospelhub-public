@@ -743,6 +743,7 @@
     .player-info{width:auto; flex:1;}
   }
 </style>
+<script src="media-tools.js"></script>
 </head>
 <body>
 
@@ -1056,6 +1057,7 @@
     currentTrack = track;
     const el = activeMediaEl();
     el.src = src;
+    MGH.setMediaSession(track, el);
     el.currentTime = 0;
     el.play().then(() => {
       isPlaying = true;
@@ -1276,16 +1278,7 @@
   async function downloadTrackFile(t) {
     rpc("increment_downloads", { row_id: t.id });
     try {
-      const res = await fetch(t.file_url);
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = `${t.title} - ${t.artist || ""}`.replace(/[^\w\s-]/g, "") || "song";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(blobUrl);
+      await MGH.downloadSong(t);
     } catch (err) {
       window.open(t.file_url, "_blank");
     }
@@ -1352,7 +1345,7 @@
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         const track = allContent.find(c => String(c.id) === String(btn.dataset.trackId));
-        if (track) downloadTrack(track);
+        if (track) { if (track.type === "Audio" && track.file_url) downloadTrackFile(track); else downloadTrack(track); }
       });
     });
     container.querySelectorAll(".share-btn").forEach(btn => {
