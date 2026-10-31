@@ -446,6 +446,7 @@
     const streamUrl = locked ? "" : (s.streaming_link || s.video_url || "");
 
     document.getElementById("songContent").innerHTML = `
+      <div class="posted-by">Posted By: <strong>${escapeHtml(s.uploaded_by || "MyGospelHub")}</strong>${s.created_at ? `<span class="pb-dot">•</span><span>${postedDate(s.created_at)}</span>` : ""}</div>
       <div class="song-header">
         <div class="song-cover">${s.cover_url ? `<img src="${escapeHtml(s.cover_url)}" alt="">` : ""}</div>
         <div>
@@ -457,7 +458,6 @@
           <h1 class="song-title">${escapeHtml(s.title)}</h1>
           <div class="song-artist">${escapeHtml(s.artist)}</div>
           ${s.producer ? `<div class="song-producer">Produced by ${escapeHtml(s.producer)}</div>` : ""}
-          <div class="posted-by">Posted By: <strong>${escapeHtml(s.uploaded_by || "MyGospelHub")}</strong>${s.created_at ? `<span class="pb-dot">•</span><span>${postedDate(s.created_at)}</span>` : ""}</div>
           ${s.description ? `<p class="song-desc">${escapeHtml(s.description)}</p>` : ""}
         </div>
       </div>
@@ -862,6 +862,6 @@
 }
 </style>
 <script src="site-nav.js"></script>
-<script src="media-tools.js"></script>
+<script src="media-tools.js?v=2"></script>
 </body>
 </html>
