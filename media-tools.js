@@ -83,7 +83,7 @@
     }
     const clean = (v) => String(v || "").replace(/[^\w\s&-]/g, "").replace(/\s+/g, " ").trim();
     const name = t.artist ? `${clean(t.artist)} - ${clean(t.title)}` : clean(t.title);
-    const base = `${name || "Song"} (MyGospelHub)`;
+    const base = `${name || "Song"} || MyGospelHub.com.ng`;
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = blobUrl;
