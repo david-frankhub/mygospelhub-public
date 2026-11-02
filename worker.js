@@ -4,7 +4,7 @@
 
 const SUPABASE_URL = "https://kqgnpryubgdtmtcjtasi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZ25wcnl1YmdkdG10Y2p0YXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTQ1NjQsImV4cCI6MjA5OTczMDU2NH0.T0y1CVCzIvfmK4vgczmlpiAFZP63MRLZT5eymu8R6jY";
-const DEFAULT_IMAGE = "https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png";
+const DEFAULT_IMAGE = "https://mygospelhub.com.ng/og-image.jpg";
 
 const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
