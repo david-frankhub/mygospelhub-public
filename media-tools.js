@@ -77,13 +77,13 @@
     const isMp3 = ext === "mp3" || blob.type === "audio/mpeg";
     if (isMp3) {
       try {
-        blob = await tagMp3(blob, { title: `${t.title || "Song"} (MyGospelHub)`, artist: t.artist, year: t.year, genre: t.genre }, t.cover_url);
+        blob = await tagMp3(blob, { title: `${t.title || "Song"} [MyGospelHub.com.ng]`, artist: t.artist, year: t.year, genre: t.genre }, t.cover_url);
       } catch (e) { /* keep the untouched file */ }
       ext = "mp3";
     }
     const clean = (v) => String(v || "").replace(/[^\w\s&-]/g, "").replace(/\s+/g, " ").trim();
     const name = t.artist ? `${clean(t.artist)} - ${clean(t.title)}` : clean(t.title);
-    const base = `${name || "Song"} || MyGospelHub.com.ng`;
+    const base = `${name || "Song"} [MyGospelHub.com.ng]`;
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = blobUrl;

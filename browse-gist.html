@@ -5,6 +5,17 @@
 <link rel="icon" type="image/png" href="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Browse Gist — MyGospelHub</title>
+<meta name="description" content="Read the latest gospel and entertainment gist on MyGospelHub.">
+<meta property="og:title" content="Browse Gist — MyGospelHub">
+<meta property="og:description" content="Read the latest gospel and entertainment gist on MyGospelHub.">
+<meta property="og:image" content="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
+<meta property="og:url" content="https://mygospelhub.com.ng/browse-gist.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MyGospelHub">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Browse Gist — MyGospelHub">
+<meta name="twitter:description" content="Read the latest gospel and entertainment gist on MyGospelHub.">
+<meta name="twitter:image" content="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -127,7 +138,49 @@
   @media (max-width:600px){
     .gist-grid{grid-template-columns:1fr;}
   }
+
+  /* ===== New card style (matches homepage / music page) ===== */
+  .tc-list{max-width:1100px; margin:0 auto; padding:0 5% 20px; display:flex !important; flex-direction:column; gap:12px;}
+  .track-card{display:grid; grid-template-columns:86px 1fr auto; align-items:center; gap:16px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--bg-raised); transition:border-color .2s; cursor:pointer;}
+  .track-card:hover{border-color:rgba(217,164,65,0.35);}
+  .tc-art{width:86px; height:86px; border-radius:12px; background:linear-gradient(135deg, #9C2C3A, #2A0810); background-size:cover; background-position:center;}
+  .tc-body{min-width:0;}
+  .tc-title{font-size:16px; font-weight:600; margin-bottom:4px; line-height:1.25; overflow-wrap:anywhere;}
+  .tc-title mark,.gr-title mark{background:rgba(217,164,65,0.3); color:inherit; border-radius:3px;}
+  .tc-artist{font-size:13.5px; font-weight:700; color:var(--gold); margin-bottom:4px; overflow-wrap:anywhere;}
+  .tc-meta{font-size:12.5px; color:var(--text-dim);}
+  .tc-desc{font-size:12px; color:rgba(138,135,128,.7); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tc-lock{font-size:12px; color:var(--gold); margin-top:4px; font-family:'JetBrains Mono',monospace;}
+  .tc-actions{display:flex; gap:10px;}
+  .tc-btn{width:50px; height:50px; border-radius:12px; border:1px solid var(--line); background:var(--bg-card); color:var(--text); display:flex; align-items:center; justify-content:center; transition:all .2s; padding:0; cursor:pointer;}
+  .tc-btn svg{width:20px; height:20px;}
+  .tc-btn:hover{border-color:var(--gold); color:var(--gold);}
+  .tc-btn.dl{border-color:rgba(217,164,65,0.45); color:var(--gold); background:rgba(217,164,65,0.07);}
+  .tc-btn.dl:hover{background:rgba(217,164,65,0.16);}
+  .tc-btn[disabled]{opacity:.35; cursor:not-allowed;}
+  .load-more-wrap{padding:8px 5% 56px !important;}
+  .load-more-btn{width:min(100%,470px); padding:18px 24px !important; border-radius:16px !important; border:1px solid rgba(217,164,65,0.45) !important; background:rgba(217,164,65,0.07) !important; color:var(--gold) !important; font-family:'Fraunces',serif; font-size:19px !important; font-weight:600;}
+  .load-more-btn:hover{background:rgba(217,164,65,0.16) !important;}
+  .gist-row{display:grid; grid-template-columns:96px 1fr auto; align-items:center; gap:16px; padding:12px; border:1px solid var(--line); border-radius:16px; background:var(--bg-raised); cursor:pointer; transition:border-color .2s;}
+  .gist-row:hover{border-color:rgba(217,164,65,0.35);}
+  .gr-art{width:96px; height:80px; border-radius:12px; background:linear-gradient(135deg, #9C2C3A, #2A0810); background-size:cover; background-position:center;}
+  .gr-body{min-width:0;}
+  .gr-cat{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); border:1px solid rgba(217,164,65,0.4); border-radius:100px; padding:3px 9px; margin-bottom:7px;}
+  .gr-title{font-size:15.5px; font-weight:600; line-height:1.3; margin-bottom:5px; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .gr-meta{font-size:11.5px; color:var(--text-dim); font-family:'JetBrains Mono',monospace;}
+  .gr-go{width:40px; height:40px; border-radius:12px; border:1px solid rgba(217,164,65,0.45); background:rgba(217,164,65,0.07); color:var(--gold); display:flex; align-items:center; justify-content:center;}
+  .gr-go svg{width:18px; height:18px;}
+  @media (max-width:560px){
+    .track-card{grid-template-columns:72px 1fr; row-gap:12px; padding:12px;}
+    .tc-art{width:72px; height:72px;}
+    .tc-actions{grid-column:1/-1; justify-content:flex-end;}
+    .tc-btn{width:54px; height:44px;}
+    .gist-row{grid-template-columns:84px 1fr; padding:10px;}
+    .gr-art{width:84px; height:72px;}
+    .gr-go{display:none;}
+  }
 </style>
+
 </head>
 <body>
 
@@ -137,7 +190,7 @@
   </nav>
 
   <div class="browse-header">
-    <h1>Browse all gist</h1>
+    <h1>All Gist</h1>
     <div class="search-bar">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input type="text" id="searchInput" placeholder="Search gist articles...">
@@ -156,9 +209,9 @@
   </div>
 
   <div class="results-count" id="resultsCount">Loading…</div>
-  <div class="gist-grid" id="gistGrid"></div>
+  <div class="gist-grid tc-list" id="gistGrid"></div>
   <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
-    <button class="load-more-btn" id="loadMoreBtn">Load more</button>
+    <button class="load-more-btn" id="loadMoreBtn">See More</button>
   </div>
 
 <script>
@@ -207,7 +260,7 @@
     return safe.slice(0, idx) + "<mark>" + safe.slice(idx, idx + q.length) + "</mark>" + safe.slice(idx + q.length);
   }
 
-  const PAGE_SIZE = 9;
+  const PAGE_SIZE = 10;
   let allPosts = [];
   let query = "";
   let activeCategory = "All";
@@ -247,21 +300,25 @@
     }
 
     grid.innerHTML = visible.map(p => `
-      <div class="gist-card" data-id="${p.id}">
-        <div class="gist-cover">${p.cover_url ? `<img src="${escapeHtml(p.cover_url)}" alt="">` : ""}<span class="cat">${escapeHtml(p.category || "Gist")}</span></div>
-        <div class="gist-body">
-          <h3>${highlight(p.title, query)}</h3>
-          <div class="gist-meta"><span>${timeAgo(p.created_at)}</span><span>${formatCount(p.reads)} reads</span></div>
+      <div class="gist-row" data-id="${p.id}">
+        <div class="gr-art" style="${p.cover_url ? `background-image:url('${escapeHtml(p.cover_url)}')` : ""}"></div>
+        <div class="gr-body">
+          <span class="gr-cat">${escapeHtml(p.category || "Gist")}</span>
+          <div class="gr-title">${highlight(p.title, query)}</div>
+          <div class="gr-meta">${timeAgo(p.created_at)} · ${formatCount(p.reads)} reads</div>
         </div>
+        <div class="gr-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
       </div>
     `).join("");
 
-    grid.querySelectorAll(".gist-card").forEach(card => {
+    grid.querySelectorAll(".gist-row").forEach(card => {
       card.addEventListener("click", () => {
         const post = allPosts.find(p => String(p.id) === card.dataset.id);
         if (post) window.location.href = postDest(post);
       });
     });
+
+    document.getElementById("loadMoreBtn").textContent = `See More (${Math.max(filtered.length - visibleCount, 0)} remaining)`;
 
     loadMoreWrap.style.display = visibleCount < filtered.length ? "block" : "none";
   }
@@ -315,48 +372,7 @@
   loadPosts();
 </script>
 <!-- Floating Submit Button -->
-<a href="submit.html" class="submit-fab" aria-label="Submit a song, video or gist">
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 5v14M5 12h14"/>
-  </svg>
-  <span class="submit-fab-label">Submit</span>
-</a>
-
-<style>
-.submit-fab {
-  position: fixed;
-  bottom: 24px;
-  right: 20px;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #d4af37, #b8912e);
-  color: #0a0a0a;
-  padding: 14px 18px;
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.submit-fab:hover,
-.submit-fab:active {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.55);
-}
-.submit-fab svg { flex-shrink: 0; }
-
-@media (max-width: 480px) {
-  .submit-fab-label { display: none; }
-  .submit-fab {
-    padding: 14px;
-    border-radius: 50%;
-  }
-}
-</style>
-  <a href="submit.html" class="submit-fab" aria-label="Click here to upload your song, video or gist on MyGospelHub">
+<a href="submit.html" class="submit-fab" aria-label="Click here to upload your song, video or gist on MyGospelHub">
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M12 5v14M5 12h14"/>
   </svg>

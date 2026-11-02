@@ -5,6 +5,17 @@
   <link rel="icon" type="image/png" href="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Video — MyGospelHub</title>
+<meta name="description" content="Watch gospel videos on MyGospelHub.">
+<meta property="og:title" content="Video — MyGospelHub">
+<meta property="og:description" content="Watch gospel videos on MyGospelHub.">
+<meta property="og:image" content="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
+<meta property="og:url" content="https://mygospelhub.com.ng/video.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MyGospelHub">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Video — MyGospelHub">
+<meta name="twitter:description" content="Watch gospel videos on MyGospelHub.">
+<meta name="twitter:image" content="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -251,9 +262,9 @@
     <div class="logo">MyGospelHub<span class="dot">.</span></div>
     <div class="nav-links">
       <a href="index.html">Home</a>
-      <a href="index.html#videos">Videos</a>
+      <a href="browse-video.html">Videos</a>
       <a href="music.html">Music</a>
-      <a href="index.html#gist">Gist</a>
+      <a href="browse-gist.html">Gist</a>
     </div>
     <a href="index.html" class="btn btn-gold">Home</a>
   </nav>
@@ -364,7 +375,7 @@
     const hasExternal = !hasFile && Boolean(externalUrl);
 
     wrap.innerHTML = `
-      <div class="breadcrumb"><a href="index.html">Home</a> / <a href="index.html#videos">Videos</a> / ${escapeHtml(v.title)}</div>
+      <div class="breadcrumb"><a href="index.html">Home</a> / <a href="browse-video.html">Videos</a> / ${escapeHtml(v.title)}</div>
 
       ${hasFile ? `
         <div class="video-player">
