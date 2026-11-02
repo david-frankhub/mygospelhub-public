@@ -1,5 +1,5 @@
 // Cloudflare Worker: serves the static site and handles share-preview links
-// (/api/song, /api/video, /api/gist-post) so WhatsApp/Facebook show the real
+// (/song/<slug>, /video/<slug>, /gist/<slug>, plus the old /api/... links) so WhatsApp/Facebook show the real
 // title, description and cover image.
 
 const SUPABASE_URL = "https://kqgnpryubgdtmtcjtasi.supabase.co";
@@ -26,10 +26,18 @@ const ROUTES = {
   },
 };
 
-async function preview(route, url) {
+// Clean share links: /song/<slug>, /video/<slug>, /gist/<slug> (an id also works).
+// The old /api/... links keep working too.
+const PRETTY = { "/song": "/api/song", "/video": "/api/video", "/gist": "/api/gist-post" };
+const looksLikeId = (v) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v) || /^\d+$/.test(v);
+
+async function preview(route, url, pretty) {
   const origin = url.origin;
-  const slug = url.searchParams.get("slug");
-  const id = url.searchParams.get("id");
+  let slug = url.searchParams.get("slug");
+  let id = url.searchParams.get("id");
+  if (pretty) {
+    if (looksLikeId(pretty)) id = pretty; else slug = pretty;
+  }
   if (!slug && !id) return Response.redirect(`${origin}/${route.page}`, 302);
 
   let row = null;
@@ -48,7 +56,9 @@ async function preview(route, url) {
   const pageUrl = row ? `${origin}/${route.page}?id=${encodeURIComponent(row.id)}` : `${origin}/${route.page}`;
 
   // Facebook treats og:url as the page to scrape, so it must be THIS link, not the song page.
-  const shareUrl = url.origin + url.pathname + (slug ? `?slug=${encodeURIComponent(slug)}` : `?id=${encodeURIComponent(id)}`);
+  const shareUrl = pretty
+    ? url.origin + url.pathname
+    : url.origin + url.pathname + (slug ? `?slug=${encodeURIComponent(slug)}` : `?id=${encodeURIComponent(id)}`);
 
   const html = `<!DOCTYPE html>
 <html lang="en"><head>
@@ -79,9 +89,11 @@ async function preview(route, url) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const route = ROUTES[url.pathname.replace(/\/$/, "")];
-    if (route) return preview(route, url);
+    const path = url.pathname.replace(/\/$/, "");
+    const route = ROUTES[path];
+    if (route) return preview(route, url, null);
+    const m = path.match(/^(\/song|\/video|\/gist)\/([^/]+)$/);
+    if (m) return preview(ROUTES[PRETTY[m[1]]], url, decodeURIComponent(m[2]));
     return env.ASSETS.fetch(request);
   },
 };
-    
