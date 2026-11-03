@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mygospelhub.com.ng/sitemap.xml

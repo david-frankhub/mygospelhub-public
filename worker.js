@@ -86,9 +86,41 @@ async function preview(route, url, pretty) {
   });
 }
 
+// Sitemap for Google: static pages + every published song, video and gist.
+const SITE = "https://mygospelhub.com.ng";
+const STATIC_PAGES = ["", "music.html", "browse-video.html", "browse-gist.html", "submit.html", "about.html", "contact.html", "privacy.html", "terms.html"];
+
+async function sbList(table, select) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?status=eq.Published&select=${select}&order=created_at.desc&limit=1000`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+    });
+    const rows = await r.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch (e) { return []; }
+}
+
+async function sitemap() {
+  const [content, gist] = await Promise.all([
+    sbList("content", "id,type,created_at"),
+    sbList("gist_articles", "id,created_at"),
+  ]);
+  const day = (iso) => (iso ? `<lastmod>${String(iso).slice(0, 10)}</lastmod>` : "");
+  const urls = [];
+  STATIC_PAGES.forEach((p) => urls.push(`<url><loc>${SITE}/${p}</loc></url>`));
+  content.forEach((c) => {
+    const page = c.type === "Video" ? "video.html" : "song.html";
+    urls.push(`<url><loc>${SITE}/${page}?id=${encodeURIComponent(c.id)}</loc>${day(c.created_at)}</url>`);
+  });
+  gist.forEach((g) => urls.push(`<url><loc>${SITE}/gist-post.html?id=${encodeURIComponent(g.id)}</loc>${day(g.created_at)}</url>`));
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
+  return new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/sitemap.xml") return sitemap();
     const path = url.pathname.replace(/\/$/, "");
     const route = ROUTES[path];
     if (route) return preview(route, url, null);
