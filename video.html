@@ -95,6 +95,8 @@
   .video-player video{width:100%; height:100%; display:block; background:#000;}
 
   /* ===== External video placeholder (no file, only a link) ===== */
+  .video-cover{margin-bottom:22px; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#0f0f11; text-align:center;}
+  .video-cover img{display:block; width:100%; height:auto; max-height:460px; object-fit:contain; margin:0 auto;}
   .video-placeholder{
     width:100%;
     aspect-ratio:16/9;
@@ -419,10 +421,7 @@ function setSeo(title, desc, page, id) {
           <video id="videoEl" src="${escapeHtml(v.file_url)}" controls preload="metadata" playsinline></video>
         </div>
       ` : embedSrc ? `
-        <div class="video-player">
-          <iframe id="videoFrame" src="${escapeHtml(embedSrc)}" title="${escapeHtml(v.title)}" style="width:100%;height:100%;border:0;display:block;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>
-        </div>
-        <p style="font-size:12px;color:var(--text-dim);margin:-10px 0 18px;">Video not loading? <a href="${escapeHtml(externalUrl)}" target="_blank" rel="noopener" style="color:var(--gold);">Open it on ${embedSrc.includes("vimeo") ? "Vimeo" : "YouTube"}</a></p>
+        ${v.cover_url ? `<div class="video-cover"><img src="${escapeHtml(v.cover_url)}" alt="${escapeHtml(v.title)}"></div>` : ""}
       ` : hasExternal ? `
         <div class="video-placeholder" id="videoPlaceholder">
           ${v.cover_url ? `<img src="${escapeHtml(v.cover_url)}" alt="">` : ""}
@@ -446,6 +445,13 @@ function setSeo(title, desc, page, id) {
       <div class="posted-by">Posted By: <strong>${escapeHtml(v.uploaded_by || "MyGospelHub")}</strong>${v.created_at ? `<span class="pb-dot">•</span><span>${postedDate(v.created_at)}</span>` : ""}</div>
 
       ${v.description ? `<p class="video-desc">${escapeHtml(v.description)}</p>` : ""}
+
+      ${embedSrc ? `
+        <div class="video-player">
+          <iframe id="videoFrame" src="${escapeHtml(embedSrc)}" title="${escapeHtml(v.title)}" style="width:100%;height:100%;border:0;display:block;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin:-10px 0 18px;">Video not loading? <a href="${escapeHtml(externalUrl)}" target="_blank" rel="noopener" style="color:var(--gold);">Open it on ${embedSrc.includes("vimeo") ? "Vimeo" : "YouTube"}</a></p>
+      ` : ""}
 
       <div class="stats-row">
         <div class="stat"><div class="stat-value">${formatCount(v.views)}</div><div class="stat-label">Views</div></div>
