@@ -416,6 +416,8 @@ function setSeo(title, desc, page, id) {
     wrap.innerHTML = `
       <div class="breadcrumb"><a href="index.html">Home</a> / <a href="browse-video.html">Videos</a> / ${escapeHtml(v.title)}</div>
 
+      <div class="posted-by">Posted By: <strong>${escapeHtml(v.uploaded_by || "MyGospelHub")}</strong>${v.created_at ? `<span class="pb-dot">•</span><span>${postedDate(v.created_at)}</span>` : ""}</div>
+
       ${hasFile ? `
         <div class="video-player">
           <video id="videoEl" src="${escapeHtml(v.file_url)}" controls preload="metadata" playsinline></video>
@@ -442,7 +444,6 @@ function setSeo(title, desc, page, id) {
       </div>
       <h1 class="video-title">${escapeHtml(v.title)}</h1>
       <div class="video-artist">${escapeHtml(v.artist)}</div>
-      <div class="posted-by">Posted By: <strong>${escapeHtml(v.uploaded_by || "MyGospelHub")}</strong>${v.created_at ? `<span class="pb-dot">•</span><span>${postedDate(v.created_at)}</span>` : ""}</div>
 
       ${v.description ? `<p class="video-desc">${escapeHtml(v.description)}</p>` : ""}
 
