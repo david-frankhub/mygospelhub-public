@@ -139,6 +139,41 @@
   .action-share:hover{border-color:var(--text-dim);}
 
   /* ===== Related gist ===== */
+  /* ===== Cards for related / recent lists (same look as the Music, Video and Gist pages) ===== */
+  .tc-list{display:flex; flex-direction:column; gap:12px; margin-bottom:40px;}
+  .track-card{display:grid; grid-template-columns:86px 1fr auto; align-items:center; gap:16px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--bg-raised); transition:border-color .2s; cursor:pointer;}
+  .track-card:hover{border-color:rgba(217,164,65,0.35);}
+  .tc-art{width:86px; height:86px; border-radius:12px; background:linear-gradient(135deg, var(--wine-bright,#9C2C3A), #2A0810); background-size:cover; background-position:center;}
+  .tc-body{min-width:0;}
+  .tc-title{font-size:16px; font-weight:600; margin-bottom:4px; line-height:1.25; overflow-wrap:anywhere;}
+  .tc-artist{font-size:13.5px; font-weight:700; color:var(--gold); margin-bottom:4px; overflow-wrap:anywhere;}
+  .tc-meta{font-size:12.5px; color:var(--text-dim);}
+  .tc-lock{font-size:12px; color:var(--gold); margin-top:4px; font-family:'JetBrains Mono',monospace;}
+  .tc-actions{display:flex; gap:10px;}
+  .tc-btn{width:50px; height:50px; border-radius:12px; border:1px solid var(--line); background:var(--bg-card,#18181B); color:var(--text); display:flex; align-items:center; justify-content:center; transition:all .2s; padding:0; cursor:pointer;}
+  .tc-btn svg{width:20px; height:20px;}
+  .tc-btn:hover{border-color:var(--gold); color:var(--gold);}
+  .tc-btn.dl{border-color:rgba(217,164,65,0.45); color:var(--gold); background:rgba(217,164,65,0.07);}
+  .tc-btn.dl:hover{background:rgba(217,164,65,0.16);}
+  .tc-btn[disabled]{opacity:.35; cursor:not-allowed;}
+  .gist-row{display:grid; grid-template-columns:96px 1fr auto; align-items:center; gap:16px; padding:12px; border:1px solid var(--line); border-radius:16px; background:var(--bg-raised); cursor:pointer; transition:border-color .2s;}
+  .gist-row:hover{border-color:rgba(217,164,65,0.35);}
+  .gr-art{width:96px; height:80px; border-radius:12px; background:linear-gradient(135deg, #9C2C3A, #2A0810); background-size:cover; background-position:center;}
+  .gr-body{min-width:0;}
+  .gr-cat{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); border:1px solid rgba(217,164,65,0.4); border-radius:100px; padding:3px 9px; margin-bottom:7px;}
+  .gr-title{font-size:15.5px; font-weight:600; line-height:1.3; margin-bottom:5px; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .gr-meta{font-size:11.5px; color:var(--text-dim); font-family:'JetBrains Mono',monospace;}
+  .gr-go{width:40px; height:40px; border-radius:12px; border:1px solid rgba(217,164,65,0.45); background:rgba(217,164,65,0.07); color:var(--gold); display:flex; align-items:center; justify-content:center;}
+  .gr-go svg{width:18px; height:18px;}
+  @media (max-width:560px){
+    .track-card{grid-template-columns:72px 1fr; row-gap:12px; padding:12px;}
+    .tc-art{width:72px; height:72px;}
+    .tc-actions{grid-column:1/-1; justify-content:flex-end;}
+    .tc-btn{width:54px; height:44px;}
+    .gist-row{grid-template-columns:84px 1fr; padding:10px;}
+    .gr-art{width:84px; height:72px;}
+    .gr-go{display:none;}
+  }
   .related-label{
     font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
     color:var(--text-dim); margin-bottom:18px;
@@ -447,6 +482,47 @@ function setSeo(title, desc, page, id) {
     });
   }
 
+  const ICON_OPEN = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+  const ICON_DL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+
+  // Card for a song or video in "More ..." / "Recent Posts": same design as the Music page.
+  function itemCardHtml(r, metaText) {
+    const page = r.type === "Video" ? "video.html" : "song.html";
+    const locked = r.release_date && new Date(r.release_date).getTime() > Date.now();
+    const canDl = Boolean(r.file_url) && !locked;
+    return `
+      <div class="track-card" data-href="${page}?id=${encodeURIComponent(r.id)}" data-id="${escapeHtml(String(r.id))}">
+        <div class="tc-art" style="${r.cover_url ? `background-image:url('${escapeHtml(r.cover_url)}')` : ""}"></div>
+        <div class="tc-body">
+          <div class="tc-title">${escapeHtml(r.title)}</div>
+          <div class="tc-artist">${escapeHtml(r.artist || "")}</div>
+          <div class="tc-meta">${escapeHtml(metaText)}</div>
+          ${locked ? `<div class="tc-lock">Releases ${escapeHtml(new Date(r.release_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }))}</div>` : ""}
+        </div>
+        <div class="tc-actions">
+          <button class="tc-btn play" data-act="open" aria-label="Open ${escapeHtml(r.title)}">${ICON_OPEN}</button>
+          <button class="tc-btn dl" data-act="download" aria-label="Download ${escapeHtml(r.title)}" ${canDl ? "" : "disabled"}>${ICON_DL}</button>
+        </div>
+      </div>`;
+  }
+
+  function wireItemCards(container, rows) {
+    container.addEventListener("click", async (e) => {
+      const card = e.target.closest(".track-card");
+      if (!card) return;
+      const btn = e.target.closest(".tc-btn");
+      if (btn && btn.dataset.act === "download") {
+        e.stopPropagation();
+        const item = rows.find(x => String(x.id) === card.dataset.id);
+        if (!item || !item.file_url) return;
+        try { supabaseRpc("increment_downloads", { row_id: item.id }); } catch (err) {}
+        try { await MGH.downloadSong(item); } catch (err) { window.open(item.file_url, "_blank"); }
+        return;
+      }
+      window.location.href = card.dataset.href;
+    });
+  }
+
   async function loadRelated(post) {
     const relWrap = document.getElementById("relatedWrap");
     try {
@@ -457,15 +533,24 @@ function setSeo(title, desc, page, id) {
       if (!results || results.length === 0) { relWrap.innerHTML = ""; return; }
       relWrap.innerHTML = `
         <div class="related-label">More in ${escapeHtml(post.category || "Gist")}</div>
-        <div class="related-grid">
+        <div class="tc-list" id="relatedList">
           ${results.map(r => `
-            <div class="related-card" onclick="window.location.href='gist-post.html?id=${r.id}'">
-              <div class="related-cover">${r.cover_url ? `<img src="${escapeHtml(r.cover_url)}" alt="">` : ""}</div>
-              <div class="related-body"><div class="related-title">${escapeHtml(r.title)}</div></div>
+            <div class="gist-row" data-href="gist-post.html?id=${encodeURIComponent(r.id)}">
+              <div class="gr-art" style="${r.cover_url ? `background-image:url('${escapeHtml(r.cover_url)}')` : ""}"></div>
+              <div class="gr-body">
+                <span class="gr-cat">${escapeHtml(r.category || "Gist")}</span>
+                <div class="gr-title">${escapeHtml(r.title)}</div>
+                <div class="gr-meta">${timeAgo(r.created_at)}${r.reads != null ? ` · ${formatCount(r.reads)} reads` : ""}</div>
+              </div>
+              <div class="gr-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
             </div>
           `).join("")}
         </div>
       `;
+      relWrap.querySelector("#relatedList").addEventListener("click", (e) => {
+        const row = e.target.closest(".gist-row");
+        if (row) window.location.href = row.dataset.href;
+      });
     } catch (e) {
       relWrap.innerHTML = "";
     }
@@ -531,18 +616,11 @@ function setSeo(title, desc, page, id) {
         return;
       }
       list.innerHTML = `
-        <div class="recent-posts-list">
-          ${rows.map(r => `
-            <div class="recent-post-row" onclick="window.location.href='${r.type === "Video" ? "video.html" : "song.html"}?id=${r.id}'">
-              <div class="recent-post-art">${r.cover_url ? `<img src="${escapeHtml(r.cover_url)}" alt="">` : ""}</div>
-              <div>
-                <div class="recent-post-title">${escapeHtml(r.title)}</div>
-                <div class="recent-post-date">${timeAgo(r.created_at)}</div>
-              </div>
-            </div>
-          `).join("")}
+        <div class="tc-list" id="recentList">
+          ${rows.map(r => itemCardHtml(r, `${r.type === "Video" ? "Video" : "Song"} • ${timeAgo(r.created_at)}`)).join("")}
         </div>
       `;
+      wireItemCards(list.querySelector("#recentList"), rows);
     } catch (e) {
       document.getElementById("recentPostsList").innerHTML = `<div class="state-block">Couldn't load recent posts.</div>`;
     }
@@ -651,5 +729,6 @@ function setSeo(title, desc, page, id) {
 }
 </style>
 <script src="site-nav.js?v=2"></script>
+<script src="media-tools.js?v=3"></script>
 </body>
 </html>
