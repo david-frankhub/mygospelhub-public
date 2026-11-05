@@ -45,6 +45,18 @@
     .sn-search{max-width:none;}
   }
   @media (max-width:480px){ .sn-logo{font-size:18px;} nav.sn-nav{gap:10px;} .sn-search{padding:10px 12px; gap:7px;} .sn-toggle{width:44px; height:44px;} }
+
+  .sn-header{position:sticky; top:0; z-index:100; background:rgba(11,11,13,0.96); backdrop-filter:blur(10px);}
+  .sn-header > nav{position:static !important; top:auto !important;}
+  .sn-tabs{display:none;}
+  @media (max-width:900px){
+    .sn-header > nav{border-bottom:none !important;}
+    .sn-tabs{display:grid; grid-template-columns:repeat(5,1fr); border-top:1px solid var(--line,#26262b); border-bottom:1px solid var(--line,#26262b); background:rgba(11,11,13,0.96);}
+    .sn-tab{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:10px 2px 9px; color:var(--text-dim,#8c8a85); text-decoration:none; font-size:11.5px; font-weight:600; letter-spacing:.01em; border-bottom:2px solid transparent; -webkit-tap-highlight-color:transparent;}
+    .sn-tab svg{width:21px; height:21px;}
+    .sn-tab.active{color:var(--gold,#d9a441); border-bottom-color:var(--gold,#d9a441);}
+    html{scroll-padding-top:128px;}
+  }
   `;
 
   var style = document.createElement("style");
@@ -53,6 +65,8 @@
 
   var nav = document.querySelector("nav");
   if (!nav) return;
+  var isHome = !!document.getElementById("mobileMenu"); // the homepage has its own header; we only add the tab bar there
+  if (!isHome) {
   nav.className = "sn-nav";
   nav.removeAttribute("style");
 
@@ -97,4 +111,25 @@
     var q = this.q.value.trim();
     if (q) location.href = "search.html?q=" + encodeURIComponent(q);
   });
+  }
+
+  // ---- Fixed tab bar under the header: Home, Music, Video, Gist, Contact ----
+  var TABS = [
+    ["Home", "index.html", ["index.html", ""], '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
+    ["Music", "music.html", ["music.html", "browse-music.html", "song.html"], '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'],
+    ["Video", "browse-video.html", ["browse-video.html", "video.html", "watch.html"], '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M10 9l5 3-5 3z" fill="currentColor"/>'],
+    ["Gist", "browse-gist.html", ["browse-gist.html", "gist-post.html"], '<path d="M4 4h13a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2z"/><path d="M8 9h7M8 13h7M8 17h4"/>'],
+    ["Contact", "contact.html", ["contact.html"], '<path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H8l-5 4V5a1 1 0 0 1 1-1z"/>']
+  ];
+  var tabs = document.createElement("div");
+  tabs.className = "sn-tabs";
+  tabs.innerHTML = TABS.map(function (t) {
+    var on = t[2].indexOf(here) !== -1 ? " active" : "";
+    return '<a class="sn-tab' + on + '" href="' + t[1] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + t[3] + "</svg><span>" + t[0] + "</span></a>";
+  }).join("");
+  var wrap = document.createElement("div");
+  wrap.className = "sn-header";
+  nav.parentNode.insertBefore(wrap, nav);
+  wrap.appendChild(nav);
+  wrap.appendChild(tabs);
 })();

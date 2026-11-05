@@ -176,6 +176,12 @@
     transition:all 0.2s;
   }
   .follow-icon:hover{border-color:var(--gold); color:var(--gold); background:rgba(217,164,65,0.08);}
+  .follow-icon[aria-label="Facebook"]{color:#1877F2;}
+  .follow-icon[aria-label="Instagram"]{color:#E1306C;}
+  .follow-icon[aria-label="TikTok"]{color:#FFFFFF;}
+  .follow-icon[aria-label="Facebook"]:hover{color:#1877F2; border-color:#1877F2; background:rgba(24,119,242,0.12);}
+  .follow-icon[aria-label="Instagram"]:hover{color:#E1306C; border-color:#E1306C; background:rgba(225,48,108,0.12);}
+  .follow-icon[aria-label="TikTok"]:hover{color:#FFFFFF; border-color:#FFFFFF; background:rgba(255,255,255,0.1);}
 
   /* ===== Comments ===== */
   .comments-section{padding-top:8px;}
@@ -644,6 +650,6 @@ function setSeo(title, desc, page, id) {
   }
 }
 </style>
-<script src="site-nav.js"></script>
+<script src="site-nav.js?v=2"></script>
 </body>
 </html>
