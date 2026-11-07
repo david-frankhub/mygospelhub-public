@@ -708,12 +708,7 @@ function setSeo(title, desc, page, id) {
       downloadBtn.addEventListener("click", async () => {
         supabaseRpc("increment_downloads", { row_id: s.id });
         // Force an actual file download instead of opening it in a new tab
-        try {
-          await MGH.downloadSong(s);
-        } catch (err) {
-          // Fallback: if the fetch/blob approach fails (e.g. CORS), open the file directly
-          window.open(s.file_url, "_blank");
-        }
+        await MGH.downloadSong(s);
       });
     }
 
@@ -775,7 +770,7 @@ function setSeo(title, desc, page, id) {
         const item = rows.find(x => String(x.id) === card.dataset.id);
         if (!item || !item.file_url) return;
         supabaseRpc("increment_downloads", { row_id: item.id });
-        try { await MGH.downloadSong(item); } catch (err) { window.open(item.file_url, "_blank"); }
+        await MGH.downloadSong(item);
         return;
       }
       window.location.href = card.dataset.href;
@@ -983,6 +978,6 @@ function setSeo(title, desc, page, id) {
 }
 </style>
 <script src="site-nav.js?v=2"></script>
-<script src="media-tools.js?v=3"></script>
+<script src="media-tools.js?v=4"></script>
 </body>
 </html>

@@ -68,30 +68,91 @@
     return m ? m[1].toLowerCase() : "";
   }
 
-  // Downloads a song file; MP3s get title, artist and cover art written into them.
-  async function downloadSong(t) {
-    const res = await fetch(t.file_url);
-    if (!res.ok) throw new Error("download failed");
-    let blob = await res.blob();
-    let ext = extFromUrl(t.file_url);
-    const isMp3 = ext === "mp3" || blob.type === "audio/mpeg";
-    if (isMp3) {
-      try {
-        blob = await tagMp3(blob, { title: `${t.title || "Song"} [MyGospelHub.com.ng]`, artist: t.artist, year: t.year, genre: t.genre }, t.cover_url);
-      } catch (e) { /* keep the untouched file */ }
-      ext = "mp3";
+  // Small message at the bottom of the screen so the visitor always sees a reaction.
+  function toast(msg, ms) {
+    let el = document.getElementById("mghToast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "mghToast";
+      el.style.cssText = "position:fixed;left:50%;bottom:90px;transform:translateX(-50%);max-width:90%;background:#17171a;color:#fff;border:1px solid rgba(217,164,65,.6);padding:11px 18px;border-radius:12px;font:600 14px system-ui,sans-serif;z-index:99999;box-shadow:0 8px 30px rgba(0,0,0,.5);text-align:center";
+      document.body.appendChild(el);
     }
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(el._t);
+    if (ms) el._t = setTimeout(() => { el.style.display = "none"; }, ms);
+  }
+
+  function cleanName(t, ext) {
     const clean = (v) => String(v || "").replace(/[^\w\s&-]/g, "").replace(/\s+/g, " ").trim();
     const name = t.artist ? `${clean(t.artist)} - ${clean(t.title)}` : clean(t.title);
     const base = `${name || "Song"} [MyGospelHub.com.ng]`;
-    const blobUrl = URL.createObjectURL(blob);
+    return ext ? `${base}.${ext}` : base;
+  }
+
+  // Fallback that always reacts: the browser itself downloads the file (no memory, no CORS).
+  function directDownload(t) {
+    const ext = extFromUrl(t.file_url);
+    let href = t.file_url;
+    if (href.indexOf("/storage/v1/object/public/") !== -1) {
+      href += (href.indexOf("?") === -1 ? "?" : "&") + "download=" + encodeURIComponent(cleanName(t, ext));
+    }
     const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = ext ? `${base}.${ext}` : base;
+    a.href = href;
+    a.download = cleanName(t, ext);
+    a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+  }
+
+  // Downloads a song file; MP3s get title, artist and cover art written into them.
+  // Always gives feedback and never fails silently.
+  async function downloadSong(t) {
+    if (!t || !t.file_url) { toast("This song has no file to download.", 3000); return; }
+    toast("Preparing your download…");
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 25000); // slow network: switch to the direct download
+      const res = await fetch(t.file_url, { signal: ctrl.signal });
+      if (!res.ok) throw new Error("download failed");
+      const total = Number(res.headers.get("content-length")) || 0;
+      let blob;
+      if (res.body && total) {
+        const reader = res.body.getReader();
+        const parts = []; let got = 0;
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          parts.push(value); got += value.length;
+          toast("Downloading… " + Math.min(99, Math.round(got / total * 100)) + "%");
+        }
+        blob = new Blob(parts);
+      } else {
+        blob = await res.blob();
+      }
+      clearTimeout(timer);
+      let ext = extFromUrl(t.file_url);
+      const isMp3 = ext === "mp3" || blob.type === "audio/mpeg";
+      if (isMp3) {
+        try {
+          blob = await tagMp3(blob, { title: `${t.title || "Song"} [MyGospelHub.com.ng]`, artist: t.artist, year: t.year, genre: t.genre }, t.cover_url);
+        } catch (e) { /* keep the untouched file */ }
+        ext = "mp3";
+      }
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = cleanName(t, ext);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+      toast("Download started ✓ Check your downloads.", 3500);
+    } catch (e) {
+      toast("Starting download…", 3000);
+      directDownload(t);
+    }
   }
 
   // Shows cover art, title and artist on the phone lock screen / notification while playing.

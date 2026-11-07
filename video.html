@@ -654,7 +654,7 @@ const url = v.slug ? `${window.location.origin}/video/${encodeURIComponent(v.slu
         const item = rows.find(x => String(x.id) === card.dataset.id);
         if (!item || !item.file_url) return;
         try { supabaseRpc("increment_downloads", { row_id: item.id }); } catch (err) {}
-        try { await MGH.downloadSong(item); } catch (err) { window.open(item.file_url, "_blank"); }
+        await MGH.downloadSong(item);
         return;
       }
       window.location.href = card.dataset.href;
@@ -853,6 +853,6 @@ const url = v.slug ? `${window.location.origin}/video/${encodeURIComponent(v.slu
 }
 </style>
 <script src="site-nav.js?v=2"></script>
-<script src="media-tools.js?v=3"></script>
+<script src="media-tools.js?v=4"></script>
 </body>
 </html>
