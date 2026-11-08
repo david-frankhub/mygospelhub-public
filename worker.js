@@ -36,8 +36,9 @@ async function getAsset(env, origin, file) {
   return res;
 }
 
-const cut = (s, n) => String(s || "").replace(/\s+/g, " ").trim().slice(0, n);
-const nl2p = (s) => String(s || "").split(/\n{2,}/).map((p) => `<p>${esc(p.trim()).replace(/\n/g, "<br>")}</p>`).join("");
+const cut = (s, n) => String(s || "").replace(/\*/g, "").replace(/\s+/g, " ").trim().slice(0, n);
+const bold = (h) => h.replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>").replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>");
+const nl2p = (s) => String(s || "").split(/\n{2,}/).map((p) => `<p>${bold(esc(p.trim())).replace(/\n/g, "<br>")}</p>`).join("");
 
 function seoParts(kind, row, canonical) {
   const by = row.artist ? ` — ${row.artist}` : "";
