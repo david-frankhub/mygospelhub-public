@@ -8,82 +8,110 @@ const DEFAULT_IMAGE = "https://mygospelhub.com.ng/og-image.jpg";
 
 const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-const ROUTES = {
-  "/api/song": {
-    table: "content", extra: "", page: "song.html", ogType: "music.song",
-    title: (r) => `${r.title} — ${r.artist} | MyGospelHub`,
-    desc: (r) => r.description || `Listen to "${r.title}" by ${r.artist} on MyGospelHub.`,
-  },
-  "/api/video": {
-    table: "content", extra: "&type=eq.Video", page: "video.html", ogType: "video.other",
-    title: (r) => `${r.title} — ${r.artist} | MyGospelHub`,
-    desc: (r) => r.description || `Watch "${r.title}" by ${r.artist} on MyGospelHub.`,
-  },
-  "/api/gist-post": {
-    table: "gist_articles", extra: "", page: "gist-post.html", ogType: "article",
-    title: (r) => `${r.title} | MyGospelHub Gist`,
-    desc: (r) => (r.body || "").slice(0, 160) || `Read "${r.title}" on MyGospelHub.`,
-  },
-};
-
-// Clean share links: /song/<slug>, /video/<slug>, /gist/<slug> (an id also works).
-// The old /api/... links keep working too.
-const PRETTY = { "/song": "/api/song", "/video": "/api/video", "/gist": "/api/gist-post" };
 const looksLikeId = (v) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v) || /^\d+$/.test(v);
 
-async function preview(route, url, pretty) {
-  const origin = url.origin;
-  let slug = url.searchParams.get("slug");
-  let id = url.searchParams.get("id");
-  if (pretty) {
-    if (looksLikeId(pretty)) id = pretty; else slug = pretty;
+// ---------- Server-rendered song / video / gist pages (so Google sees real content) ----------
+const PAGES = {
+  song:  { table: "content", extra: "", file: "/song", loading: '<div class="state-block">Loading song…</div>', ogType: "music.song" },
+  video: { table: "content", extra: "&type=eq.Video", file: "/video", loading: '<div class="state-block">Loading video…</div>', ogType: "video.other" },
+  gist:  { table: "gist_articles", extra: "", file: "/gist-post", loading: '<div class="state-block">Loading article…</div>', ogType: "article" },
+};
+const API_KIND = { "/api/song": "song", "/api/video": "video", "/api/gist-post": "gist" };
+
+async function fetchRow(kind, slug, id) {
+  const cfg = PAGES[kind];
+  const filter = slug ? `slug=eq.${encodeURIComponent(slug)}` : `id=eq.${encodeURIComponent(id)}`;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${cfg.table}?${filter}&status=eq.Published${cfg.extra}&select=*&limit=1`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+  });
+  const rows = await r.json();
+  return Array.isArray(rows) && rows.length ? rows[0] : null;
+}
+
+async function getAsset(env, origin, file) {
+  let res = await env.ASSETS.fetch(new Request(origin + file));
+  for (let i = 0; i < 2 && res.status >= 300 && res.status < 400 && res.headers.get("location"); i++) {
+    res = await env.ASSETS.fetch(new Request(new URL(res.headers.get("location"), origin)));
   }
-  if (!slug && !id) return Response.redirect(`${origin}/${route.page}`, 302);
+  return res;
+}
 
+const cut = (s, n) => String(s || "").replace(/\s+/g, " ").trim().slice(0, n);
+const nl2p = (s) => String(s || "").split(/\n{2,}/).map((p) => `<p>${esc(p.trim()).replace(/\n/g, "<br>")}</p>`).join("");
+
+function seoParts(kind, row, canonical) {
+  const by = row.artist ? ` — ${row.artist}` : "";
+  let title, desc, body, ld;
+  const image = row.cover_url || row.thumbnail_url || DEFAULT_IMAGE;
+  if (kind === "gist") {
+    title = `${row.title} | MyGospelHub`;
+    desc = cut(row.body, 155) || `Read "${row.title}" on MyGospelHub.`;
+    body = `<article class="seo-article"><h1>${esc(row.title)}</h1><p><em>${esc(row.category)}${row.uploaded_by ? " · By " + esc(row.uploaded_by) : ""}</em></p>${nl2p(row.body)}</article>`;
+    ld = { "@context": "https://schema.org", "@type": "Article", headline: row.title, image: [image], datePublished: row.created_at, author: { "@type": "Organization", name: row.uploaded_by || "MyGospelHub" }, publisher: { "@type": "Organization", name: "MyGospelHub" }, mainEntityOfPage: canonical };
+  } else if (kind === "video") {
+    title = `${row.title}${by} | MyGospelHub`;
+    desc = cut(row.description, 155) || `Watch "${row.title}"${row.artist ? " by " + row.artist : ""} on MyGospelHub.`;
+    body = `<article class="seo-article"><h1>${esc(row.title)}</h1><p><em>${esc(row.artist)}${row.genre ? " · " + esc(row.genre) : ""}</em></p>${nl2p(row.description)}</article>`;
+    ld = { "@context": "https://schema.org", "@type": "VideoObject", name: row.title, description: desc, thumbnailUrl: [image], uploadDate: row.created_at, url: canonical };
+  } else {
+    title = `${row.title}${by} | MyGospelHub`;
+    desc = cut(row.description, 155) || `Listen to and download "${row.title}"${row.artist ? " by " + row.artist : ""} on MyGospelHub.`;
+    body = `<article class="seo-article"><h1>${esc(row.title)}</h1><p><em>${esc(row.artist)}${row.genre ? " · " + esc(row.genre) : ""}${row.year ? " · " + esc(row.year) : ""}</em></p>${nl2p(row.description)}${row.lyrics ? "<h2>Lyrics</h2>" + nl2p(row.lyrics) : ""}</article>`;
+    ld = { "@context": "https://schema.org", "@type": "MusicRecording", name: row.title, byArtist: { "@type": "MusicGroup", name: row.artist || "Unknown" }, image: [image], datePublished: row.created_at, description: desc, url: canonical, genre: row.genre || undefined };
+  }
+  return { title, desc, body, image, ld };
+}
+
+async function renderPage(kind, request, env, slug, id) {
+  const url = new URL(request.url);
+  const cfg = PAGES[kind];
+  const assetRes = await getAsset(env, url.origin, cfg.file);
   let row = null;
-  try {
-    const filter = slug ? `slug=eq.${encodeURIComponent(slug)}` : `id=eq.${encodeURIComponent(id)}`;
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${route.table}?${filter}&status=eq.Published${route.extra}&select=*&limit=1`, {
-      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-    });
-    const rows = await r.json();
-    if (Array.isArray(rows) && rows.length) row = rows[0];
-  } catch (e) { row = null; }
-
-  const title = row ? route.title(row) : "MyGospelHub — Music. Videos. Gist.";
-  const description = row ? route.desc(row) : "Your home for gospel music, videos, and entertainment gist.";
-  const image = row && row.cover_url ? row.cover_url : DEFAULT_IMAGE;
-  const pageUrl = row ? `${origin}/${route.page}?id=${encodeURIComponent(row.id)}` : `${origin}/${route.page}`;
-
-  // Facebook treats og:url as the page to scrape, so it must be THIS link, not the song page.
-  const shareUrl = pretty
-    ? url.origin + url.pathname
-    : url.origin + url.pathname + (slug ? `?slug=${encodeURIComponent(slug)}` : `?id=${encodeURIComponent(id)}`);
-
-  const html = `<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${esc(title)}</title>
-<meta name="description" content="${esc(description)}">
-<meta property="og:title" content="${esc(title)}">
-<meta property="og:description" content="${esc(description)}">
-<meta property="og:image" content="${esc(image)}">
-<meta property="og:url" content="${esc(shareUrl)}">
-<link rel="canonical" href="${esc(shareUrl)}">
-<meta property="og:type" content="${route.ogType}">
+  try { row = await fetchRow(kind, slug, id); } catch (e) { row = null; }
+  if (!row || !assetRes.ok) {
+    // Not found: show the normal page (it explains), but tell Google it is gone.
+    return new Response(assetRes.body, { status: row ? assetRes.status : 404, headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": row ? "all" : "noindex" } });
+  }
+  const canonical = `${url.origin}/${kind}/${encodeURIComponent(row.slug || row.id)}`;
+  const p = seoParts(kind, row, canonical);
+  let html = await assetRes.text();
+  const head = `<base href="/">
+<meta name="description" content="${esc(p.desc)}">
+<link rel="canonical" href="${esc(canonical)}">
+<meta property="og:title" content="${esc(p.title)}">
+<meta property="og:description" content="${esc(p.desc)}">
+<meta property="og:image" content="${esc(p.image)}">
+<meta property="og:url" content="${esc(canonical)}">
+<meta property="og:type" content="${cfg.ogType}">
 <meta property="og:site_name" content="MyGospelHub">
-<meta property="og:image:alt" content="${esc(title)}">
+<meta property="og:image:alt" content="${esc(p.title)}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${esc(title)}">
-<meta name="twitter:description" content="${esc(description)}">
-<meta name="twitter:image" content="${esc(image)}">
-<script>window.location.replace(${JSON.stringify(pageUrl)});</script>
-</head><body><p>Redirecting to <a href="${esc(pageUrl)}">${esc(title)}</a>…</p></body></html>`;
-
+<meta name="twitter:title" content="${esc(p.title)}">
+<meta name="twitter:description" content="${esc(p.desc)}">
+<meta name="twitter:image" content="${esc(p.image)}">
+<script type="application/ld+json">${JSON.stringify(p.ld).replace(/</g, "\\u003c")}</script>
+<script>window.__PRETTY=${JSON.stringify({ k: "id", v: row.id }).replace(/</g, "\\u003c")};</script>
+<style>.seo-article{max-width:760px;margin:0 auto;padding:8px 4px;line-height:1.7}.seo-article h1{font-size:28px;margin:0 0 6px}.seo-article p{margin:0 0 14px}</style>`;
+  html = html
+    .replace(/<title>[\s\S]*?<\/title>/i, `<title>${esc(p.title)}</title>`)
+    .replace(/<meta\s+(?:name|property)="(?:description|og:[^"]*|twitter:[^"]*)"[^>]*>\s*/gi, "")
+    .replace(/<link\s+rel="canonical"[^>]*>\s*/gi, "")
+    .replace(/<head>/i, `<head>\n${head}`)
+    .replace(cfg.loading, p.body);
   return new Response(html, {
     headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300" },
   });
+}
+
+// Old links (/api/song?id=..., /song.html?...) go to the new clean address.
+async function legacyRedirect(kind, url) {
+  const slug = url.searchParams.get("slug");
+  const id = url.searchParams.get("id");
+  if (!slug && !id) return Response.redirect(`${url.origin}/${kind === "gist" ? "browse-gist.html" : kind === "video" ? "browse-video.html" : "music.html"}`, 302);
+  let row = null;
+  try { row = await fetchRow(kind, slug, id); } catch (e) {}
+  const target = row ? `${url.origin}/${kind}/${encodeURIComponent(row.slug || row.id)}` : `${url.origin}/${kind === "gist" ? "gist-post" : kind}.html?${slug ? "slug=" + encodeURIComponent(slug) : "id=" + encodeURIComponent(id)}`;
+  return Response.redirect(target, 301);
 }
 
 // Sitemap for Google: static pages + every published song, video and gist.
@@ -102,17 +130,17 @@ async function sbList(table, select) {
 
 async function sitemap() {
   const [content, gist] = await Promise.all([
-    sbList("content", "id,type,created_at"),
-    sbList("gist_articles", "id,created_at"),
+    sbList("content", "id,slug,type,created_at"),
+    sbList("gist_articles", "id,slug,created_at"),
   ]);
   const day = (iso) => (iso ? `<lastmod>${String(iso).slice(0, 10)}</lastmod>` : "");
   const urls = [];
   STATIC_PAGES.forEach((p) => urls.push(`<url><loc>${SITE}/${p}</loc></url>`));
   content.forEach((c) => {
-    const page = c.type === "Video" ? "video.html" : "song.html";
-    urls.push(`<url><loc>${SITE}/${page}?id=${encodeURIComponent(c.id)}</loc>${day(c.created_at)}</url>`);
+    const kind = c.type === "Video" ? "video" : "song";
+    urls.push(`<url><loc>${SITE}/${kind}/${encodeURIComponent(c.slug || c.id)}</loc>${day(c.created_at)}</url>`);
   });
-  gist.forEach((g) => urls.push(`<url><loc>${SITE}/gist-post.html?id=${encodeURIComponent(g.id)}</loc>${day(g.created_at)}</url>`));
+  gist.forEach((g) => urls.push(`<url><loc>${SITE}/gist/${encodeURIComponent(g.slug || g.id)}</loc>${day(g.created_at)}</url>`));
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
   return new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }
@@ -122,10 +150,17 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/sitemap.xml") return sitemap();
     const path = url.pathname.replace(/\/$/, "");
-    const route = ROUTES[path];
-    if (route) return preview(route, url, null);
-    const m = path.match(/^(\/song|\/video|\/gist)\/([^/]+)$/);
-    if (m) return preview(ROUTES[PRETTY[m[1]]], url, decodeURIComponent(m[2]));
+    try {
+      if (API_KIND[path]) return await legacyRedirect(API_KIND[path], url);
+      const m = path.match(/^\/(song|video|gist)\/([^/]+)$/);
+      if (m) {
+        const v = decodeURIComponent(m[2]);
+        return await renderPage(m[1], request, env, looksLikeId(v) ? null : v, looksLikeId(v) ? v : null);
+      }
+      // Old page links like /song?id=... or /song.html?slug=... -> clean address
+      const old = path.match(/^\/(song|video)(\.html)?$/) || path.match(/^\/(gist)-post(\.html)?$/);
+      if (old && (url.searchParams.get("id") || url.searchParams.get("slug"))) return await legacyRedirect(old[1], url);
+    } catch (e) { /* fall through to the normal site */ }
     return env.ASSETS.fetch(request);
   },
 };

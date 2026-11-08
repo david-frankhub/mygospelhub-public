@@ -397,6 +397,7 @@
   const ICON_SHARE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>`;
 
   const params = new URLSearchParams(window.location.search);
+  if (window.__PRETTY) params.set(window.__PRETTY.k, window.__PRETTY.v);
   const videoSlug = params.get("slug");
   const videoId = params.get("id");
   const wrap = document.getElementById("videoWrap");
@@ -418,7 +419,7 @@ function setSeo(title, desc, page, id) {
     if (m) m.setAttribute("content", String(desc || title).replace(/\s+/g, " ").slice(0, 155));
     var l = document.querySelector('link[rel="canonical"]');
     if (!l) { l = document.createElement("link"); l.rel = "canonical"; document.head.appendChild(l); }
-    l.href = "https://mygospelhub.com.ng/" + page + "?id=" + encodeURIComponent(id);
+    l.href = "https://mygospelhub.com.ng/" + String(page).replace("gist-post.html","gist").replace(".html","") + "/" + encodeURIComponent(id);
   } catch (e) {}
 }
   // Turns a YouTube or Vimeo link into an embeddable player address (or "" if it can't be embedded).
@@ -447,7 +448,7 @@ function setSeo(title, desc, page, id) {
   function renderVideo(v) {
     currentVideo = v;
     document.title = `${v.title} — MyGospelHub`;
-    setSeo(document.title, v.description || `Watch "${v.title}" by ${v.artist} on MyGospelHub.`, "video.html", v.id);
+    setSeo(document.title, v.description || `Watch "${v.title}" by ${v.artist} on MyGospelHub.`, "video.html", v.slug || v.id);
 
     const hasFile = Boolean(v.file_url);
     const externalUrl = v.video_url || v.streaming_link || "";

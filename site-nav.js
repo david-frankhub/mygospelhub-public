@@ -11,6 +11,8 @@
     ["Contact", "contact.html"]
   ];
   var here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  var pm = location.pathname.match(/^\/(song|video|gist)\/[^/]+\/?$/);
+  if (pm) here = pm[1] === "gist" ? "gist-post.html" : pm[1] + ".html"; // clean links like /song/my-song
 
   var css = `
   nav.sn-nav{display:flex; align-items:center; gap:12px; padding:14px 5%; position:sticky; top:0; z-index:100;

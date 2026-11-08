@@ -449,6 +449,7 @@
   const ICON_SHARE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
 
   const params = new URLSearchParams(window.location.search);
+  if (window.__PRETTY) params.set(window.__PRETTY.k, window.__PRETTY.v);
   const songSlug = params.get("slug");
   const songId = params.get("id");
   let currentSong = null;
@@ -471,7 +472,7 @@
       currentSong = rows[0];
       document.getElementById("crumbTitle").textContent = currentSong.title;
       document.title = `${currentSong.title} — MyGospelHub`;
-      setSeo(document.title, currentSong.description || `Play and download "${currentSong.title}" by ${currentSong.artist} on MyGospelHub.`, "song.html", currentSong.id);
+      setSeo(document.title, currentSong.description || `Play and download "${currentSong.title}" by ${currentSong.artist} on MyGospelHub.`, "song.html", currentSong.slug || currentSong.id);
       renderSong();
       loadRelated();
       loadComments();
@@ -490,7 +491,7 @@ function setSeo(title, desc, page, id) {
     if (m) m.setAttribute("content", String(desc || title).replace(/\s+/g, " ").slice(0, 155));
     var l = document.querySelector('link[rel="canonical"]');
     if (!l) { l = document.createElement("link"); l.rel = "canonical"; document.head.appendChild(l); }
-    l.href = "https://mygospelhub.com.ng/" + page + "?id=" + encodeURIComponent(id);
+    l.href = "https://mygospelhub.com.ng/" + String(page).replace("gist-post.html","gist").replace(".html","") + "/" + encodeURIComponent(id);
   } catch (e) {}
 }
   // Turns a YouTube or Vimeo link into an embeddable player address (or "" if it can't be embedded).
