@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artistes — MyGospelHub</title>
+<meta name="description" content="Songs, videos and news by gospel artistes on MyGospelHub.">
+<meta property="og:title" content="Music — MyGospelHub">
+<meta property="og:description" content="All gospel tracks on MyGospelHub. Play and download the latest gospel songs.">
+<meta property="og:image" content="https://mygospelhub.com.ng/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://mygospelhub.com.ng/music.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MyGospelHub">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Music — MyGospelHub">
+<meta name="twitter:description" content="All gospel tracks on MyGospelHub. Play and download the latest gospel songs.">
+<meta name="twitter:image" content="https://mygospelhub.com.ng/og-image.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B0D;
+    --bg-raised:#141416;
+    --bg-card:#18181B;
+    --text:#F2EFE9;
+    --text-dim:#8A8780;
+    --gold:#D9A441;
+    --wine:#7A1F2B;
+    --wine-bright:#9C2C3A;
+    --line: rgba(242,239,233,0.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    padding-bottom:88px;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.01em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--gold);color:#0B0B0D;}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  button{font-family:inherit; cursor:pointer;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
+  }
+
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 5%; position:sticky; top:0;
+    background:rgba(11,11,13,0.85); backdrop-filter:blur(10px);
+    z-index:100; border-bottom:1px solid var(--line);
+  }
+  .logo{font-family:'Fraunces',serif; font-size:22px; font-weight:700; display:flex; align-items:baseline; gap:2px;}
+  .logo .dot{color:var(--gold);}
+  .nav-links{display:flex; gap:36px; font-size:14px; font-weight:500;}
+  .nav-links a{color:var(--text-dim); transition:color 0.2s;}
+  .nav-links a:hover, .nav-links a.active{color:var(--text);}
+  .btn{padding:10px 20px; border-radius:100px; font-size:13px; font-weight:600; border:1px solid var(--line); background:transparent; color:var(--text); transition:all 0.2s;}
+  .btn-gold{background:var(--gold); color:#0B0B0D; border:1px solid var(--gold);}
+  .btn-gold:hover{background:#E5B45C;}
+
+  .music-hero{
+    padding:56px 5% 40px;
+    max-width:1400px; margin:0 auto;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:14px;
+  }
+  .music-hero h1{font-size:clamp(32px,4.5vw,52px); line-height:1.05; margin-bottom:14px;}
+  .music-hero p{font-size:15.5px; color:var(--text-dim); max-width:520px; line-height:1.6;}
+
+  section{padding:0 5%; max-width:1400px; margin:0 auto;}
+  .genre-strip{display:flex; gap:12px; flex-wrap:wrap; padding:24px 0 40px;}
+  .genre-pill{
+    padding:11px 20px; border-radius:100px; border:1px solid var(--line);
+    font-size:13px; font-weight:500; color:var(--text-dim); transition:all 0.2s; cursor:pointer;
+  }
+  .genre-pill:hover, .genre-pill.active{border-color:var(--gold); color:var(--gold); background:rgba(217,164,65,0.08);}
+
+  .section-head{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    margin-bottom:28px; border-bottom:1px solid var(--line); padding-bottom:18px;
+  }
+  .section-head .label{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;}
+  .section-head h2{font-size:26px;}
+
+  .track-list{display:flex; flex-direction:column; margin-bottom:56px;}
+  .track-row{
+    display:grid;
+    grid-template-columns:36px 52px 1fr auto 40px;
+    align-items:center;
+    gap:18px;
+    padding:13px 12px;
+    border-bottom:1px solid var(--line);
+    border-radius:10px;
+    transition:background 0.2s;
+    cursor:pointer;
+  }
+  .track-row:hover{background:var(--bg-card);}
+  .track-row.playing{background:rgba(217,164,65,0.06);}
+  .track-num{font-family:'JetBrains Mono',monospace; color:var(--text-dim); font-size:13px;}
+  .track-row:hover .track-num, .track-row.playing .track-num{color:var(--gold);}
+  .track-art{
+    width:52px; height:52px; border-radius:8px; flex-shrink:0;
+    background:linear-gradient(135deg, var(--wine-bright), #2A0810);
+    background-size:cover; background-position:center;
+    position:relative;
+  }
+  .track-art.playing::after{
+    content:"";
+    position:absolute; inset:0; border-radius:8px;
+    background:rgba(11,11,13,0.5);
+  }
+  .eq{
+    position:absolute; bottom:6px; left:6px; display:flex; align-items:flex-end; gap:2px; height:14px; z-index:1;
+  }
+  .eq span{width:3px; background:var(--gold); border-radius:1px; animation:eqbar 0.9s ease-in-out infinite;}
+  .eq span:nth-child(1){height:40%; animation-delay:0s;}
+  .eq span:nth-child(2){height:100%; animation-delay:0.2s;}
+  .eq span:nth-child(3){height:65%; animation-delay:0.4s;}
+  @keyframes eqbar{0%,100%{transform:scaleY(0.4);}50%{transform:scaleY(1);}}
+  .track-title{font-size:15px; font-weight:600; margin-bottom:3px;}
+  .track-artist{font-size:12.5px; color:var(--text-dim);}
+  .track-plays{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim); white-space:nowrap;}
+  .track-dur{font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--text-dim);}
+
+  .state-block{
+    padding:40px 20px; text-align:center; color:var(--text-dim); font-size:13.5px;
+    background:var(--bg-card); border:1px solid var(--line); border-radius:14px; margin-bottom:56px;
+  }
+
+  .now-playing-bar{
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(15,15,17,0.92); backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);
+    padding:12px 5%;
+    display:flex; align-items:center; gap:20px;
+    z-index:200;
+  }
+  .np-track{display:flex; align-items:center; gap:12px; width:260px; min-width:0; cursor:pointer;}
+  .np-art{width:44px; height:44px; border-radius:7px; background:linear-gradient(135deg, var(--wine-bright), #2A0810); background-size:cover; background-position:center; flex-shrink:0;}
+  .np-info{min-width:0;}
+  .np-title{font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .np-artist{font-size:11.5px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+  .np-controls{flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; max-width:520px; margin:0 auto;}
+  .np-buttons{display:flex; align-items:center; gap:18px;}
+  .np-buttons button{background:none; border:none; color:var(--text-dim); display:flex; align-items:center; justify-content:center; transition:color 0.2s;}
+  .np-buttons button:hover{color:var(--text);}
+  .np-play{
+    width:34px; height:34px; border-radius:50%; background:var(--gold) !important;
+    color:#0B0B0D !important; display:flex; align-items:center; justify-content:center;
+  }
+  .np-play:hover{background:#E5B45C !important;}
+  .np-progress-row{display:flex; align-items:center; gap:10px; width:100%;}
+  .np-time{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-dim); width:34px;}
+  .np-time.right{text-align:right;}
+  .np-progress{flex:1; height:3px; border-radius:2px; background:rgba(242,239,233,0.15); position:relative; cursor:pointer;}
+  .np-progress-fill{position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--gold); border-radius:2px;}
+
+  .np-extra{width:120px; display:flex; justify-content:flex-end; gap:14px;}
+  .np-extra button{background:none; border:none; color:var(--text-dim); transition:color 0.2s;}
+  .np-extra button:hover{color:var(--gold);}
+
+  @media (max-width:900px){
+    .nav-links{display:none;}
+    .track-row{grid-template-columns:26px 44px 1fr 32px; }
+    .track-plays, .track-dur{display:none;}
+    .np-track{width:150px;}
+    .np-extra{display:none;}
+  }
+
+  /* ===== Track cards (play + download) ===== */
+  .track-list{gap:12px; margin-bottom:24px;}
+  .track-card{
+    display:grid; grid-template-columns:86px 1fr auto; align-items:center; gap:16px;
+    padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--bg-raised);
+    transition:border-color .2s, background .2s; cursor:pointer;
+  }
+  .track-card:hover{border-color:rgba(217,164,65,0.35);}
+  .track-card.playing{border-color:var(--gold); background:rgba(217,164,65,0.06);}
+  .tc-art{width:86px; height:86px; border-radius:12px; background:linear-gradient(135deg, var(--wine-bright), #2A0810); background-size:cover; background-position:center; position:relative; overflow:hidden;}
+  .tc-body{min-width:0;}
+  .tc-title{font-size:16px; font-weight:600; margin-bottom:4px; line-height:1.25; overflow-wrap:anywhere;}
+  .tc-artist{font-size:13.5px; font-weight:700; color:var(--gold); margin-bottom:4px; overflow-wrap:anywhere;}
+  .tc-meta{font-size:12.5px; color:var(--text-dim);}
+  .tc-desc{font-size:12px; color:rgba(138,135,128,.7); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tc-lock{font-size:12px; color:var(--gold); margin-top:4px; font-family:'JetBrains Mono',monospace;}
+  .tc-actions{display:flex; gap:10px;}
+  .tc-btn{width:50px; height:50px; border-radius:12px; border:1px solid var(--line); background:var(--bg-card); color:var(--text); display:flex; align-items:center; justify-content:center; transition:all .2s; padding:0;}
+  .tc-btn svg{width:20px; height:20px;}
+  .tc-btn:hover{border-color:var(--gold); color:var(--gold);}
+  .tc-btn.dl{border-color:rgba(217,164,65,0.45); color:var(--gold); background:rgba(217,164,65,0.07);}
+  .tc-btn.dl:hover{background:rgba(217,164,65,0.16);}
+  .tc-btn.is-playing{background:var(--gold); color:#0B0B0D; border-color:var(--gold);}
+  .tc-btn[disabled]{opacity:.35; cursor:not-allowed;}
+  .see-more-wrap{display:flex; justify-content:center; margin:8px 0 56px;}
+  .see-more-btn{width:min(100%,470px); padding:18px 24px; border-radius:16px; border:1px solid rgba(217,164,65,0.45); background:rgba(217,164,65,0.07); color:var(--gold); font-family:'Fraunces',serif; font-size:19px; font-weight:600; transition:background .2s;}
+  .see-more-btn:hover{background:rgba(217,164,65,0.16);}
+  @media (max-width:560px){
+    .track-card{grid-template-columns:72px 1fr; row-gap:12px; padding:12px;}
+    .tc-art{width:72px; height:72px;}
+    .tc-actions{grid-column:1/-1; justify-content:flex-end;}
+    .tc-btn{width:54px; height:44px;}
+  }
+
+  .ar-hero{padding:56px 5% 12px;max-width:900px;margin:0 auto}
+  .ar-hero .eyebrow{color:var(--gold);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
+  .ar-hero h1{font-size:clamp(30px,6vw,46px);line-height:1.1;margin-bottom:10px;overflow-wrap:anywhere}
+  .ar-hero p{color:var(--text-dim)}
+  .ar-wrap{max-width:900px;margin:0 auto;padding:10px 5% 20px;display:grid;gap:12px}
+  .ar-wrap h2{font-family:'Fraunces',serif;font-size:22px;margin:18px 0 2px}
+  .ar-wrap h2 span{color:var(--text-dim);font-size:14px;font-weight:500}
+  .ar-card{display:flex;gap:14px;align-items:center;background:var(--bg-card);border:1px solid var(--line);border-radius:14px;padding:12px;transition:border-color .2s}
+  .ar-card:hover{border-color:rgba(217,164,65,.45)}
+  .ar-cover{width:72px;height:72px;border-radius:10px;object-fit:cover;background:var(--bg-raised);flex-shrink:0}
+  .ar-meta{min-width:0}
+  .ar-badge{display:inline-block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(217,164,65,.4);border-radius:999px;padding:2px 8px;margin-bottom:4px}
+  .ar-title{font-family:'Fraunces',serif;font-size:17px;font-weight:600;line-height:1.25}
+  .ar-line{color:var(--text-dim);font-size:13px;margin-top:2px}
+  .ar-snip{color:var(--text-dim);font-size:13px;line-height:1.5;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
+  .ar-empty{text-align:center;color:var(--text-dim);padding:40px 0}
+</style>
+</head>
+
+<body>
+<nav>
+    <div class="logo">MyGospelHub<span class="dot">.</span></div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="browse-video.html">Videos</a>
+      <a href="music.html" class="active">Music</a>
+      <a href="browse-gist.html">Gist</a>
+    </div>
+    <a href="index.html" class="btn btn-gold">Home</a>
+  </nav>
+  <div class="ar-hero">
+    <div class="eyebrow">Artistes</div>
+    <h1 id="arName">…</h1>
+    <p id="arSub">Loading…</p>
+  </div>
+  <div class="ar-wrap" id="arContent"></div>
+  <div style="height:30px"></div>
+<script>
+  const SUPABASE_URL = "https://kqgnpryubgdtmtcjtasi.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZ25wcnl1YmdkdG10Y2p0YXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTQ1NjQsImV4cCI6MjA5OTczMDU2NH0.T0y1CVCzIvfmK4vgczmlpiAFZP63MRLZT5eymu8R6jY";
+  const NAME = (new URLSearchParams(location.search).get("name") || "").trim();
+  const H = { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY };
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; };
+  const q = NAME.replace(/[,()*%]/g, " ").replace(/\s+/g, " ").trim();
+  const rest = (path) => fetch(SUPABASE_URL + "/rest/v1/" + path, { headers: H }).then((r) => r.json()).then((r) => (Array.isArray(r) ? r : [])).catch(() => []);
+  const cover = (r) => esc(r.cover_url || r.thumbnail_url || "og-image.jpg");
+  function card(href, r, badge, line2, snip) {
+    return `<a class="ar-card" href="${href}"><img class="ar-cover" loading="lazy" src="${cover(r)}" alt=""><div class="ar-meta"><span class="ar-badge">${badge}</span><div class="ar-title">${esc(r.title)}</div><div class="ar-line">${esc(line2)}</div>${snip ? `<div class="ar-snip">${esc(snip)}</div>` : ""}</div></a>`;
+  }
+  async function run() {
+    if (!q) { document.getElementById("arName").textContent = "All artistes"; document.getElementById("arSub").textContent = "Open a song or video and tap the artiste's name."; return; }
+    document.getElementById("arName").textContent = NAME;
+    document.title = NAME + " — songs, videos and news | MyGospelHub";
+    const enc = encodeURIComponent("*" + q + "*");
+    const [media, posts] = await Promise.all([
+      rest(`content?status=eq.Published&or=(artist.ilike.${enc},title.ilike.${enc},description.ilike.${enc})&order=created_at.desc&select=id,slug,title,artist,type,cover_url,thumbnail_url,lyrics,description&limit=60`),
+      rest(`gist_articles?status=eq.Published&or=(title.ilike.${enc},body.ilike.${enc})&order=created_at.desc&select=id,slug,title,category,cover_url,body&limit=30`),
+    ]);
+    const lc = q.toLowerCase();
+    media.sort((a, b) => (String(b.artist || "").toLowerCase().includes(lc) - String(a.artist || "").toLowerCase().includes(lc)));
+    const out = [];
+    const types = [["Audio", "Songs", "song"], ["Lyrics", "Lyrics", "song"], ["Video", "Videos", "video"]];
+    types.forEach(([t, label, kind]) => {
+      const rows = media.filter((r) => (r.type || "Audio") === t);
+      if (rows.length) out.push(`<h2>${label} <span>${rows.length}</span></h2>` + rows.map((r) => card(`/${kind}/${encodeURIComponent(r.slug || r.id)}`, r, t === "Audio" ? "Song" : t, r.artist, t === "Lyrics" ? (r.lyrics || "").trim() : "")).join(""));
+    });
+    if (posts.length) out.push(`<h2>Gist <span>${posts.length}</span></h2>` + posts.map((r) => card(`/gist/${encodeURIComponent(r.slug || r.id)}`, r, esc(r.category || "Gist"), "", String(r.body || "").replace(/[*\[\]]/g, "").trim().slice(0, 140))).join(""));
+    const total = media.length + posts.length;
+    document.getElementById("arSub").textContent = total ? total + " post" + (total > 1 ? "s" : "") + " related to " + NAME : "Nothing found for " + NAME + " yet.";
+    document.getElementById("arContent").innerHTML = out.join("") || '<div class="ar-empty">No posts yet. Check back soon.</div>';
+    const m = document.querySelector('meta[name="description"]'); if (m) m.setAttribute("content", "All songs, videos and news about " + NAME + " on MyGospelHub.");
+  }
+  run();
+</script>
+<script src="site-nav.js?v=2"></script>
+<script src="media-tools.js?v=5"></script>
+</body>
+</html>

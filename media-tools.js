@@ -173,5 +173,38 @@
     } catch (e) { /* not supported */ }
   }
 
-  window.MGH = { downloadSong, setMediaSession };
+  // ---------- Clickable artist / title names ----------
+  const _esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const _re = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  function nameUrl(name) { return "artist.html?name=" + encodeURIComponent(String(name).trim()); }
+  function nameLink(name) {
+    const n = String(name == null ? "" : name).trim();
+    return n ? `<a class="name-link" href="${nameUrl(n)}">${_esc(n)}</a>` : "";
+  }
+  // "Kirk Franklin Ft Davido" -> two separate clickable names, separators kept as plain text
+  function artistHtml(str) {
+    const parts = String(str || "").split(/(\s+(?:ft\.?|feat\.?|featuring|x|and|\+)\s+|\s*[,&]\s*)/i);
+    return parts.map((p, i) => (i % 2 ? _esc(p) : nameLink(p))).join("");
+  }
+  function artistNames(str) {
+    return String(str || "").split(/\s+(?:ft\.?|feat\.?|featuring|x|and|\+)\s+|\s*[,&]\s*/i).map((s) => s.trim()).filter(Boolean);
+  }
+  // Safe text -> html. [[Any Name]] becomes a link; the song's own artist names are linked automatically.
+  function linkText(text, artistStr) {
+    let html = _esc(text || "");
+    const holds = [];
+    html = html.replace(/\[\[([^\]\n]+?)\]\]/g, (m, n) => { holds.push(nameLink(n.replace(/&#39;/g, "'").replace(/&amp;/g, "&"))); return "\u0001" + (holds.length - 1) + "\u0002"; });
+    artistNames(artistStr).sort((a, b) => b.length - a.length).forEach((n) => {
+      const safe = _esc(n);
+      html = html.replace(new RegExp("(^|[^\\w\u0001])(" + _re(safe) + ")(?![\\w\u0002])", "gi"), (m, pre, name) => { holds.push(nameLink(n)); return pre + "\u0001" + (holds.length - 1) + "\u0002"; });
+    });
+    return html.replace(/\u0001(\d+)\u0002/g, (m, i) => holds[+i]);
+  }
+  (function () {
+    const st = document.createElement("style");
+    st.textContent = ".name-link{color:inherit;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;text-decoration-color:rgba(217,164,65,.7)}.name-link:hover{color:var(--gold,#d9a441)}";
+    document.head.appendChild(st);
+  })();
+
+  window.MGH = { downloadSong, setMediaSession, nameLink, artistHtml, linkText, nameUrl };
 })();

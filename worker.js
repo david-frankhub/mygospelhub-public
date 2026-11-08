@@ -36,9 +36,10 @@ async function getAsset(env, origin, file) {
   return res;
 }
 
-const cut = (s, n) => String(s || "").replace(/\*/g, "").replace(/\s+/g, " ").trim().slice(0, n);
+const cut = (s, n) => String(s || "").replace(/\*|\[\[|\]\]/g, "").replace(/\s+/g, " ").trim().slice(0, n);
+const nameLinks = (h) => h.replace(/\[\[([^\]\n]+?)\]\]/g, (m, n) => `<a href="/artist.html?name=${encodeURIComponent(n.replace(/&amp;/g, "&").replace(/&#39;/g, "'").trim())}">${n}</a>`);
 const bold = (h) => h.replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>").replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>");
-const nl2p = (s) => String(s || "").split(/\n{2,}/).map((p) => `<p>${bold(esc(p.trim())).replace(/\n/g, "<br>")}</p>`).join("");
+const nl2p = (s) => String(s || "").split(/\n{2,}/).map((p) => `<p>${nameLinks(bold(esc(p.trim()))).replace(/\n/g, "<br>")}</p>`).join("");
 
 function seoParts(kind, row, canonical) {
   const by = row.artist ? ` — ${row.artist}` : "";
@@ -131,7 +132,7 @@ async function sbList(table, select) {
 
 async function sitemap() {
   const [content, gist] = await Promise.all([
-    sbList("content", "id,slug,type,created_at"),
+    sbList("content", "id,slug,type,created_at,artist"),
     sbList("gist_articles", "id,slug,created_at"),
   ]);
   const day = (iso) => (iso ? `<lastmod>${String(iso).slice(0, 10)}</lastmod>` : "");
@@ -142,6 +143,9 @@ async function sitemap() {
     urls.push(`<url><loc>${SITE}/${kind}/${encodeURIComponent(c.slug || c.id)}</loc>${day(c.created_at)}</url>`);
   });
   gist.forEach((g) => urls.push(`<url><loc>${SITE}/gist/${encodeURIComponent(g.slug || g.id)}</loc>${day(g.created_at)}</url>`));
+  const names = new Set();
+  content.forEach((c) => String(c.artist || "").split(/\s+(?:ft\.?|feat\.?|featuring|x|and|\+)\s+|\s*[,&]\s*/i).forEach((n) => { n = n.trim(); if (n && n.length < 60) names.add(n); }));
+  [...names].slice(0, 400).forEach((n) => urls.push(`<url><loc>${SITE}/artist.html?name=${encodeURIComponent(n).replace(/&/g, "&amp;")}</loc></url>`));
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
   return new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }

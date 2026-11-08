@@ -416,7 +416,7 @@
 function setSeo(title, desc, page, id) {
   try {
     var m = document.querySelector('meta[name="description"]');
-    if (m) m.setAttribute("content", String(desc || title).replace(/\s+/g, " ").slice(0, 155));
+    if (m) m.setAttribute("content", String(desc || title).replace(/\*|\[\[|\]\]/g, "").replace(/\s+/g, " ").slice(0, 155));
     var l = document.querySelector('link[rel="canonical"]');
     if (!l) { l = document.createElement("link"); l.rel = "canonical"; document.head.appendChild(l); }
     l.href = "https://mygospelhub.com.ng/" + String(page).replace("gist-post.html","gist").replace(".html","") + "/" + encodeURIComponent(id);
@@ -485,9 +485,9 @@ function setSeo(title, desc, page, id) {
         ${v.year ? `<span class="video-tag">${escapeHtml(String(v.year))}</span>` : ""}
       </div>
       <h1 class="video-title">${escapeHtml(v.title)}</h1>
-      <div class="video-artist">${escapeHtml(v.artist)}</div>
+      <div class="video-artist">${MGH.artistHtml(v.artist)}</div>
 
-      ${v.description ? `<p class="video-desc">${escapeHtml(v.description)}</p>` : ""}
+      ${v.description ? `<p class="video-desc">${MGH.linkText(v.description, v.artist)}</p>` : ""}
 
       ${embedSrc ? `
         <div class="video-player">
@@ -854,6 +854,6 @@ const url = v.slug ? `${window.location.origin}/video/${encodeURIComponent(v.slu
 }
 </style>
 <script src="site-nav.js?v=2"></script>
-<script src="media-tools.js?v=4"></script>
+<script src="media-tools.js?v=5"></script>
 </body>
 </html>
