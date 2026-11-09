@@ -175,7 +175,7 @@
         <div class="field" id="mediaFileField">
           <label id="mediaLabel">Audio file *</label>
           <div class="file-drop">
-            <input type="file" id="f_media" accept="audio/*,video/*">
+            <input type="file" id="f_media">
             <div class="file-name" id="mediaName"></div>
             <div class="field-hint">Or fill the streaming link above instead of uploading.</div>
           </div>
@@ -276,25 +276,40 @@
     document.getElementById("mediaFileField").style.display = isGist ? "none" : "block";
     document.getElementById("lyricsField").style.display = currentType === "song" ? "block" : "none";
     document.getElementById("mediaLabel").textContent = currentType === "video" ? "Video file *" : "Audio file *";
-    document.getElementById("f_media").accept = currentType === "video" ? "video/*" : "audio/*";
   }
 
   document.getElementById("f_cover").addEventListener("change", e => {
     document.getElementById("coverName").textContent = e.target.files[0]?.name || "";
   });
+  // No "accept" filter on purpose: phones (especially iPhones) grey out audio files they don't recognise.
+  // We check the file ourselves instead.
+  const NOT_MEDIA = /\.(jpe?g|png|gif|webp|heic|pdf|docx?|xlsx?|pptx?|txt|zip|rar|apk)$/i;
   document.getElementById("f_media").addEventListener("change", e => {
-    document.getElementById("mediaName").textContent = e.target.files[0]?.name || "";
+    const f = e.target.files[0];
+    const nameEl = document.getElementById("mediaName");
+    if (!f) { nameEl.textContent = ""; return; }
+    if ((f.type && f.type.startsWith("image/")) || NOT_MEDIA.test(f.name)) {
+      e.target.value = "";
+      nameEl.textContent = "";
+      alert("That file is not an audio or video file. Please choose your song or video file.");
+      return;
+    }
+    nameEl.textContent = f.name;
   });
+  const MIME = { mp3: "audio/mpeg", m4a: "audio/mp4", aac: "audio/aac", wav: "audio/wav", ogg: "audio/ogg", opus: "audio/ogg", flac: "audio/flac", amr: "audio/amr", mp4: "video/mp4", m4v: "video/mp4", mov: "video/quicktime", webm: "video/webm", "3gp": "video/3gpp" };
 
   async function uploadFile(file, bucket) {
-    const ext = file.name.split(".").pop();
+    const m = /\.([a-z0-9]{2,5})$/i.exec(file.name || "");
+    let ext = m ? m[1].toLowerCase() : "";
+    if (!ext) ext = file.type ? (file.type.split("/")[1] || "bin").replace(/[^a-z0-9]/gi, "").slice(0, 5) || "bin" : (bucket === "covers" ? "jpg" : "mp3");
+    const mime = file.type || MIME[ext] || "application/octet-stream";
     const path = `submissions/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
       method: "POST",
       headers: {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        "Content-Type": file.type || "application/octet-stream"
+        "Content-Type": mime
       },
       body: file
     });
