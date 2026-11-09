@@ -477,8 +477,6 @@
       loadRelated();
       loadComments();
       loadFollowSection();
-      // count a play/view the moment the page loads
-      supabaseRpc("increment_views", { row_id: currentSong.id });
     } catch (err) {
       console.error(err);
       document.getElementById("songContent").innerHTML = `<div class="state-block">Couldn't load this song right now. Refresh to try again.</div>`;
