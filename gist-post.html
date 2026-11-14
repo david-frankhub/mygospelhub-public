@@ -735,6 +735,30 @@ function setSeo(title, desc, page, id) {
   }
 }
 </style>
+<style>
+/* ===== Mobile redesign: editorial reading layout ===== */
+#readBar{position:fixed; top:0; left:0; height:3px; width:0; z-index:2000; background:linear-gradient(90deg,#9C2C3A,#D9A441); box-shadow:0 0 10px rgba(217,164,65,0.6); pointer-events:none;}
+@media (max-width:700px){
+  .article-wrap{padding-top:18px; position:relative;}
+  .article-wrap::before{content:""; position:absolute; top:-10px; left:50%; width:100%; height:380px; transform:translateX(-50%);
+    background:radial-gradient(closest-side, rgba(156,44,58,0.45), rgba(156,44,58,0)); pointer-events:none; z-index:-1;}
+  .breadcrumb{margin-bottom:16px;}
+  .article-cat{background:rgba(217,164,65,0.14); color:var(--gold); border:1px solid rgba(217,164,65,0.4); letter-spacing:0.12em;}
+  .article-title{font-size:34px; line-height:1.12; letter-spacing:-0.025em; margin-bottom:16px;}
+  .article-meta{padding-bottom:18px; margin-bottom:20px; font-size:12px;}
+  .article-cover{border-radius:28px; border:1px solid rgba(255,255,255,0.12); box-shadow:0 26px 56px -18px rgba(217,164,65,0.4); margin-bottom:26px;}
+  .article-body{font-size:17px; line-height:1.9; color:#ECE9E2;}
+  .article-body::first-letter{font-family:'Fraunces',serif; font-weight:600; font-size:3.4em; line-height:0.85; float:left; padding:6px 10px 0 0; color:var(--gold);}
+  .stats-row{grid-template-columns:repeat(2,1fr) !important;}
+  .article-actions{flex-direction:row !important; flex-wrap:nowrap; gap:10px;}
+  .action-like,.action-share{flex:1; justify-content:center; padding:14px 18px;}
+  .action-like{background:rgba(217,164,65,0.12); border-color:rgba(217,164,65,0.4); color:var(--gold);}
+}
+</style>
+<div id="readBar"></div>
+<script>
+(function(){var b=document.getElementById("readBar");if(!b)return;function u(){var h=document.documentElement,s=h.scrollTop||document.body.scrollTop,m=(h.scrollHeight-h.clientHeight)||1;b.style.width=Math.min(100,Math.max(0,s/m*100))+"%";}window.addEventListener("scroll",u,{passive:true});u();})();
+</script>
 <script src="site-nav.js?v=4"></script>
 <script src="media-tools.js?v=5"></script>
 </body>
