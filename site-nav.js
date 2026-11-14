@@ -50,6 +50,15 @@
 
   .sn-header{position:sticky; top:0; z-index:100; background:rgba(11,11,13,0.96); backdrop-filter:blur(10px);}
   .sn-header > nav{position:static !important; top:auto !important;}
+
+  .sn-sheet-bg{position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:2500; opacity:0; pointer-events:none; transition:opacity .25s;}
+  .sn-sheet{position:fixed; left:0; right:0; bottom:0; z-index:2501; background:#141416; border:1px solid rgba(255,255,255,0.1); border-radius:30px 30px 0 0; padding:12px 18px 28px; transform:translateY(105%); transition:transform .3s cubic-bezier(.2,.8,.2,1);}
+  .sn-sheet.open{transform:none;} .sn-sheet-bg.open{opacity:1; pointer-events:auto;}
+  .sn-sheet i{display:block; width:42px; height:4px; border-radius:4px; background:rgba(255,255,255,0.2); margin:0 auto 16px;}
+  .sn-sheet a{display:flex; align-items:center; justify-content:space-between; padding:16px 18px; margin-bottom:8px; border-radius:20px; background:#18181B; border:1px solid rgba(255,255,255,0.08); color:#F2EFE9; font-weight:600; font-size:15px; text-decoration:none;}
+  .sn-sheet a.gold{background:linear-gradient(135deg,#F4CF85,#D9A441); color:#0B0B0D; border:none;}
+  .sn-sheet a span{opacity:.5;}
+  @media (min-width:901px){.sn-sheet,.sn-sheet-bg{display:none;}}
   .sn-tabs{display:none;}
   @media (max-width:900px){
     .sn-tabs{display:grid; grid-template-columns:repeat(5,1fr); gap:2px; position:fixed; left:50%; transform:translateX(-50%);
@@ -62,10 +71,7 @@
     .sn-tab.active{background:var(--gold,#d9a441); color:#0B0B0D;}
     body{padding-bottom:104px;}
     html{scroll-padding-top:80px;}
-    .submit-fab{left:auto !important; right:16px !important; bottom:92px !important; width:54px !important; height:54px; padding:0 !important; border-radius:50% !important;
-      justify-content:center !important; box-shadow:0 10px 26px rgba(217,164,65,0.45) !important;}
-    .submit-fab span{display:none !important;}
-    .submit-fab svg{width:24px !important; height:24px !important;}
+    .submit-fab{display:none !important;}
     .now-playing-bar,.player-bar{bottom:84px !important; left:14px !important; right:14px !important; border-radius:20px; border:1px solid var(--line,#26262b) !important;}
   }
 
@@ -140,13 +146,13 @@
   });
   }
 
-  // ---- Fixed tab bar under the header: Home, Music, Video, Gist, Contact ----
+  // ---- Floating tab bar: Home, Music, Video, Gist, More ----
   var TABS = [
     ["Home", "index.html", ["index.html", ""], '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
     ["Music", "music.html", ["music.html", "browse-music.html", "song.html"], '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'],
     ["Video", "browse-video.html", ["browse-video.html", "video.html", "watch.html"], '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M10 9l5 3-5 3z" fill="currentColor"/>'],
     ["Gist", "browse-gist.html", ["browse-gist.html", "gist-post.html"], '<path d="M4 4h13a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2z"/><path d="M8 9h7M8 13h7M8 17h4"/>'],
-    ["Contact", "contact.html", ["contact.html"], '<path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H8l-5 4V5a1 1 0 0 1 1-1z"/>']
+    ["More", "#more", ["contact.html", "about.html", "submit.html", "privacy.html", "terms.html"], '<circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/>']
   ];
   var tabs = document.createElement("div");
   tabs.className = "sn-tabs";
@@ -158,5 +164,13 @@
   wrap.className = "sn-header";
   nav.parentNode.insertBefore(wrap, nav);
   wrap.appendChild(nav);
+
+  var bg = document.createElement("div"); bg.className = "sn-sheet-bg";
+  var sheet = document.createElement("div"); sheet.className = "sn-sheet";
+  sheet.innerHTML = '<i></i><a class="gold" href="submit.html">Upload song / video / gist<span>&rarr;</span></a><a href="about.html">About MyGospelHub<span>&rarr;</span></a><a href="contact.html">Contact us<span>&rarr;</span></a><a href="privacy.html">Privacy policy<span>&rarr;</span></a><a href="terms.html">Terms of service<span>&rarr;</span></a>';
+  document.body.appendChild(bg); document.body.appendChild(sheet);
+  function toggleSheet(on) { bg.classList.toggle("open", on); sheet.classList.toggle("open", on); }
+  bg.addEventListener("click", function () { toggleSheet(false); });
+  tabs.addEventListener("click", function (e) { var a = e.target.closest('a[href="#more"]'); if (a) { e.preventDefault(); toggleSheet(!sheet.classList.contains("open")); } });
   document.body.appendChild(tabs); // outside the header: a blurred header would otherwise trap position:fixed
 })();

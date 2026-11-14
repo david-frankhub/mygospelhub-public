@@ -219,6 +219,23 @@
   });
 </script>
 
-<script src="site-nav.js?v=4"></script>
+<style>
+/* ===== Redesign (Figma language) ===== */
+.submit-fab{display:none !important;}
+.wrap{position:relative;}
+.wrap::before{content:""; position:absolute; top:-30px; left:50%; width:100%; height:360px; transform:translateX(-50%); background:radial-gradient(closest-side, rgba(156,44,58,0.4), rgba(156,44,58,0)); pointer-events:none; z-index:-1;}
+.eyebrow{display:inline-block; padding:7px 14px; border-radius:100px; background:rgba(217,164,65,0.12); border:1px solid rgba(217,164,65,0.4);}
+.wrap h1{letter-spacing:-0.025em; line-height:1.1;}
+@media (max-width:700px){ body{padding-bottom:110px;} .wrap{padding-top:34px !important;} .wrap h1{font-size:34px !important;} }
+
+.contact-card{border-radius:26px !important; background:var(--bg-raised) !important;}
+.contact-icon{border-radius:50% !important; background:rgba(217,164,65,0.14) !important; color:var(--gold);}
+#contactForm{background:var(--bg-raised); border:1px solid var(--line); border-radius:28px; padding:22px 18px;}
+.field label{font-family:'JetBrains Mono',monospace; font-size:10.5px !important; letter-spacing:0.1em; text-transform:uppercase;}
+.field input,.field textarea{border-radius:16px !important; background:var(--bg) !important; font-size:16px !important;}
+.field input:focus,.field textarea:focus{box-shadow:0 0 0 4px rgba(217,164,65,0.14);}
+.submit-btn{border-radius:100px !important; background:linear-gradient(135deg,#F4CF85,#D9A441) !important; box-shadow:0 14px 34px -10px rgba(217,164,65,0.7);}
+</style>
+<script src="site-nav.js?v=5"></script>
 </body>
 </html>

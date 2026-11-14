@@ -156,6 +156,21 @@
   }
 }
 </style>
-<script src="site-nav.js?v=4"></script>
+<style>
+/* ===== Redesign (Figma language) ===== */
+.submit-fab{display:none !important;}
+.wrap{position:relative;}
+.wrap::before{content:""; position:absolute; top:-30px; left:50%; width:100%; height:360px; transform:translateX(-50%); background:radial-gradient(closest-side, rgba(156,44,58,0.4), rgba(156,44,58,0)); pointer-events:none; z-index:-1;}
+.eyebrow{display:inline-block; padding:7px 14px; border-radius:100px; background:rgba(217,164,65,0.12); border:1px solid rgba(217,164,65,0.4);}
+.wrap h1{letter-spacing:-0.025em; line-height:1.1;}
+@media (max-width:700px){ body{padding-bottom:110px;} .wrap{padding-top:34px !important;} .wrap h1{font-size:34px !important;} }
+
+.pillar{border-radius:26px; background:var(--bg-raised); padding:22px 20px;}
+.pillar h3{font-family:'Fraunces',serif; font-size:19px;}
+.body{background:var(--bg-raised); border:1px solid var(--line); border-radius:28px; padding:24px 22px 4px;}
+.founder-card{border-radius:30px; background:linear-gradient(160deg,rgba(156,44,58,0.28),#141416 60%); border:1px solid rgba(217,164,65,0.3);}
+.founder-avatar{border:2px solid var(--gold); box-shadow:0 0 36px rgba(217,164,65,0.35);}
+</style>
+<script src="site-nav.js?v=5"></script>
 </body>
 </html>

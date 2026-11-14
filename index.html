@@ -763,6 +763,52 @@
     .section-head{flex-direction:column; align-items:flex-start; gap:10px;}
     .player-info{width:auto; flex:1;}
   }
+
+  /* ===== Figma alignment ===== */
+  .see-all{font-size:13px; font-weight:600; color:var(--gold); white-space:nowrap; align-self:flex-end; padding-bottom:6px;}
+  .section-head{display:flex !important; flex-direction:row !important; justify-content:space-between; align-items:flex-end !important; gap:12px; text-align:left; border-bottom:none !important; margin-bottom:18px !important; padding-bottom:0 !important;}
+  .chips-section{padding-top:22px !important; padding-bottom:6px !important;}
+  .genre-strip{flex-wrap:nowrap !important; overflow-x:auto; gap:10px !important; scrollbar-width:none; padding-bottom:4px;}
+  .genre-strip::-webkit-scrollbar{display:none;}
+  .genre-pill{flex:0 0 auto; border-radius:100px !important; padding:10px 20px !important; font-size:13px !important;}
+  .genre-pill.active{background:var(--gold) !important; color:#0B0B0D !important; border-color:var(--gold) !important;}
+  .trend-row{display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; margin:0 -20px; padding:2px 20px 10px; scroll-padding-left:20px;}
+  .trend-row::-webkit-scrollbar{display:none;}
+  .trend-card{flex:0 0 168px; scroll-snap-align:start; display:block; color:inherit;}
+  .trend-art{width:168px; height:168px; border-radius:26px; background:var(--bg-card) center/cover; border:1px solid rgba(255,255,255,0.1); box-shadow:0 18px 36px -16px rgba(0,0,0,0.9);}
+  .trend-title{font-family:'Fraunces',serif; font-weight:600; font-size:16px; margin-top:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .trend-artist{font-size:12.5px; color:var(--text-dim); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .share-cta{padding:30px 5% 10px;}
+  .share-card{border-radius:30px; padding:30px 24px; background:linear-gradient(135deg,#D9A441 0%,#B0602F 55%,#7A1F2B 100%); box-shadow:0 26px 50px -22px rgba(217,164,65,0.55);}
+  .share-card h2{font-size:28px; color:#fff; line-height:1.1;}
+  .share-card p{color:rgba(255,255,255,0.82); font-size:14px; line-height:1.5; margin:10px 0 20px; max-width:320px;}
+  .share-btn{display:inline-flex; align-items:center; gap:8px; background:#0B0B0D; color:var(--text); border-radius:100px; padding:13px 22px; font-weight:700; font-size:14px;}
+  footer{background:var(--bg) !important; color:var(--text) !important; border-top:1px solid var(--line) !important;}
+  .footer-grid .logo{color:var(--text) !important;}
+  .footer-grid p{color:var(--text-dim) !important;}
+  .footer-grid a{color:var(--text-dim) !important;}
+  .footer-bottom{border-top-color:var(--line) !important; color:var(--text-dim) !important;}
+  .footer-social{display:none;}
+  @media (max-width:900px){
+    section{padding-top:26px !important; padding-bottom:6px !important;}
+    .all-tracks-wrap{display:none !important;}
+    .footer-inner{text-align:center; padding:40px 5% 26px;}
+    .footer-grid{display:block !important; margin-bottom:18px !important;}
+    .footer-grid > div:not(:first-child){display:none;}
+    .footer-grid p{margin:0 auto;}
+    .footer-social{display:flex; justify-content:center; gap:12px; margin-bottom:22px;}
+    .footer-social a{width:44px; height:44px; border-radius:50%; background:var(--bg-card); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:var(--text);}
+    .footer-bottom{flex-direction:column; gap:8px; border-top:none !important; padding-top:0 !important;}
+    /* New Releases = ranked list card */
+    #tracks .tc-list{counter-reset:rank; background:var(--bg-raised); border:1px solid var(--line); border-radius:28px; padding:6px 14px; gap:0 !important;}
+    #tracks .track-card{counter-increment:rank; background:transparent !important; border:none !important; border-bottom:1px solid var(--line) !important; border-radius:0 !important; box-shadow:none !important; display:flex !important; flex-wrap:nowrap !important; align-items:center; gap:12px; padding:14px 0 !important;}
+    #tracks .track-card:last-child{border-bottom:none !important;}
+    #tracks .track-card::before{content:counter(rank); font-family:'Fraunces',serif; font-weight:600; font-size:20px; color:var(--gold); width:20px; text-align:center; flex:0 0 auto;}
+    #tracks .tc-art{width:54px !important; height:54px !important; flex:0 0 54px; border-radius:16px !important;}
+    #tracks .tc-desc,#tracks .tc-actions .dl{display:none !important;}
+    #tracks .tc-body{flex:1; min-width:0;}
+    #tracks .tc-actions{margin:0 !important; width:auto !important;}
+  }
 </style>
 <script src="media-tools.js?v=5"></script>
 </head>
@@ -835,12 +881,31 @@
     <div class="hero-dots" id="heroDots"></div>
   </div>
 
+  <section id="genres" class="chips-section">
+    <div class="genre-strip" id="genreStrip">
+      <button class="genre-pill active" data-genre="All">All</button>
+    </div>
+    <div class="setlist" id="genreResults" style="margin-top:28px;"></div>
+  </section>
+
+  <section id="trending">
+    <div class="section-head">
+      <div>
+        <div class="label">Most played this week</div>
+        <h2>Trending Tracks</h2>
+      </div>
+      <a href="music.html" class="see-all">See all &rsaquo;</a>
+    </div>
+    <div class="trend-row" id="trendRow"></div>
+  </section>
+
   <section id="videos">
     <div class="section-head">
       <div>
-        <div class="label">Just dropped</div>
+        <div class="label">Watch &amp; worship</div>
         <h2>Latest Videos</h2>
       </div>
+      <a href="browse-video.html" class="see-all">See all &rsaquo;</a>
     </div>
     <div class="tc-list" id="setlistVideos">
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
@@ -854,8 +919,9 @@
     <div class="section-head">
       <div>
         <div class="label">Just dropped</div>
-        <h2>Latest Songs</h2>
+        <h2>New Releases</h2>
       </div>
+      <a href="music.html" class="see-all">See all &rsaquo;</a>
     </div>
     <div class="tc-list" id="setlistTracks">
       <div class="skel-row"><div class="skel skel-thumb"></div><div><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
@@ -868,9 +934,10 @@
   <section id="gist">
     <div class="section-head">
       <div>
-        <div class="label">Fresh off the grapevine</div>
-        <h2>Latest Gist</h2>
+        <div class="label">Gospel entertainment</div>
+        <h2>Gist &amp; News</h2>
       </div>
+      <a href="browse-gist.html" class="see-all">See all &rsaquo;</a>
     </div>
     <div class="gist-list" id="gistGrid">
       <div class="skel-card"><div class="skel skel-cover"></div><div class="skel-card-body"><div class="skel skel-line long"></div><div class="skel skel-line short"></div></div></div>
@@ -880,17 +947,13 @@
     <div class="all-tracks-wrap"><a href="browse-gist.html" class="all-tracks-btn">All Gist</a></div>
   </section>
 
-  <section id="genres">
-    <div class="section-head">
-      <div>
-        <div class="label">Find your sound</div>
-        <h2>Browse by Genre</h2>
-      </div>
+
+  <section class="share-cta">
+    <div class="share-card">
+      <h2>Share your ministry</h2>
+      <p>Upload your song, video or gist and reach thousands of listeners.</p>
+      <a href="submit.html" class="share-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Upload now</a>
     </div>
-    <div class="genre-strip" id="genreStrip">
-      <button class="genre-pill active" data-genre="All">All</button>
-    </div>
-    <div class="setlist" id="genreResults" style="margin-top:28px;"></div>
   </section>
 
   <footer>
@@ -918,6 +981,11 @@
           <a href="privacy.html">Privacy Policy</a>
           <a href="terms.html">Terms of Service</a>
         </div>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.facebook.com/share/1DyGHVpWsx/" target="_blank" rel="noopener" aria-label="Facebook">f</a>
+        <a href="https://www.instagram.com/iam_davidfrank?igsh=cGlra3Rpb3FubW94" target="_blank" rel="noopener" aria-label="Instagram">ig</a>
+        <a href="https://vm.tiktok.com/ZS9hfCLFCGack-otoG1/" target="_blank" rel="noopener" aria-label="TikTok">tt</a>
       </div>
       <div class="footer-bottom">
         <span>© 2026 MyGospelHub. All rights reserved.</span>
@@ -1454,6 +1522,19 @@
       trackList.innerHTML = trendingTracks.map(trackCardHtml).join("");
     }
 
+    // Trending Tracks (most played)
+    const trendRow = document.getElementById("trendRow");
+    if (trendRow) {
+      const hot = [...tracks].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
+      document.getElementById("trending").style.display = hot.length ? "" : "none";
+      trendRow.innerHTML = hot.map(t => `
+        <a class="trend-card" href="song.html?${t.slug ? "slug=" + t.slug : "id=" + t.id}">
+          <div class="trend-art" style="${t.cover_url ? `background-image:url('${escapeHtml(t.cover_url)}')` : ""}"></div>
+          <div class="trend-title">${escapeHtml(t.title)}</div>
+          <div class="trend-artist">${escapeHtml(t.artist || "")}</div>
+        </a>`).join("");
+    }
+
     // Genre-filtered results (searches across both videos and tracks)
     const activeGenre = document.querySelector(".genre-pill.active")?.dataset.genre || "All";
     const genreResults = document.getElementById("genreResults");
@@ -1658,6 +1739,6 @@
 
   loadContent();
 </script>
-<script src="site-nav.js?v=4"></script>
+<script src="site-nav.js?v=5"></script>
 </body>
 </html>
