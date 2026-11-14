@@ -764,7 +764,9 @@
     .player-info{width:auto; flex:1;}
   }
 
+  .ticker{overflow:hidden; max-width:100%;}
   /* ===== Figma alignment ===== */
+  @media (max-width:700px){ .nav-search-wrap{display:none !important;} .nav-icon-btn{display:flex !important; margin-left:auto; width:44px; height:44px; border-radius:50%; background:var(--bg-raised);} .nav-toggle{border-radius:50% !important; width:44px !important; height:44px !important;} }
   .see-all{font-size:13px; font-weight:600; color:var(--gold); white-space:nowrap; align-self:flex-end; padding-bottom:6px;}
   .section-head{display:flex !important; flex-direction:row !important; justify-content:space-between; align-items:flex-end !important; gap:12px; text-align:left; border-bottom:none !important; margin-bottom:18px !important; padding-bottom:0 !important;}
   .chips-section{padding-top:22px !important; padding-bottom:6px !important;}
@@ -986,9 +988,9 @@
         </div>
       </div>
       <div class="footer-social">
-        <a href="https://www.facebook.com/share/1DyGHVpWsx/" target="_blank" rel="noopener" aria-label="Facebook">f</a>
-        <a href="https://www.instagram.com/iam_davidfrank?igsh=cGlra3Rpb3FubW94" target="_blank" rel="noopener" aria-label="Instagram">ig</a>
-        <a href="https://vm.tiktok.com/ZS9hfCLFCGack-otoG1/" target="_blank" rel="noopener" aria-label="TikTok">tt</a>
+        <a href="https://www.facebook.com/share/1DyGHVpWsx/" target="_blank" rel="noopener" aria-label="Facebook"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg></a>
+        <a href="https://www.instagram.com/iam_davidfrank?igsh=cGlra3Rpb3FubW94" target="_blank" rel="noopener" aria-label="Instagram"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="https://vm.tiktok.com/ZS9hfCLFCGack-otoG1/" target="_blank" rel="noopener" aria-label="TikTok"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 2h-3v13.5a2.5 2.5 0 11-2.5-2.5c.17 0 .34.02.5.05V10a5.5 5.5 0 105.5 5.5V9.2a6.5 6.5 0 003.5 1.02V7.2A4.5 4.5 0 0116.5 2z"/></svg></a>
       </div>
       <div class="footer-bottom">
         <span>© 2026 MyGospelHub. All rights reserved.</span>
@@ -1742,6 +1744,6 @@
 
   loadContent();
 </script>
-<script src="site-nav.js?v=6"></script>
+<script src="site-nav.js?v=7"></script>
 </body>
 </html>
