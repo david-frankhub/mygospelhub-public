@@ -68,7 +68,7 @@
     .sn-tab{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:8px 0 7px; min-width:0; border-radius:26px;
       color:#8A8780; text-decoration:none; font-size:10.5px; font-weight:600; -webkit-tap-highlight-color:transparent; transition:background .2s,color .2s;}
     .sn-tab svg{width:22px; height:22px;}
-    .sn-tab.active{background:var(--gold,#d9a441); color:#0B0B0D;}
+    .sn-tab{color:var(--c) !important;} .sn-tab span{color:var(--c); opacity:.9;} .sn-tab.active{background:var(--c); color:#0B0B0D !important;} .sn-tab.active span{color:#0B0B0D; opacity:1;}
     body{padding-bottom:104px;}
     html{scroll-padding-top:80px;}
     .submit-fab{display:none !important;}
@@ -158,7 +158,8 @@
   tabs.className = "sn-tabs";
   tabs.innerHTML = TABS.map(function (t) {
     var on = t[2].indexOf(here) !== -1 ? " active" : "";
-    return '<a class="sn-tab' + on + '" href="' + t[1] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + t[3] + "</svg><span>" + t[0] + "</span></a>";
+    var COL = {Home:"#D9A441", Music:"#F0708A", Video:"#5B9BF0", Gist:"#3FAE6A", More:"#A78BFA"}[t[0]];
+    return '<a class="sn-tab' + on + '" style="--c:' + COL + '" href="' + t[1] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + t[3] + "</svg><span>" + t[0] + "</span></a>";
   }).join("");
   var wrap = document.createElement("div");
   wrap.className = "sn-header";
@@ -172,5 +173,15 @@
   function toggleSheet(on) { bg.classList.toggle("open", on); sheet.classList.toggle("open", on); }
   bg.addEventListener("click", function () { toggleSheet(false); });
   tabs.addEventListener("click", function (e) { var a = e.target.closest('a[href="#more"]'); if (a) { e.preventDefault(); toggleSheet(!sheet.classList.contains("open")); } });
+
+  // ---- "Share your ministry" card on content pages ----
+  if (/^(song|video|watch|gist-post|music|browse-music|browse-video|browse-gist|artist)\.html$/.test(here)) {
+    var st = document.createElement("style");
+    st.textContent = ".sn-share{max-width:760px; margin:10px auto 0; padding:0 5%;} .sn-share-card{border-radius:30px; padding:28px 24px; background:linear-gradient(135deg,#D9A441 0%,#B0602F 55%,#7A1F2B 100%); box-shadow:0 26px 50px -22px rgba(217,164,65,0.55); color:#fff;} .sn-share-card h2{font-family:'Fraunces',serif; font-size:26px; line-height:1.1; margin:0;} .sn-share-card p{color:rgba(255,255,255,0.85); font-size:14px; line-height:1.5; margin:10px 0 18px; max-width:320px;} .sn-share-card a{display:inline-flex; align-items:center; gap:8px; background:#0B0B0D; color:#F2EFE9; border-radius:100px; padding:13px 22px; font-weight:700; font-size:14px; text-decoration:none;}";
+    document.head.appendChild(st);
+    var sc = document.createElement("div"); sc.className = "sn-share";
+    sc.innerHTML = '<div class="sn-share-card"><h2>Share your ministry</h2><p>Upload your song, video or gist and reach thousands of listeners.</p><a href="submit.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Upload now</a></div>';
+    document.body.appendChild(sc);
+  }
   document.body.appendChild(tabs); // outside the header: a blurred header would otherwise trap position:fixed
 })();
