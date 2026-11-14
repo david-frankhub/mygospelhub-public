@@ -409,6 +409,27 @@
   });
 </script>
 
+<style>
+/* ===== Redesign: friendly rounded upload form ===== */
+.submit-fab{display:none !important;}
+.wrap{position:relative;}
+.wrap::before{content:""; position:absolute; top:-20px; left:50%; width:100%; height:340px; transform:translateX(-50%); background:radial-gradient(closest-side, rgba(217,164,65,0.18), rgba(217,164,65,0)); pointer-events:none; z-index:-1;}
+.wrap h1{letter-spacing:-0.02em; line-height:1.12;}
+.type-row{background:var(--bg-raised); border:1px solid var(--line); border-radius:100px; padding:5px; gap:4px;}
+.type-chip{border:none; background:transparent; border-radius:100px; padding:12px 6px; cursor:pointer;}
+.type-chip.active{background:linear-gradient(135deg,#F4CF85,#D9A441); color:#0B0B0D; box-shadow:0 8px 22px -8px rgba(217,164,65,0.7);}
+#formView form{background:var(--bg-raised); border:1px solid var(--line); border-radius:28px; padding:22px 18px 20px; box-shadow:0 30px 60px -30px rgba(0,0,0,0.8);}
+.field label{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; font-weight:500;}
+.field input[type=text],.field input[type=email],.field input[type=tel],.field input[type=number],.field textarea,.field select{border-radius:16px; padding:15px 16px; background:var(--bg); font-size:16px;}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold); box-shadow:0 0 0 4px rgba(217,164,65,0.14);}
+.file-drop{border-radius:20px; padding:22px 16px; background:rgba(217,164,65,0.04); border-color:rgba(217,164,65,0.3);}
+.file-drop input::file-selector-button{background:var(--gold); color:#0B0B0D; border:none; border-radius:100px; padding:9px 16px; font-weight:700; font-size:12.5px; margin-right:10px;}
+.submit-btn{border-radius:100px; padding:17px; background:linear-gradient(135deg,#F4CF85,#D9A441); box-shadow:0 14px 34px -10px rgba(217,164,65,0.7); letter-spacing:0.01em;}
+.confirm-panel{text-align:center; background:var(--bg-raised); border:1px solid var(--line); border-radius:28px; padding:34px 20px;}
+.confirm-icon{width:72px; height:72px; margin:0 auto 18px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(217,164,65,0.14); box-shadow:0 0 40px rgba(217,164,65,0.35); font-size:34px;}
+.wa-btn{border-radius:100px;}
+@media (max-width:700px){ body{padding-bottom:110px;} }
+</style>
 <script src="site-nav.js?v=4"></script>
 </body>
 </html>
