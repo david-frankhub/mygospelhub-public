@@ -766,7 +766,7 @@
 
   .ticker{overflow:hidden; max-width:100%;}
   /* ===== Figma alignment ===== */
-  @media (max-width:700px){ .nav-search-wrap{display:none !important;} .nav-icon-btn{display:flex !important; margin-left:auto; width:44px; height:44px; border-radius:50%; background:var(--bg-raised);} .nav-toggle{border-radius:50% !important; width:44px !important; height:44px !important;} }
+  @media (max-width:700px){ .nav-toggle{border-radius:50% !important; width:44px !important; height:44px !important;} }
   .see-all{font-size:13px; font-weight:600; color:var(--gold); white-space:nowrap; align-self:flex-end; padding-bottom:6px;}
   .section-head{display:flex !important; flex-direction:row !important; justify-content:space-between; align-items:flex-end !important; gap:12px; text-align:left; border-bottom:none !important; margin-bottom:18px !important; padding-bottom:0 !important;}
   .chips-section{padding-top:22px !important; padding-bottom:6px !important;}
@@ -1672,35 +1672,26 @@
     resultsEl.querySelectorAll(".search-result-row").forEach(row => {
       row.addEventListener("click", () => {
         const id = row.dataset.id;
-        if (row.dataset.kind === "content") {
-          const track = allContent.find(c => String(c.id) === String(id));
-          if (track) {
-            closeAllSearchResults();
-            inputEl.value = "";
-            document.getElementById("mobileSearchBar").classList.remove("show");
-            document.getElementById("videos").scrollIntoView({ behavior: "smooth" });
-            if (track.file_url || track.streaming_link || track.video_url) {
-              setTimeout(() => playTrack(track), 400);
-            }
-          }
-        } else {
-          closeAllSearchResults();
-          inputEl.value = "";
-          document.getElementById("mobileSearchBar").classList.remove("show");
-          document.getElementById("gist").scrollIntoView({ behavior: "smooth" });
-        }
+        const item = (row.dataset.kind === "gist" ? allGist : allContent).find(c => String(c.id) === String(id));
+        if (!item) return;
+        const key = item.slug ? "slug=" + item.slug : "id=" + item.id;
+        const page = row.dataset.kind === "gist" ? "gist-post.html" : (item.type === "Video" ? "video.html" : "song.html");
+        window.location.href = page + "?" + key;
       });
     });
   }
 
   // Desktop search
+  function goSearch(e, el) { if (e.key === "Enter" && el.value.trim()) window.location.href = "search.html?q=" + encodeURIComponent(el.value.trim()); }
   const searchInput = document.getElementById("searchInput");
+  searchInput.addEventListener("keydown", (e) => goSearch(e, searchInput));
   const searchResults = document.getElementById("searchResults");
   searchInput.addEventListener("input", (e) => runSearch(e.target.value, searchResults, searchInput));
   searchInput.addEventListener("focus", (e) => { if (e.target.value.trim()) runSearch(e.target.value, searchResults, searchInput); });
 
   // Mobile search
   const searchInputMobile = document.getElementById("searchInputMobile");
+  searchInputMobile.addEventListener("keydown", (e) => goSearch(e, searchInputMobile));
   const searchResultsMobile = document.getElementById("searchResultsMobile");
   const mobileSearchBar = document.getElementById("mobileSearchBar");
   searchInputMobile.addEventListener("input", (e) => runSearch(e.target.value, searchResultsMobile, searchInputMobile));

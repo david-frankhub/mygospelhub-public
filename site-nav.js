@@ -60,12 +60,8 @@
   .sn-sheet a span{opacity:.5;}
   @media (min-width:901px){.sn-sheet,.sn-sheet-bg{display:none;}}
 
-  .sn-search-btn{display:none;}
   @media (max-width:700px){
-    .sn-search-btn{display:flex; margin-left:auto; width:44px; height:44px; border-radius:50%; border:1px solid var(--line,#26262b); background:var(--bg-raised,#161619); color:var(--text,#f3f1ec); align-items:center; justify-content:center; padding:0;}
     .sn-toggle{border-radius:50% !important; width:44px !important; height:44px !important;}
-    .sn-search{display:none !important;}
-    .sn-search.open{display:flex !important; position:absolute; left:5%; right:5%; top:50%; transform:translateY(-50%); z-index:6; background:#141416; border:1px solid var(--gold,#d9a441); border-radius:100px; padding:12px 18px; max-width:none; box-shadow:0 12px 40px rgba(0,0,0,.6);}
     /* list pages: chips + ranked list */
     .genre-pill,.chip{border-radius:100px !important; flex:0 0 auto;}
     .genre-pill.active,.chip.active{background:var(--gold) !important; color:#0B0B0D !important; border-color:var(--gold) !important;}
@@ -148,7 +144,6 @@
       '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' +
       '<input type="search" name="q" placeholder="Search post" autocomplete="off" enterkeyhint="search" aria-label="Search">' +
     "</form>" +
-    '<button class="sn-search-btn" id="snSearchBtn" aria-label="Search"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/></svg></button>' +
     '<div class="sn-links">' + linksHtml + "</div>" +
     '<button class="sn-toggle" id="snToggle" aria-label="Open menu">' +
       '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>' +
@@ -198,11 +193,6 @@
   wrap.appendChild(nav);
 
 
-  var sBtn = document.getElementById("snSearchBtn"), sForm = document.getElementById("snSearch");
-  if (sBtn && sForm) {
-    sBtn.addEventListener("click", function () { sForm.classList.add("open"); var i = sForm.querySelector("input"); if (i) i.focus(); });
-    document.addEventListener("click", function (e) { if (!sForm.contains(e.target) && !sBtn.contains(e.target)) sForm.classList.remove("open"); });
-  }
   var bg = document.createElement("div"); bg.className = "sn-sheet-bg";
   var sheet = document.createElement("div"); sheet.className = "sn-sheet";
   sheet.innerHTML = '<i></i><a class="gold" href="submit.html">Upload song / video / gist<span>&rarr;</span></a><a href="about.html">About MyGospelHub<span>&rarr;</span></a><a href="contact.html">Contact us<span>&rarr;</span></a><a href="privacy.html">Privacy policy<span>&rarr;</span></a><a href="terms.html">Terms of service<span>&rarr;</span></a>';

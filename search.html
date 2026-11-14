@@ -188,12 +188,12 @@
     </div>
     <div class="nav-links">
       <a href="index.html">Home</a>
-      <a href="index.html#videos">Videos</a>
+      <a href="browse-video.html">Videos</a>
       <a href="music.html">Music</a>
-      <a href="index.html#gist">Gist</a>
+      <a href="browse-gist.html">Gist</a>
       <a href="index.html#genres">Genres</a>
     </div>
-    <button class="btn btn-gold">Watch Live</button>
+    <a href="index.html" class="btn btn-gold">Home</a>
   </nav>
 
   <div class="results-header">
@@ -210,24 +210,28 @@
   <section id="resultsContainer"></section>
 
 <script>
-  const searchIndex = [
-    { type: 'video', title: 'Nothing Is Impossible', sub: 'Mercy Chinwo · 1.2M views', tag: 'Worship', dur: '4:52', url: 'watch.html' },
-    { type: 'video', title: 'Way Maker (Live Session)', sub: 'Sinach · 980K views', tag: 'Live', dur: '6:14', url: 'watch.html' },
-    { type: 'video', title: 'Onyeoma', sub: 'Tope Alabi · 640K views', tag: 'Yoruba', dur: '5:03', url: 'watch.html' },
-    { type: 'video', title: 'Choir Cover: Great Is Your Faithfulness', sub: 'Lagos Community Choir · 210K views', tag: 'Cover', dur: '3:47', url: 'watch.html' },
-    { type: 'video', title: 'Sound of Grace Concert Highlights', sub: 'Various Artists · 158K views', tag: 'Event', dur: '9:21', url: 'watch.html' },
-
-    { type: 'music', title: 'Nothing Is Impossible', sub: 'Mercy Chinwo', plays: '1.2M plays', dur: '4:52', url: 'music.html' },
-    { type: 'music', title: 'Way Maker', sub: 'Sinach', plays: '980K plays', dur: '4:10', url: 'music.html' },
-    { type: 'music', title: 'Onyeoma', sub: 'Tope Alabi', plays: '640K plays', dur: '5:03', url: 'music.html' },
-    { type: 'music', title: 'Great Is Your Faithfulness', sub: 'Lagos Community Choir', plays: '210K plays', dur: '3:47', url: 'music.html' },
-    { type: 'music', title: 'Yahweh', sub: 'Nathaniel Bassey', plays: '142K plays', dur: '6:02', url: 'music.html' },
-    { type: 'music', title: 'Egwu Ebube', sub: 'Frank Edwards', plays: '185K plays', dur: '4:38', url: 'music.html' },
-
-    { type: 'gist', title: 'Inside the Sound of Grace concert: what actually happened backstage', sub: '4.2K reads · 2 hrs ago', tag: 'Concert', url: 'gist-article.html' },
-    { type: 'gist', title: 'Is a joint album coming? Two top gospel acts spark speculation', sub: '3.1K reads · 5 hrs ago', tag: 'Rumor', url: 'gist-article.html' },
-    { type: 'gist', title: 'Meet the Lagos choir whose cover just crossed 200K views', sub: '2.6K reads · 1 day ago', tag: 'Community', url: 'gist-article.html' },
-  ];
+  const SUPABASE_URL = "https://kqgnpryubgdtmtcjtasi.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZ25wcnl1YmdkdG10Y2p0YXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTQ1NjQsImV4cCI6MjA5OTczMDU2NH0.T0y1CVCzIvfmK4vgczmlpiAFZP63MRLZT5eymu8R6jY";
+  let searchIndex = [];
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fmt = n => { n = Number(n) || 0; return n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e3 ? (n / 1e3).toFixed(1) + "K" : String(n); };
+  async function sb(table, params) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } });
+    if (!r.ok) throw new Error("load failed");
+    return r.json();
+  }
+  async function loadIndex() {
+    const [content, gist] = await Promise.all([
+      sb("content", "status=eq.Published&order=created_at.desc&limit=1000"),
+      sb("gist_articles", "status=eq.Published&order=created_at.desc&limit=1000"),
+    ]);
+    const key = x => x.slug ? "slug=" + encodeURIComponent(x.slug) : "id=" + x.id;
+    searchIndex = (content || []).map(c => {
+      const isVideo = c.type === "Video";
+      return { type: isVideo ? "video" : "music", title: c.title || "", sub: [c.artist, c.genre].filter(Boolean).join(" · "), tag: c.genre || (isVideo ? "Video" : "Music"),
+        plays: fmt(c.views) + (isVideo ? " views" : " plays"), dur: c.year || "", cover: c.cover_url || "", url: (isVideo ? "video.html?" : "song.html?") + key(c) };
+    }).concat((gist || []).map(g => ({ type: "gist", title: g.title || "", sub: [g.category, g.excerpt].filter(Boolean).join(" · ").slice(0, 90), tag: g.category || "Gist", cover: g.cover_url || "", url: "gist-post.html?" + key(g) })));
+  }
 
   function getQueryParam(name) {
     const params = new URLSearchParams(window.location.search);
@@ -258,7 +262,7 @@
   function renderVideoCard(item, q) {
     return `
       <div class="media-card" onclick="window.location.href='${item.url}'">
-        <div class="media-cover"><span class="cat">${item.tag}</span><span class="dur">${item.dur}</span></div>
+        <div class="media-cover" style="${item.cover ? `background-image:url(\'${esc(item.cover)}\');background-size:cover;background-position:center` : ''}"><span class="cat">${item.tag}</span><span class="dur">${item.dur}</span></div>
         <div class="media-body"><h3>${highlight(item.title, q)}</h3><div class="media-sub">${item.sub}</div></div>
       </div>`;
   }
@@ -266,7 +270,7 @@
   function renderGistCard(item, q) {
     return `
       <div class="media-card" onclick="window.location.href='${item.url}'">
-        <div class="media-cover gist"><span class="cat">${item.tag}</span></div>
+        <div class="media-cover gist" style="${item.cover ? `background-image:url(\'${esc(item.cover)}\');background-size:cover;background-position:center` : ''}"><span class="cat">${item.tag}</span></div>
         <div class="media-body"><h3>${highlight(item.title, q)}</h3><div class="media-sub">${item.sub}</div></div>
       </div>`;
   }
@@ -274,7 +278,7 @@
   function renderTrackRow(item, q) {
     return `
       <div class="track-row" onclick="window.location.href='${item.url}'">
-        <div class="track-art"></div>
+        <div class="track-art" style="${item.cover ? `background:url(\'${esc(item.cover)}\') center/cover` : ''}"></div>
         <div>
           <div class="track-title">${highlight(item.title, q)}</div>
           <div class="track-artist">${item.sub}</div>
@@ -299,7 +303,7 @@
     if (matches.length === 0) {
       resultsContainer.innerHTML = `
         <div class="empty-state">
-          <div class="display">No results for "${currentQuery}"</div>
+          <div class="display">No results for "${esc(currentQuery)}"</div>
           <p>Try a different search term, or check the spelling of an artist or title.</p>
         </div>`;
       return;
@@ -363,8 +367,10 @@
     searchInput.focus();
   });
 
-  render();
+  resultsContainer.innerHTML = '<div class="empty-state"><p>Searching…</p></div>';
+  loadIndex().then(render).catch(() => { resultsContainer.innerHTML = '<div class="empty-state"><div class="display">Couldn\'t load results</div><p>Check your connection and try again.</p></div>'; });
 </script>
 
+<script src="site-nav.js?v=7"></script>
 </body>
 </html>
