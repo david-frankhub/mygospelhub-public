@@ -680,7 +680,7 @@ function setSeo(title, desc, page, id) {
           <span>Lyrics</span>
           <svg id="lyricsChevron" style="transform:rotate(180deg)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        <div class="lyrics-body open" id="lyricsBody">${escapeHtml(s.lyrics)}</div>
+        <div class="lyrics-body open" id="lyricsBody">${MGH.richText(s.lyrics)}</div>
       </div>
       ` : ""}
     `;
@@ -1152,6 +1152,6 @@ function setSeo(title, desc, page, id) {
 @media (max-width:700px){ .platforms{order:6 !important;} .pl{flex:1 1 auto; justify-content:center;} }
 </style>
 <script src="site-nav.js?v=7"></script>
-<script src="media-tools.js?v=5"></script>
+<script src="media-tools.js?v=6"></script>
 </body>
 </html>

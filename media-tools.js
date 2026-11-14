@@ -198,13 +198,18 @@
       const safe = _esc(n);
       html = html.replace(new RegExp("(^|[^\\w\u0001])(" + _re(safe) + ")(?![\\w\u0002])", "gi"), (m, pre, name) => { holds.push(nameLink(n)); return pre + "\u0001" + (holds.length - 1) + "\u0002"; });
     });
-    return html.replace(/\u0001(\d+)\u0002/g, (m, i) => holds[+i]);
+    return bold(html.replace(/\u0001(\d+)\u0002/g, (m, i) => holds[+i]));
   }
+  // *text* and **text** become bold (works in song/video descriptions, lyrics and articles)
+  function bold(html) {
+    return html.replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>").replace(/\*([^*\n]+?)\*/g, "<strong>$1</strong>");
+  }
+  function richText(text) { return bold(_esc(text || "")); }
   (function () {
     const st = document.createElement("style");
-    st.textContent = ".name-link{color:inherit;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;text-decoration-color:rgba(217,164,65,.7)}.name-link:hover{color:var(--gold,#d9a441)}";
+    st.textContent = ".name-link{color:inherit;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;text-decoration-color:rgba(217,164,65,.7)}.name-link:hover{color:var(--gold,#d9a441)}.song-desc,.about-card p,.video-desc{white-space:pre-wrap}.song-desc strong,.about-card strong,.video-desc strong,.lyrics-body strong{color:#F2EFE9;font-weight:700}";
     document.head.appendChild(st);
   })();
 
-  window.MGH = { downloadSong, setMediaSession, nameLink, artistHtml, linkText, nameUrl };
+  window.MGH = { downloadSong, setMediaSession, nameLink, artistHtml, linkText, richText, nameUrl };
 })();
