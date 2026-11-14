@@ -68,6 +68,22 @@
     .submit-fab svg{width:24px !important; height:24px !important;}
     .now-playing-bar,.player-bar{bottom:84px !important; left:14px !important; right:14px !important; border-radius:20px; border:1px solid var(--line,#26262b) !important;}
   }
+
+  /* ===== Shared mobile polish (matches the Figma redesign) ===== */
+  @media (max-width:700px){
+    .track-card{border-radius:24px !important; border-color:rgba(255,255,255,0.07) !important;}
+    .tc-art{border-radius:18px !important; box-shadow:0 12px 26px -12px rgba(217,164,65,0.4);}
+    .tc-btn{border-radius:50% !important; width:46px !important; height:46px !important;}
+    .tc-actions .tc-btn:first-child:not([disabled]){background:var(--gold,#d9a441) !important; color:#0B0B0D !important; border-color:var(--gold,#d9a441) !important;}
+    .gist-row,.gist-card{border-radius:24px !important;}
+    .search-bar{border-radius:100px !important;}
+    .video-wrap,.yt-card{border-radius:26px !important;}
+    .stats-row{display:grid !important; grid-template-columns:repeat(3,1fr); gap:0 !important; padding:16px 6px !important; text-align:center;
+      background:var(--bg-raised,#141416); border:1px solid var(--line,#26262b) !important; border-radius:26px; margin-bottom:20px;}
+    .stats-row .stat{text-align:center !important;}
+    .stats-row .stat + .stat{border-left:1px solid var(--line,#26262b);}
+    .action-btn{border-radius:100px;}
+  }
   `;
 
   var style = document.createElement("style");
