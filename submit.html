@@ -137,8 +137,16 @@
             <textarea id="f_lyrics"></textarea>
           </div>
           <div class="field">
-            <label>Streaming link (optional fallback, e.g. Audiomack/YouTube)</label>
-            <input type="text" id="f_streaming">
+            <label>YouTube link (optional)</label>
+            <input type="text" id="f_youtube" placeholder="https://www.youtube.com/watch?v=...">
+          </div>
+          <div class="field">
+            <label>Spotify link (optional)</label>
+            <input type="text" id="f_spotify" placeholder="https://open.spotify.com/track/...">
+          </div>
+          <div class="field">
+            <label>Audiomack link (optional)</label>
+            <input type="text" id="f_audiomack" placeholder="https://audiomack.com/...">
           </div>
         </div>
 
@@ -179,7 +187,7 @@
           <div class="file-drop">
             <input type="file" id="f_media">
             <div class="file-name" id="mediaName"></div>
-            <div class="field-hint">Or fill the streaming link above instead of uploading.</div>
+            <div class="field-hint">Or add a YouTube, Spotify or Audiomack link above instead of uploading.</div>
           </div>
         </div>
 
@@ -346,7 +354,8 @@
     const phone = document.getElementById("f_phone").value.trim();
     const coverFile = document.getElementById("f_cover").files[0];
     const mediaFile = document.getElementById("f_media").files[0];
-    const streaming = document.getElementById("f_streaming").value.trim();
+    const yt = document.getElementById("f_youtube").value.trim(), sp = document.getElementById("f_spotify").value.trim(), am = document.getElementById("f_audiomack").value.trim();
+    const streaming = yt || sp || am;
     const body = document.getElementById("f_body").value.trim();
 
     if (!title || !name || !phone) {
@@ -360,7 +369,7 @@
       return;
     }
     if (currentType !== "gist" && !mediaFile && !streaming) {
-      errEl.textContent = "Upload a file or provide a streaming link.";
+      errEl.textContent = "Upload a file or add at least one link (YouTube, Spotify or Audiomack).";
       errEl.style.display = "block";
       return;
     }
@@ -392,6 +401,7 @@
         cover_url: coverUrl,
         file_url: fileUrl,
         streaming_link: streaming || null,
+        youtube_url: yt || null, spotify_url: sp || null, audiomack_url: am || null,
         submitter_name: name,
         submitter_phone: phone,
         submitter_email: document.getElementById("f_email").value.trim() || null,
