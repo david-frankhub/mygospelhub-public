@@ -147,10 +147,29 @@ async function sitemap() {
   return new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }
 
+
+// Storage proxy: song files and cover images are served through Cloudflare's cache, so Supabase
+// only sends each file once instead of on every visit (saves Supabase egress).
+async function storageProxy(request, url) {
+  const m = url.pathname.match(/^\/s\/(covers|media)\/(.+)$/);
+  if (!m || (request.method !== "GET" && request.method !== "HEAD")) return new Response("Not found", { status: 404 });
+  const upstream = `${SUPABASE_URL}/storage/v1/object/public/${m[1]}/${m[2]}`;
+  const headers = {};
+  const range = request.headers.get("Range");
+  if (range) headers["Range"] = range;
+  const res = await fetch(upstream, { method: request.method, headers, cf: { cacheEverything: true, cacheTtl: 2592000, cacheTtlByStatus: { "200-299": 2592000, "404": 60, "500-599": 0 } } });
+  const out = new Response(res.body, res);
+  out.headers.set("Cache-Control", "public, max-age=2592000, immutable");
+  out.headers.set("Access-Control-Allow-Origin", "*");
+  out.headers.delete("Set-Cookie");
+  return out;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/sitemap.xml") return sitemap();
+    if (url.pathname.startsWith("/s/")) return storageProxy(request, url);
     const path = url.pathname.replace(/\/$/, "");
     try {
       if (API_KIND[path]) return await legacyRedirect(API_KIND[path], url);

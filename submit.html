@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="/cdn.js?v=1"></script>
 <link rel="icon" type="image/png" href="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Submit Your Song, Video or Gist — MyGospelHub</title>
@@ -299,7 +300,23 @@
   });
   const MIME = { mp3: "audio/mpeg", m4a: "audio/mp4", aac: "audio/aac", wav: "audio/wav", ogg: "audio/ogg", opus: "audio/ogg", flac: "audio/flac", amr: "audio/amr", mp4: "video/mp4", m4v: "video/mp4", mov: "video/quicktime", webm: "video/webm", "3gp": "video/3gpp" };
 
+  // Shrink big cover photos before upload (saves storage + bandwidth; phone photos are often 3MB+).
+  async function shrinkImage(file) {
+    try {
+      if (!file.type || file.type.indexOf("image/") !== 0 || file.size < 300 * 1024) return file;
+      const bmp = await createImageBitmap(file);
+      const scale = Math.min(1, 1200 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      const blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.82));
+      if (!blob || blob.size >= file.size) return file;
+      return new File([blob], (file.name || "cover").replace(/\.[a-z0-9]+$/i, "") + ".jpg", { type: "image/jpeg" });
+    } catch (e) { return file; }
+  }
+
   async function uploadFile(file, bucket) {
+    if (bucket === "covers") file = await shrinkImage(file);
     const m = /\.([a-z0-9]{2,5})$/i.exec(file.name || "");
     let ext = m ? m[1].toLowerCase() : "";
     if (!ext) ext = file.type ? (file.type.split("/")[1] || "bin").replace(/[^a-z0-9]/gi, "").slice(0, 5) || "bin" : (bucket === "covers" ? "jpg" : "mp3");
