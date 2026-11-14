@@ -52,12 +52,21 @@
   .sn-header > nav{position:static !important; top:auto !important;}
   .sn-tabs{display:none;}
   @media (max-width:900px){
-    .sn-header > nav{border-bottom:none !important;}
-    .sn-tabs{display:grid; grid-template-columns:repeat(5,1fr); padding:6px 4px; background:linear-gradient(90deg,#7A1F2B 0%,#3a0f16 55%,#0B0B0D 100%);}
-    .sn-tab{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; margin:0 auto; padding:7px 8px 6px; min-width:58px; border-radius:14px; color:#EBD9D2; text-decoration:none; font-size:11.5px; font-weight:600; letter-spacing:.01em; -webkit-tap-highlight-color:transparent; transition:background .2s,color .2s;}
-    .sn-tab svg{width:21px; height:21px;}
+    .sn-tabs{display:grid; grid-template-columns:repeat(5,1fr); gap:2px; position:fixed; left:50%; transform:translateX(-50%);
+      bottom:calc(14px + env(safe-area-inset-bottom,0px)); width:min(calc(100% - 28px),420px); padding:7px; border-radius:34px; z-index:1001;
+      background:rgba(28,28,32,0.95); border:1px solid rgba(255,255,255,0.12); box-shadow:0 14px 34px rgba(0,0,0,0.65);
+      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);}
+    .sn-tab{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:8px 0 7px; min-width:0; border-radius:26px;
+      color:#8A8780; text-decoration:none; font-size:10.5px; font-weight:600; -webkit-tap-highlight-color:transparent; transition:background .2s,color .2s;}
+    .sn-tab svg{width:22px; height:22px;}
     .sn-tab.active{background:var(--gold,#d9a441); color:#0B0B0D;}
-    html{scroll-padding-top:128px;}
+    body{padding-bottom:104px;}
+    html{scroll-padding-top:80px;}
+    .submit-fab{left:auto !important; right:16px !important; bottom:92px !important; width:54px !important; height:54px; padding:0 !important; border-radius:50% !important;
+      justify-content:center !important; box-shadow:0 10px 26px rgba(217,164,65,0.45) !important;}
+    .submit-fab span{display:none !important;}
+    .submit-fab svg{width:24px !important; height:24px !important;}
+    .now-playing-bar,.player-bar{bottom:84px !important; left:14px !important; right:14px !important; border-radius:20px; border:1px solid var(--line,#26262b) !important;}
   }
   `;
 
@@ -133,5 +142,5 @@
   wrap.className = "sn-header";
   nav.parentNode.insertBefore(wrap, nav);
   wrap.appendChild(nav);
-  wrap.appendChild(tabs);
+  document.body.appendChild(tabs); // outside the header: a blurred header would otherwise trap position:fixed
 })();
