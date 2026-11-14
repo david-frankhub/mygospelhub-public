@@ -5,6 +5,7 @@
 <link rel="icon" type="image/png" href="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Browse Videos — MyGospelHub</title>
+<link rel="canonical" href="https://mygospelhub.com.ng/browse-video">
 <meta name="description" content="Watch the latest gospel videos on MyGospelHub.">
 <meta property="og:title" content="Browse Videos — MyGospelHub">
 <meta property="og:description" content="Watch the latest gospel videos on MyGospelHub.">
@@ -12,7 +13,7 @@
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:url" content="https://mygospelhub.com.ng/browse-video.html">
+<meta property="og:url" content="https://mygospelhub.com.ng/browse-video">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="MyGospelHub">
 <meta name="twitter:card" content="summary_large_image">
@@ -194,7 +195,7 @@
 
   <nav>
     <div class="logo">MyGospelHub<span class="dot">.</span></div>
-    <a href="index.html" class="btn btn-gold">Home</a>
+    <a href="/" class="btn btn-gold">Home</a>
   </nav>
 
   <div class="browse-header">
@@ -257,7 +258,7 @@
   }
 
   function videoDest(v) {
-    return `video.html?${v.slug ? "slug=" + v.slug : "id=" + v.id}`;
+    return `/video/${v.slug || v.id}`;
   }
 
   const ICON_PLAY = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
@@ -409,7 +410,7 @@
 
   loadVideos();
 </script>
-<a href="submit.html" class="submit-fab" aria-label="Click here to upload your song, video or gist on MyGospelHub">
+<a href="/submit" class="submit-fab" aria-label="Click here to upload your song, video or gist on MyGospelHub">
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M12 5v14M5 12h14"/>
   </svg>

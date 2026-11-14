@@ -2,15 +2,17 @@
    Loaded on every page except the homepage (which has its own live-search header). */
 (function () {
   var LINKS = [
-    ["Home", "index.html"],
-    ["Videos", "browse-video.html"],
-    ["Music", "music.html"],
-    ["Gist", "browse-gist.html"],
-    ["Genres", "index.html#genres"],
-    ["About", "about.html"],
-    ["Contact", "contact.html"]
+    ["Home", "/"],
+    ["Videos", "/browse-video"],
+    ["Music", "/music"],
+    ["Gist", "/browse-gist"],
+    ["Genres", "/#genres"],
+    ["About", "/about"],
+    ["Contact", "/contact"]
   ];
-  var here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  var here = (location.pathname.split("/").pop() || "index").toLowerCase();
+  if (here.indexOf(".") === -1) here += ".html";
+  function keyOf(h) { return (h.replace(/[#?].*$/, "").replace(/^\//, "") || "index") + ".html"; }
   var pm = location.pathname.match(/^\/(song|video|gist)\/[^/]+\/?$/);
   if (pm) here = pm[1] === "gist" ? "gist-post.html" : pm[1] + ".html"; // clean links like /song/my-song
 
@@ -130,17 +132,17 @@
   nav.removeAttribute("style");
 
   var linksHtml = LINKS.map(function (l) {
-    var active = l[1].toLowerCase() === here ? " active" : "";
+    var active = keyOf(l[1].toLowerCase()) === here ? " active" : "";
     return '<a href="' + l[1] + '" class="' + active.trim() + '">' + l[0] + "</a>";
   }).join("");
   var itemsHtml = LINKS.map(function (l) {
-    var active = l[1].toLowerCase() === here ? " active" : "";
+    var active = keyOf(l[1].toLowerCase()) === here ? " active" : "";
     return '<a href="' + l[1] + '" class="sn-item' + active + '">' + l[0] + "</a>";
-  }).join("") + '<a href="submit.html" class="sn-item sn-upload">Upload Song/Video/Gist</a>';
+  }).join("") + '<a href="/submit" class="sn-item sn-upload">Upload Song/Video/Gist</a>';
 
   nav.innerHTML =
-    '<a href="index.html" class="sn-logo">MyGospelHub<span class="sn-dot">.</span></a>' +
-    '<form class="sn-search" id="snSearch" role="search" action="search.html" method="get">' +
+    '<a href="/" class="sn-logo">MyGospelHub<span class="sn-dot">.</span></a>' +
+    '<form class="sn-search" id="snSearch" role="search" action="/search" method="get">' +
       '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' +
       '<input type="search" name="q" placeholder="Search post" autocomplete="off" enterkeyhint="search" aria-label="Search">' +
     "</form>" +
@@ -154,7 +156,7 @@
   var menu = document.createElement("div");
   menu.className = "sn-menu";
   menu.innerHTML =
-    '<div class="sn-menu-head"><a href="index.html" class="sn-logo">MyGospelHub<span class="sn-dot">.</span></a>' +
+    '<div class="sn-menu-head"><a href="/" class="sn-logo">MyGospelHub<span class="sn-dot">.</span></a>' +
     '<button class="sn-close" aria-label="Close menu">✕</button></div>' + itemsHtml;
   document.body.appendChild(overlay);
   document.body.appendChild(menu);
@@ -168,16 +170,16 @@
   document.getElementById("snSearch").addEventListener("submit", function (e) {
     e.preventDefault();
     var q = this.q.value.trim();
-    if (q) location.href = "search.html?q=" + encodeURIComponent(q);
+    if (q) location.href = "/search?q=" + encodeURIComponent(q);
   });
   }
 
   // ---- Floating tab bar: Home, Music, Video, Gist, More ----
   var TABS = [
-    ["Home", "index.html", ["index.html", ""], '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
-    ["Music", "music.html", ["music.html", "browse-music.html", "song.html"], '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'],
-    ["Video", "browse-video.html", ["browse-video.html", "video.html", "watch.html"], '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M10 9l5 3-5 3z" fill="currentColor"/>'],
-    ["Gist", "browse-gist.html", ["browse-gist.html", "gist-post.html"], '<path d="M4 4h13a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2z"/><path d="M8 9h7M8 13h7M8 17h4"/>'],
+    ["Home", "/", ["index.html"], '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
+    ["Music", "/music", ["music.html", "browse-music.html", "song.html"], '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'],
+    ["Video", "/browse-video", ["browse-video.html", "video.html", "watch.html"], '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M10 9l5 3-5 3z" fill="currentColor"/>'],
+    ["Gist", "/browse-gist", ["browse-gist.html", "gist-post.html"], '<path d="M4 4h13a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2z"/><path d="M8 9h7M8 13h7M8 17h4"/>'],
     ["More", "#more", ["contact.html", "about.html", "submit.html", "privacy.html", "terms.html"], '<circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/>']
   ];
   var tabs = document.createElement("div");
@@ -195,7 +197,7 @@
 
   var bg = document.createElement("div"); bg.className = "sn-sheet-bg";
   var sheet = document.createElement("div"); sheet.className = "sn-sheet";
-  sheet.innerHTML = '<i></i><a class="gold" href="submit.html">Upload song / video / gist<span>&rarr;</span></a><a href="about.html">About MyGospelHub<span>&rarr;</span></a><a href="contact.html">Contact us<span>&rarr;</span></a><a href="privacy.html">Privacy policy<span>&rarr;</span></a><a href="terms.html">Terms of service<span>&rarr;</span></a>';
+  sheet.innerHTML = '<i></i><a class="gold" href="/submit">Upload song / video / gist<span>&rarr;</span></a><a href="/about">About MyGospelHub<span>&rarr;</span></a><a href="/contact">Contact us<span>&rarr;</span></a><a href="/privacy">Privacy policy<span>&rarr;</span></a><a href="/terms">Terms of service<span>&rarr;</span></a>';
   document.body.appendChild(bg); document.body.appendChild(sheet);
   function toggleSheet(on) { bg.classList.toggle("open", on); sheet.classList.toggle("open", on); }
   bg.addEventListener("click", function () { toggleSheet(false); });
@@ -207,7 +209,7 @@
     st.textContent = ".sn-share{max-width:760px; margin:10px auto 0; padding:0 5%;} .sn-share-card{border-radius:30px; padding:28px 24px; background:linear-gradient(135deg,#D9A441 0%,#B0602F 55%,#7A1F2B 100%); box-shadow:0 26px 50px -22px rgba(217,164,65,0.55); color:#fff;} .sn-share-card h2{font-family:'Fraunces',serif; font-size:26px; line-height:1.1; margin:0;} .sn-share-card p{color:rgba(255,255,255,0.85); font-size:14px; line-height:1.5; margin:10px 0 18px; max-width:320px;} .sn-share-card a{display:inline-flex; align-items:center; gap:8px; background:#0B0B0D; color:#F2EFE9; border-radius:100px; padding:13px 22px; font-weight:700; font-size:14px; text-decoration:none;}";
     document.head.appendChild(st);
     var sc = document.createElement("div"); sc.className = "sn-share";
-    sc.innerHTML = '<div class="sn-share-card"><h2>Share your ministry</h2><p>Upload your song, video or gist and reach thousands of listeners.</p><a href="submit.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Upload now</a></div>';
+    sc.innerHTML = '<div class="sn-share-card"><h2>Share your ministry</h2><p>Upload your song, video or gist and reach thousands of listeners.</p><a href="/submit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Upload now</a></div>';
     document.body.appendChild(sc);
   }
   document.body.appendChild(tabs); // outside the header: a blurred header would otherwise trap position:fixed

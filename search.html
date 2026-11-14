@@ -5,6 +5,7 @@
   <link rel="icon" type="image/png" href="https://kqgnpryubgdtmtcjtasi.supabase.co/storage/v1/object/public/covers/file_00000000a20081f48e8855cb4ade1850.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Search — MyGospelHub</title>
+<meta name="robots" content="noindex,follow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -187,13 +188,13 @@
       </div>
     </div>
     <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="browse-video.html">Videos</a>
-      <a href="music.html">Music</a>
-      <a href="browse-gist.html">Gist</a>
-      <a href="index.html#genres">Genres</a>
+      <a href="/">Home</a>
+      <a href="/browse-video">Videos</a>
+      <a href="/music">Music</a>
+      <a href="/browse-gist">Gist</a>
+      <a href="/#genres">Genres</a>
     </div>
-    <a href="index.html" class="btn btn-gold">Home</a>
+    <a href="/" class="btn btn-gold">Home</a>
   </nav>
 
   <div class="results-header">
@@ -225,12 +226,12 @@
       sb("content", "status=eq.Published&order=created_at.desc&limit=1000"),
       sb("gist_articles", "status=eq.Published&order=created_at.desc&limit=1000"),
     ]);
-    const key = x => x.slug ? "slug=" + encodeURIComponent(x.slug) : "id=" + x.id;
+    const key = x => encodeURIComponent(x.slug || x.id);
     searchIndex = (content || []).map(c => {
       const isVideo = c.type === "Video";
       return { type: isVideo ? "video" : "music", title: c.title || "", sub: [c.artist, c.genre].filter(Boolean).join(" · "), tag: c.genre || (isVideo ? "Video" : "Music"),
-        plays: fmt(c.views) + (isVideo ? " views" : " plays"), dur: c.year || "", cover: c.cover_url || "", url: (isVideo ? "video.html?" : "song.html?") + key(c) };
-    }).concat((gist || []).map(g => ({ type: "gist", title: g.title || "", sub: [g.category, g.excerpt].filter(Boolean).join(" · ").slice(0, 90), tag: g.category || "Gist", cover: g.cover_url || "", url: "gist-post.html?" + key(g) })));
+        plays: fmt(c.views) + (isVideo ? " views" : " plays"), dur: c.year || "", cover: c.cover_url || "", url: (isVideo ? "/video/" : "/song/") + key(c) };
+    }).concat((gist || []).map(g => ({ type: "gist", title: g.title || "", sub: [g.category, g.excerpt].filter(Boolean).join(" · ").slice(0, 90), tag: g.category || "Gist", cover: g.cover_url || "", url: "/gist/" + key(g) })));
   }
 
   function getQueryParam(name) {
@@ -358,7 +359,7 @@
 
   searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && searchInput.value.trim()) {
-      window.location.href = 'search.html?q=' + encodeURIComponent(searchInput.value.trim());
+      window.location.href = '/search?q=' + encodeURIComponent(searchInput.value.trim());
     }
   });
   searchClear.addEventListener('click', () => {

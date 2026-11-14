@@ -118,7 +118,7 @@ async function legacyRedirect(kind, url) {
 
 // Sitemap for Google: static pages + every published song, video and gist.
 const SITE = "https://mygospelhub.com.ng";
-const STATIC_PAGES = ["", "music.html", "browse-video.html", "browse-gist.html", "submit.html", "about.html", "contact.html", "privacy.html", "terms.html"];
+const STATIC_PAGES = ["", "music", "browse-video", "browse-gist", "about", "contact", "privacy", "terms"];
 
 async function sbList(table, select) {
   try {
@@ -143,9 +143,6 @@ async function sitemap() {
     urls.push(`<url><loc>${SITE}/${kind}/${encodeURIComponent(c.slug || c.id)}</loc>${day(c.created_at)}</url>`);
   });
   gist.forEach((g) => urls.push(`<url><loc>${SITE}/gist/${encodeURIComponent(g.slug || g.id)}</loc>${day(g.created_at)}</url>`));
-  const names = new Set();
-  content.forEach((c) => String(c.artist || "").split(/\s+(?:ft\.?|feat\.?|featuring|x|and|\+)\s+|\s*[,&]\s*/i).forEach((n) => { n = n.trim(); if (n && n.length < 60) names.add(n); }));
-  [...names].slice(0, 400).forEach((n) => urls.push(`<url><loc>${SITE}/artist.html?name=${encodeURIComponent(n).replace(/&/g, "&amp;")}</loc></url>`));
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
   return new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }

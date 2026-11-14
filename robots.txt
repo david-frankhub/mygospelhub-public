@@ -1,4 +1,7 @@
- User-agent: *
+User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /search
+Disallow: /submit
 
 Sitemap: https://mygospelhub.com.ng/sitemap.xml
