@@ -579,7 +579,7 @@ function setSeo(title, desc, page, id) {
     const ytLink = locked ? "" : (s.youtube_url || (/youtu\.?be/i.test(s.streaming_link || "") ? s.streaming_link : "") || s.video_url || "");
     const spLink = locked ? "" : (s.spotify_url || (/spotify\.com/i.test(s.streaming_link || "") ? s.streaming_link : ""));
     const amLink = locked ? "" : (s.audiomack_url || (/audiomack\.com/i.test(s.streaming_link || "") ? s.streaming_link : ""));
-    const otherLink = locked ? "" : ((!ytLink && !spLink && !amLink) ? (s.streaming_link || "") : "");
+    const otherLink = locked ? "" : ((s.streaming_link && !/youtu\.?be|spotify\.com|audiomack\.com/i.test(s.streaming_link)) ? s.streaming_link : "");
     const streamUrl = ytLink || otherLink;
     const embedSrc = toEmbed(streamUrl);
 
