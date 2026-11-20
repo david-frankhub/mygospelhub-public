@@ -667,7 +667,7 @@ function setSeo(title, desc, page, id) {
         </a>` : ""}
       </div></div>` : ""}
 
-      <!-- The description is not shown here: Google still reads it from the meta description, structured data and the server-rendered page. -->
+      ${s.description ? `<div class="about-card"><p>${MGH.linkText(s.description, s.artist)}</p></div>` : ""}
 
       <div class="details-card">
         <div class="details-head">Track Details</div>
