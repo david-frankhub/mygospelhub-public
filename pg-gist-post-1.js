@@ -246,11 +246,11 @@ function setSeo(title, desc, page, id) {
     try {
       const results = await supabaseQuery(
         "gist_articles",
-        `status=eq.Published&category=eq.${encodeURIComponent(post.category || "")}&id=neq.${post.id}&order=reads.desc.nullslast,created_at.desc&limit=5`
+        `status=eq.Published&id=neq.${post.id}&order=reads.desc.nullslast,created_at.desc&limit=5`
       );
       if (!results || results.length === 0) { relWrap.innerHTML = ""; return; }
       relWrap.innerHTML = `
-        <div class="related-label">More in ${escapeHtml(post.category || "Gist")}</div>
+        <div class="related-label">Related Posts</div>
         <div class="tc-list" id="relatedList">
           ${results.map(r => `
             <div class="gist-row" data-href="/gist/${encodeURIComponent(r.slug || r.id)}">
