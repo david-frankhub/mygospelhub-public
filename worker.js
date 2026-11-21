@@ -165,9 +165,72 @@ async function storageProxy(request, url) {
   return out;
 }
 
+// ---------- AI Content Studio (admin only, Cloudflare Workers AI, free tier) ----------
+// Swap AI_MODEL to change model; no API key needed (uses the env.AI binding).
+const AI_MODEL = "@cf/google/gemma-4-26b-a4b-it";
+const ADMIN_ORIGINS = ["https://mygospelhub-admin-2n9k-six.vercel.app"];
+const AI_CATEGORIES = ["Concert","Rumor","Community","Release","Church Life","Music Tips","Worship","Devotional","Faith and Encouragement","Artist Spotlight","Entertainment","Sports","Politics","Health and Well-being","General"];
+const aiHits = new Map(); // best-effort per-isolate rate limit
+
+function aiCors(request) {
+  const o = request.headers.get("Origin");
+  const h = { "Vary": "Origin", "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Max-Age": "86400" };
+  if (ADMIN_ORIGINS.includes(o)) h["Access-Control-Allow-Origin"] = o;
+  return h;
+}
+const aiJson = (request, obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...aiCors(request) } });
+
+async function aiDraft(request, env) {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
+  if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
+  if (!ADMIN_ORIGINS.includes(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
+  if (!env.AI) return aiJson(request, { error: "AI is not set up on this Worker yet (add the AI binding)." }, 503);
+
+  const token = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+  if (!token) return aiJson(request, { error: "Please sign in again." }, 401);
+  const auth = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` };
+  const ur = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: auth });
+  if (!ur.ok) return aiJson(request, { error: "Please sign in again." }, 401);
+  const user = await ur.json();
+  const pr = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}&select=role&limit=1`, { headers: auth });
+  const prof = pr.ok ? await pr.json() : [];
+  if (!prof[0] || !["admin", "super_admin"].includes(prof[0].role)) return aiJson(request, { error: "Admins only." }, 403);
+
+  const now = Date.now();
+  const hits = (aiHits.get(user.id) || []).filter((t) => now - t < 3600000);
+  if (hits.length >= 20) return aiJson(request, { error: "Too many requests. Try again in a while." }, 429);
+  hits.push(now); aiHits.set(user.id, hits);
+
+  let b; try { b = await request.json(); } catch { return aiJson(request, { error: "Bad request" }, 400); }
+  const facts = String(b.facts || "").trim().slice(0, 8000);
+  if (facts.length < 20) return aiJson(request, { error: "Paste the facts or notes first (at least a couple of sentences)." }, 400);
+  const tone = String(b.tone || "warm, clear, professional").slice(0, 80);
+
+  const system = "You are an editor for MyGospelHub, a Nigerian gospel music and entertainment website. Write an original article using ONLY the facts supplied by the editor. Never invent facts, names, dates, numbers or quotes. If something is not in the facts, leave it out. Do not copy sentences from the source; rewrite in your own words. No clickbait. Plain text paragraphs separated by blank lines, 250-450 words, no markdown, no headings. Reply with ONLY a JSON object: {\"title\": string (max 70 chars), \"category\": one of " + JSON.stringify(AI_CATEGORIES) + ", \"body\": string, \"meta_description\": string (max 155 chars)}.";
+  let out;
+  try {
+    out = await env.AI.run(AI_MODEL, {
+      messages: [{ role: "system", content: system }, { role: "user", content: `Tone: ${tone}\n\nFACTS / NOTES FROM EDITOR:\n${facts}` }],
+      max_tokens: 1400,
+      chat_template_kwargs: { enable_thinking: false },
+    });
+  } catch (e) { return aiJson(request, { error: "AI is busy or the free daily limit is used up. Try again later." }, 502); }
+
+  const text = out?.choices?.[0]?.message?.content ?? out?.response ?? "";
+  const m = String(text).match(/\{[\s\S]*\}/);
+  let d; try { d = JSON.parse(m ? m[0] : ""); } catch { return aiJson(request, { error: "The AI reply was not usable. Please try again." }, 502); }
+  return aiJson(request, {
+    title: String(d.title || "").slice(0, 120),
+    category: AI_CATEGORIES.includes(d.category) ? d.category : "General",
+    body: String(d.body || ""),
+    meta_description: String(d.meta_description || "").slice(0, 160),
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/api/ai/draft") return aiDraft(request, env);
     if (url.pathname === "/sitemap.xml") return sitemap();
     if (url.pathname.startsWith("/s/")) return storageProxy(request, url);
     const path = url.pathname.replace(/\/$/, "");

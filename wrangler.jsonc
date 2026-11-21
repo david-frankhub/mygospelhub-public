@@ -2,6 +2,7 @@
   "name": "mygospelhub",
   "main": "worker.js",
   "compatibility_date": "2025-09-01",
+  "ai": { "binding": "AI" },
   "assets": {
     "directory": "./",
     "binding": "ASSETS",
