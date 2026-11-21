@@ -301,11 +301,43 @@ function setSeo(title, desc, page, id) {
     }
   }
 
+  // Related Posts: other news, most-read first.
+  async function loadRelatedNews(post) {
+    const wrap = document.getElementById("relatedNewsWrap");
+    if (!wrap) return;
+    try {
+      const rows = await supabaseQuery(
+        "gist_articles",
+        `status=eq.Published&id=neq.${post.id}&order=reads.desc.nullslast,created_at.desc&limit=5`
+      );
+      if (!rows || rows.length === 0) { wrap.innerHTML = ""; return; }
+      wrap.innerHTML = `
+        <div class="related-label">Related Posts</div>
+        <div class="tc-list" id="relatedNewsList">
+          ${rows.map(r => `
+            <div class="gist-row" data-href="/gist/${encodeURIComponent(r.slug || r.id)}">
+              <div class="gr-art" style="${r.cover_url ? `background-image:url('${escapeHtml(r.cover_url)}')` : ""}"></div>
+              <div class="gr-body">
+                <span class="gr-cat">${escapeHtml(r.category || "Gist")}</span>
+                <div class="gr-title">${escapeHtml(r.title)}</div>
+                <div class="gr-meta">${timeAgo(r.created_at)} · ${formatCount(r.reads || 0)} reads</div>
+              </div>
+              <div class="gr-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            </div>
+          `).join("")}
+        </div>`;
+    } catch (e) {
+      wrap.innerHTML = "";
+    }
+  }
+
   async function loadFollowSection(post) {
     const wrap = document.getElementById("followWrap");
     wrap.innerHTML = `
       <div class="related-label">Recent Posts</div>
       <div id="recentPostsList"><div class="state-block">Loading…</div></div>
+
+      <div id="relatedNewsWrap"></div>
 
       <div class="follow-us">
         <div class="related-label">Follow Us On</div>
@@ -322,6 +354,8 @@ function setSeo(title, desc, page, id) {
         </div>
       </div>
     `;
+
+    loadRelatedNews(post);
 
     try {
       const rows = await supabaseQuery(
