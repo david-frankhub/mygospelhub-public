@@ -243,29 +243,42 @@ const decodeXml = (t) => String(t || "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, 
 const tagText = (x, tag) => { const m = x.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`)); return m ? decodeXml(m[1]).trim() : ""; };
 
 async function collectLeads(env) {
-  const seen = new Set(), items = [];
+  const seen = new Set(), items = [], diag = [];
+  const feeds = (q) => [
+    ["google", `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-NG&gl=NG&ceid=NG:en`],
+    ["bing", `https://www.bing.com/news/search?q=${encodeURIComponent(q)}&format=rss&cc=NG`],
+  ];
+  const cutoff = Date.now() - 10 * 86400000;
   for (const q of LEAD_QUERIES) {
-    try {
-      const r = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(q + " when:3d")}&hl=en-NG&gl=NG&ceid=NG:en`, { headers: { "User-Agent": "Mozilla/5.0 MyGospelHubBot" } });
-      if (!r.ok) continue;
-      const xml = await r.text();
-      for (const it of xml.split("<item>").slice(1, 11)) {
-        const url = tagText(it, "link"), title = tagText(it, "title");
-        if (!url || !title || seen.has(url)) continue;
-        seen.add(url);
-        const snippet = tagText(it, "description").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-        const d = tagText(it, "pubDate");
-        items.push({ title, url, source: tagText(it, "source"), snippet, published_at: d ? new Date(d).toISOString() : "" });
-      }
-    } catch (e) { /* skip this query */ }
+    for (const [name, feed] of feeds(q)) {
+      let got = 0, status = 0;
+      try {
+        const r = await fetch(feed, { headers: { "User-Agent": "Mozilla/5.0 (compatible; MyGospelHubBot/1.0)", "Accept": "application/rss+xml, text/xml, */*" } });
+        status = r.status;
+        if (r.ok) {
+          const xml = await r.text();
+          for (const it of xml.split("<item>").slice(1, 13)) {
+            const url = tagText(it, "link"), title = tagText(it, "title");
+            if (!url || !title || seen.has(url)) continue;
+            const d = tagText(it, "pubDate"), ts = d ? new Date(d).getTime() : NaN;
+            if (!isNaN(ts) && ts < cutoff) continue;
+            seen.add(url); got++;
+            const snippet = tagText(it, "description").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+            items.push({ title, url, source: tagText(it, "source") || tagText(it, "News:Source") || name, snippet, published_at: isNaN(ts) ? "" : new Date(ts).toISOString() });
+          }
+        }
+      } catch (e) { status = -1; }
+      diag.push(`${name}:${status}:${got}`);
+      if (got > 0) break; // this feed worked for the query; skip the fallback
+    }
   }
-  if (!items.length) return 0;
+  if (!items.length) return { added: 0, found: 0, diag };
   const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ai_ingest`, {
     method: "POST",
     headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({ p_key: env.INGEST_KEY, p_items: items }),
   });
-  return r.ok ? await r.json() : -1;
+  return { added: r.ok ? await r.json() : -1, found: items.length, diag, dbStatus: r.status };
 }
 
 async function aiFetchLeads(request, env) {
@@ -275,9 +288,9 @@ async function aiFetchLeads(request, env) {
   const who = await aiAdmin(request, env);
   if (who instanceof Response) return who;
   if (!env.INGEST_KEY) return aiJson(request, { error: "INGEST_KEY secret is not set on the Worker yet." }, 503);
-  const n = await collectLeads(env);
-  if (n < 0) return aiJson(request, { error: "Could not save leads." }, 502);
-  return aiJson(request, { added: n });
+  const res = await collectLeads(env);
+  if (res.added < 0) return aiJson(request, { error: "Could not save leads (check that INGEST_KEY matches). DB status " + res.dbStatus }, 502);
+  return aiJson(request, res);
 }
 
 export default {
