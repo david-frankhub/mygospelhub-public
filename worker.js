@@ -209,11 +209,11 @@ async function aiDraft(request, env) {
   hits.push(now); aiHits.set(user.id, hits);
 
   let b; try { b = await request.json(); } catch { return aiJson(request, { error: "Bad request" }, 400); }
-  const facts = String(b.facts || "").trim().slice(0, 8000);
+  const facts = String(b.facts || "").replace(/https?:\/\/\S+/g, "").trim().slice(0, 8000);
   if (facts.length < 20) return aiJson(request, { error: "Paste the facts or notes first (at least a couple of sentences)." }, 400);
   const tone = String(b.tone || "warm, clear, professional").slice(0, 80);
 
-  const system = "You are an editor for MyGospelHub, a Nigerian gospel music and entertainment website. Write an original article using ONLY the facts supplied by the editor. Never invent facts, names, dates, numbers or quotes. If something is not in the facts, leave it out. Do not copy sentences from the source; rewrite in your own words. No clickbait. Body: plain text paragraphs separated by blank lines, 250-450 words, no markdown, no headings. Reply in EXACTLY this format and nothing else:\nTITLE: <headline, max 70 characters>\nCATEGORY: <one of: " + AI_CATEGORIES.join(", ") + ">\nMETA: <Google description, max 155 characters>\nBODY:\n<the article>";
+  const system = "You are an editor for MyGospelHub, a Nigerian gospel music and entertainment website. Write an original article using ONLY the facts supplied by the editor. Never invent facts, names, dates, numbers or quotes. If something is not in the facts, leave it out. Do not copy sentences from the source; rewrite in your own words. No clickbait. You cannot open links or browse the web, so ignore any mention of links or sources you cannot read. NEVER refuse and never ask for more information: if the facts are thin, write a shorter careful news brief (120-200 words) using only what is given, and keep a neutral tone. Body: plain text paragraphs separated by blank lines, up to 450 words, no markdown, no headings. Reply in EXACTLY this format and nothing else:\nTITLE: <headline, max 70 characters>\nCATEGORY: <one of: " + AI_CATEGORIES.join(", ") + ">\nMETA: <Google description, max 155 characters>\nBODY:\n<the article>";
   let out;
   try {
     out = await env.AI.run(AI_MODEL, {
