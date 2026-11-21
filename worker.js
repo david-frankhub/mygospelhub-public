@@ -212,13 +212,15 @@ async function aiDraft(request, env) {
   const facts = String(b.facts || "").replace(/https?:\/\/\S+/g, "").trim().slice(0, 8000);
   if (facts.length < 20) return aiJson(request, { error: "Paste the facts or notes first (at least a couple of sentences)." }, 400);
   const tone = String(b.tone || "warm, clear, professional").slice(0, 80);
+  const LENGTHS = { short: ["150-250", 900], standard: ["450-650", 2000], long: ["750-1000", 2900] };
+  const [words, maxTok] = LENGTHS[b.length] || LENGTHS.standard;
 
-  const system = "You are an editor for MyGospelHub, a Nigerian gospel music and entertainment website. Write an original article using ONLY the facts supplied by the editor. Never invent facts, names, dates, numbers or quotes. If something is not in the facts, leave it out. Do not copy sentences from the source; rewrite in your own words. No clickbait. You cannot open links or browse the web, so ignore any mention of links or sources you cannot read. NEVER refuse and never ask for more information: if the facts are thin, write a shorter careful news brief (120-200 words) using only what is given, and keep a neutral tone. Body: plain text paragraphs separated by blank lines, up to 450 words, no markdown, no headings. Reply in EXACTLY this format and nothing else:\nTITLE: <headline, max 70 characters>\nCATEGORY: <one of: " + AI_CATEGORIES.join(", ") + ">\nMETA: <Google description, max 155 characters>\nBODY:\n<the article>";
+  const system = "You are an editor for MyGospelHub, a Nigerian gospel music and entertainment website. Write an original article using ONLY the facts supplied by the editor. Never invent facts, names, dates, numbers or quotes. If something is not in the facts, leave it out. Do not copy sentences from the source; rewrite in your own words. No clickbait. You cannot open links or browse the web, so ignore any mention of links or sources you cannot read. NEVER refuse and never ask for more information: even when the facts are thin, still write a full article of the requested length: expand by explaining what the facts mean for gospel music fans, describing the people and events already named, adding smooth transitions and a thoughtful closing paragraph, but do NOT add any new factual claims, names, numbers, dates or quotes. Body: plain text paragraphs of 3-5 sentences each, separated by blank lines, about " + words + " words (write the full length, do not stop early), no markdown, no headings. Start with a strong opening paragraph that gives the main news, then the details, then context, then a closing paragraph. Reply in EXACTLY this format and nothing else:\nTITLE: <headline, max 70 characters>\nCATEGORY: <one of: " + AI_CATEGORIES.join(", ") + ">\nMETA: <Google description, max 155 characters>\nBODY:\n<the article>";
   let out;
   try {
     out = await env.AI.run(AI_MODEL, {
       messages: [{ role: "system", content: system }, { role: "user", content: `Tone: ${tone}\n\nFACTS / NOTES FROM EDITOR:\n${facts}` }],
-      max_tokens: 1600,
+      max_tokens: maxTok,
       chat_template_kwargs: { enable_thinking: false },
     });
   } catch (e) { return aiJson(request, { error: "AI is busy or the free daily limit is used up. Try again later." }, 502); }
