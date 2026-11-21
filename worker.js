@@ -379,3 +379,4 @@ export default {
   scheduled: handler.scheduled,
   async fetch(request, env, ctx) { return withSecurity(await handler.fetch(request, env, ctx)); },
 };
+// redeploy 2026-11-21
