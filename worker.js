@@ -301,12 +301,34 @@ async function aiFetchLeads(request, env) {
   return aiJson(request, res);
 }
 
+// ---------- Post to the Facebook Page (admin only): cover photo + caption with the link ----------
+const FB_GRAPH = "v22.0";
+async function fbPost(request, env) {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
+  if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
+  if (!ADMIN_ORIGINS.includes(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
+  const who = await aiAdmin(request, env);
+  if (who instanceof Response) return who;
+  if (!env.FB_PAGE_ID || !env.FB_PAGE_TOKEN) return aiJson(request, { error: "Facebook is not set up yet (FB_PAGE_ID and FB_PAGE_TOKEN missing on the Worker)." }, 503);
+  let b; try { b = await request.json(); } catch { return aiJson(request, { error: "Bad request" }, 400); }
+  const message = String(b.message || "").trim().slice(0, 5000);
+  const image = String(b.image_url || "");
+  if (message.length < 10) return aiJson(request, { error: "Write the caption first." }, 400);
+  if (!image.startsWith(SUPABASE_URL + "/storage/") && !image.startsWith("https://mygospelhub.com.ng/")) return aiJson(request, { error: "This article needs a cover image from MyGospelHub first." }, 400);
+  const body = new URLSearchParams({ url: image, caption: message, access_token: env.FB_PAGE_TOKEN, published: "true" });
+  const r = await fetch(`https://graph.facebook.com/${FB_GRAPH}/${encodeURIComponent(env.FB_PAGE_ID)}/photos`, { method: "POST", body });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok || d.error) return aiJson(request, { error: "Facebook said: " + (d.error?.message || r.status) }, 502);
+  return aiJson(request, { id: d.post_id || d.id });
+}
+
 export default {
   async scheduled(event, env, ctx) { if (env.INGEST_KEY) ctx.waitUntil(collectLeads(env)); },
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/api/ai/draft") return aiDraft(request, env);
     if (url.pathname === "/api/ai/fetch-leads") return aiFetchLeads(request, env);
+    if (url.pathname === "/api/fb/post") return fbPost(request, env);
     if (url.pathname === "/sitemap.xml") return sitemap();
     if (url.pathname.startsWith("/s/")) return storageProxy(request, url);
     const path = url.pathname.replace(/\/$/, "");
