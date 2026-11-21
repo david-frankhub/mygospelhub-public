@@ -322,7 +322,33 @@ async function fbPost(request, env) {
   return aiJson(request, { id: d.post_id || d.id });
 }
 
-export default {
+// ---------- Security headers (added to every response) ----------
+// NOTE: if you add Google AdSense or analytics later, their domains must be added to the CSP below.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "img-src 'self' data: blob: https:",
+  "media-src 'self' blob: https:",
+  "connect-src 'self' https://kqgnpryubgdtmtcjtasi.supabase.co wss://kqgnpryubgdtmtcjtasi.supabase.co",
+  "frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'self'",
+].join("; ");
+function withSecurity(res) {
+  const out = new Response(res.body, res);
+  out.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  out.headers.set("X-Content-Type-Options", "nosniff");
+  out.headers.set("X-Frame-Options", "SAMEORIGIN");
+  out.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  out.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
+  if ((out.headers.get("Content-Type") || "").includes("text/html")) out.headers.set("Content-Security-Policy", CSP);
+  return out;
+}
+
+const handler = {
   async scheduled(event, env, ctx) { if (env.INGEST_KEY) ctx.waitUntil(collectLeads(env)); },
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -345,4 +371,9 @@ export default {
     } catch (e) { /* fall through to the normal site */ }
     return env.ASSETS.fetch(request);
   },
+};
+
+export default {
+  scheduled: handler.scheduled,
+  async fetch(request, env, ctx) { return withSecurity(await handler.fetch(request, env, ctx)); },
 };
