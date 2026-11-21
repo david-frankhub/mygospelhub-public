@@ -92,7 +92,7 @@ async function renderPage(kind, request, env, slug, id) {
 <meta name="twitter:description" content="${esc(p.desc)}">
 <meta name="twitter:image" content="${esc(p.image)}">
 <script type="application/ld+json">${JSON.stringify(p.ld).replace(/</g, "\\u003c")}</script>
-<script>window.__PRETTY=${JSON.stringify({ k: "id", v: row.id }).replace(/</g, "\\u003c")};</script>
+<script type="application/json" id="mgh-pretty">${JSON.stringify({ k: "id", v: row.id }).replace(/</g, "\\u003c")}</script>
 <style>.seo-article{max-width:760px;margin:0 auto;padding:8px 4px;line-height:1.7}.seo-article h1{font-size:28px;margin:0 0 6px}.seo-article p{margin:0 0 14px}</style>`;
   html = html
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${esc(p.title)}</title>`)
@@ -326,7 +326,7 @@ async function fbPost(request, env) {
 // NOTE: if you add Google AdSense or analytics later, their domains must be added to the CSP below.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https:",

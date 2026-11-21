@@ -20,3 +20,22 @@
     });
   };
 })();
+
+/* CSP-friendly helpers: page data from the Worker (a JSON block, not a script) and clickable cards. */
+(function () {
+  Object.defineProperty(window, "__PRETTY", {
+    configurable: true,
+    get: function () {
+      var e = document.getElementById("mgh-pretty");
+      if (!e) return undefined;
+      try { return JSON.parse(e.textContent); } catch (x) { return undefined; }
+    }
+  });
+  document.addEventListener("click", function (ev) {
+    var t = ev.target;
+    if (!t || !t.closest) return;
+    var el = t.closest("[data-href]");
+    if (!el || t.closest("a,button,input,select,textarea,label")) return;
+    window.location.href = el.getAttribute("data-href");
+  });
+})();

@@ -1,0 +1,1 @@
+(function(){var b=document.getElementById("readBar");if(!b)return;function u(){var h=document.documentElement,s=h.scrollTop||document.body.scrollTop,m=(h.scrollHeight-h.clientHeight)||1;b.style.width=Math.min(100,Math.max(0,s/m*100))+"%";}window.addEventListener("scroll",u,{passive:true});u();})();
