@@ -213,26 +213,34 @@ async function aiDraft(request, env) {
   if (facts.length < 20) return aiJson(request, { error: "Paste the facts or notes first (at least a couple of sentences)." }, 400);
   const tone = String(b.tone || "warm, clear, professional").slice(0, 80);
 
-  const system = "You are an editor for MyGospelHub, a Nigerian gospel music and entertainment website. Write an original article using ONLY the facts supplied by the editor. Never invent facts, names, dates, numbers or quotes. If something is not in the facts, leave it out. Do not copy sentences from the source; rewrite in your own words. No clickbait. Plain text paragraphs separated by blank lines, 250-450 words, no markdown, no headings. Reply with ONLY a JSON object: {\"title\": string (max 70 chars), \"category\": one of " + JSON.stringify(AI_CATEGORIES) + ", \"body\": string, \"meta_description\": string (max 155 chars)}.";
+  const system = "You are an editor for MyGospelHub, a Nigerian gospel music and entertainment website. Write an original article using ONLY the facts supplied by the editor. Never invent facts, names, dates, numbers or quotes. If something is not in the facts, leave it out. Do not copy sentences from the source; rewrite in your own words. No clickbait. Body: plain text paragraphs separated by blank lines, 250-450 words, no markdown, no headings. Reply in EXACTLY this format and nothing else:\nTITLE: <headline, max 70 characters>\nCATEGORY: <one of: " + AI_CATEGORIES.join(", ") + ">\nMETA: <Google description, max 155 characters>\nBODY:\n<the article>";
   let out;
   try {
     out = await env.AI.run(AI_MODEL, {
       messages: [{ role: "system", content: system }, { role: "user", content: `Tone: ${tone}\n\nFACTS / NOTES FROM EDITOR:\n${facts}` }],
-      max_tokens: 1400,
+      max_tokens: 1600,
       chat_template_kwargs: { enable_thinking: false },
     });
   } catch (e) { return aiJson(request, { error: "AI is busy or the free daily limit is used up. Try again later." }, 502); }
 
-  const text = out?.choices?.[0]?.message?.content ?? out?.response ?? "";
-  const m = String(text).match(/\{[\s\S]*\}/);
-  let d; try { d = JSON.parse(m ? m[0] : ""); } catch { return aiJson(request, { error: "The AI reply was not usable. Please try again." }, 502); }
+  let text = out?.choices?.[0]?.message?.content ?? out?.response ?? out?.result?.response ?? "";
+  if (Array.isArray(text)) text = text.map((x) => x?.text || "").join("");
+  text = String(text).replace(/^```[a-z]*\n?|```$/gim, "").trim();
+  const g = (re) => { const m = text.match(re); return m ? m[1].trim() : ""; };
+  const title = g(/^\s*\**TITLE\**:\**\s*(.+)$/im);
+  const category = g(/^\s*\**CATEGORY\**:\**\s*(.+)$/im).replace(/[*"]/g, "");
+  const meta = g(/^\s*\**META\**:\**\s*(.+)$/im);
+  const bm = text.match(/^\s*\**BODY\**:\**\s*\n?([\s\S]+)$/im);
+  const body = bm ? bm[1].trim() : "";
+  if (!title || body.length < 100) return aiJson(request, { error: "The AI reply was not usable. Please try again.", debug: text.slice(0, 300) }, 502);
   return aiJson(request, {
-    title: String(d.title || "").slice(0, 120),
-    category: AI_CATEGORIES.includes(d.category) ? d.category : "General",
-    body: String(d.body || ""),
-    meta_description: String(d.meta_description || "").slice(0, 160),
+    title: title.replace(/^["*]+|["*]+$/g, "").slice(0, 120),
+    category: AI_CATEGORIES.find((c) => c.toLowerCase() === category.toLowerCase()) || "General",
+    body,
+    meta_description: meta.replace(/^["*]+|["*]+$/g, "").slice(0, 160),
   });
 }
+
 
 // ---------- News leads collector (daily cron + admin "Fetch now") ----------
 const LEAD_QUERIES = [
