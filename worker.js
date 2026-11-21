@@ -47,7 +47,7 @@ function seoParts(kind, row, canonical) {
   const image = row.cover_url || row.thumbnail_url || DEFAULT_IMAGE;
   if (kind === "gist") {
     title = `${row.title} | MyGospelHub`;
-    desc = cut(row.body, 155) || `Read "${row.title}" on MyGospelHub.`;
+    desc = cut(row.meta_description, 160) || cut(row.body, 155) || `Read "${row.title}" on MyGospelHub.`;
     body = `<article class="seo-article"><h1>${esc(row.title)}</h1><p><em>${esc(row.category)}${row.uploaded_by ? " · By " + esc(row.uploaded_by) : ""}</em></p>${nl2p(row.body)}</article>`;
     ld = { "@context": "https://schema.org", "@type": "Article", headline: row.title, image: [image], datePublished: row.created_at, author: { "@type": "Organization", name: row.uploaded_by || "MyGospelHub" }, publisher: { "@type": "Organization", name: "MyGospelHub" }, mainEntityOfPage: canonical };
   } else if (kind === "video") {
@@ -180,12 +180,7 @@ function aiCors(request) {
 }
 const aiJson = (request, obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...aiCors(request) } });
 
-async function aiDraft(request, env) {
-  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
-  if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
-  if (!ADMIN_ORIGINS.includes(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
-  if (!env.AI) return aiJson(request, { error: "AI is not set up on this Worker yet (add the AI binding)." }, 503);
-
+async function aiAdmin(request, env) {
   const token = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
   if (!token) return aiJson(request, { error: "Please sign in again." }, 401);
   const auth = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` };
@@ -195,6 +190,18 @@ async function aiDraft(request, env) {
   const pr = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}&select=role&limit=1`, { headers: auth });
   const prof = pr.ok ? await pr.json() : [];
   if (!prof[0] || !["admin", "super_admin"].includes(prof[0].role)) return aiJson(request, { error: "Admins only." }, 403);
+  return { user };
+}
+
+async function aiDraft(request, env) {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
+  if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
+  if (!ADMIN_ORIGINS.includes(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
+  if (!env.AI) return aiJson(request, { error: "AI is not set up on this Worker yet (add the AI binding)." }, 503);
+
+  const who = await aiAdmin(request, env);
+  if (who instanceof Response) return who;
+  const user = who.user;
 
   const now = Date.now();
   const hits = (aiHits.get(user.id) || []).filter((t) => now - t < 3600000);
@@ -227,10 +234,58 @@ async function aiDraft(request, env) {
   });
 }
 
+// ---------- News leads collector (daily cron + admin "Fetch now") ----------
+const LEAD_QUERIES = [
+  "Nigerian gospel music", "Nigerian gospel artist new song", "gospel music Nigeria concert",
+  "Nigerian gospel singer", "Christian music Nigeria", "Nigeria entertainment gospel",
+];
+const decodeXml = (t) => String(t || "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&");
+const tagText = (x, tag) => { const m = x.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`)); return m ? decodeXml(m[1]).trim() : ""; };
+
+async function collectLeads(env) {
+  const seen = new Set(), items = [];
+  for (const q of LEAD_QUERIES) {
+    try {
+      const r = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(q + " when:3d")}&hl=en-NG&gl=NG&ceid=NG:en`, { headers: { "User-Agent": "Mozilla/5.0 MyGospelHubBot" } });
+      if (!r.ok) continue;
+      const xml = await r.text();
+      for (const it of xml.split("<item>").slice(1, 11)) {
+        const url = tagText(it, "link"), title = tagText(it, "title");
+        if (!url || !title || seen.has(url)) continue;
+        seen.add(url);
+        const snippet = tagText(it, "description").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        const d = tagText(it, "pubDate");
+        items.push({ title, url, source: tagText(it, "source"), snippet, published_at: d ? new Date(d).toISOString() : "" });
+      }
+    } catch (e) { /* skip this query */ }
+  }
+  if (!items.length) return 0;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ai_ingest`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_key: env.INGEST_KEY, p_items: items }),
+  });
+  return r.ok ? await r.json() : -1;
+}
+
+async function aiFetchLeads(request, env) {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
+  if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
+  if (!ADMIN_ORIGINS.includes(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
+  const who = await aiAdmin(request, env);
+  if (who instanceof Response) return who;
+  if (!env.INGEST_KEY) return aiJson(request, { error: "INGEST_KEY secret is not set on the Worker yet." }, 503);
+  const n = await collectLeads(env);
+  if (n < 0) return aiJson(request, { error: "Could not save leads." }, 502);
+  return aiJson(request, { added: n });
+}
+
 export default {
+  async scheduled(event, env, ctx) { if (env.INGEST_KEY) ctx.waitUntil(collectLeads(env)); },
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/api/ai/draft") return aiDraft(request, env);
+    if (url.pathname === "/api/ai/fetch-leads") return aiFetchLeads(request, env);
     if (url.pathname === "/sitemap.xml") return sitemap();
     if (url.pathname.startsWith("/s/")) return storageProxy(request, url);
     const path = url.pathname.replace(/\/$/, "");
