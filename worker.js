@@ -358,6 +358,36 @@ async function aiFetchLeads(request, env) {
   return aiJson(request, res);
 }
 
+// ---------- Find YouTube / Spotify / Audiomack / fan links inside a lead's source page (admin only) ----------
+async function aiFindLinks(request, env) {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
+  if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
+  if (!ADMIN_ORIGINS.includes(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
+  const who = await aiAdmin(request, env);
+  if (who instanceof Response) return who;
+  let b; try { b = await request.json(); } catch { return aiJson(request, { error: "Bad request" }, 400); }
+  let u; try { u = new URL(String(b.url || "")); } catch { return aiJson(request, { error: "Bad link" }, 400); }
+  if (!/^https?:$/.test(u.protocol)) return aiJson(request, { error: "Bad link" }, 400);
+  const out = { youtube: "", spotify: "", audiomack: "", fan: "", note: "" };
+  if (/(^|\.)youtu(\.be|be\.com)$/.test(u.hostname)) { out.youtube = u.href; return aiJson(request, out); }
+  if (/(^|\.)open\.spotify\.com$/.test(u.hostname)) { out.spotify = u.href; return aiJson(request, out); }
+  if (/(^|\.)audiomack\.com$/.test(u.hostname)) { out.audiomack = u.href; return aiJson(request, out); }
+  let html = "";
+  try {
+    const r = await fetch(u.href, { redirect: "follow", headers: { "User-Agent": "Mozilla/5.0 (compatible; MyGospelHubBot/1.0)", "Accept": "text/html,*/*" }, signal: AbortSignal.timeout(9000) });
+    if (!r.ok) { out.note = "The source page did not open (" + r.status + ")."; return aiJson(request, out); }
+    html = (await r.text()).slice(0, 1500000).replace(/\\\//g, "/").replace(/&amp;/g, "&");
+  } catch (e) { out.note = "Could not open the source page."; return aiJson(request, out); }
+  const first = (re) => { const m = html.match(re); return m ? m[0] : ""; };
+  const yt = html.match(/https?:\/\/(?:www\.)?youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/)([\w-]{11})/) || html.match(/https?:\/\/youtu\.be\/([\w-]{11})/);
+  if (yt) out.youtube = "https://www.youtube.com/watch?v=" + yt[1];
+  out.spotify = first(/https?:\/\/open\.spotify\.com\/(?:track|album)\/[\w]+/);
+  out.audiomack = first(/https?:\/\/(?:www\.)?audiomack\.com\/[\w.-]+\/(?:song|album)\/[\w.-]+/);
+  out.fan = first(/https?:\/\/(?:ffm\.to|fanlink\.to|smarturl\.it|orcd\.co|lnk\.to|song\.link|found\.ee|hyperfollow\.com|linktr\.ee|music\.apple\.com)\/[\w\/.?=&%-]+/);
+  if (!out.youtube && !out.spotify && !out.audiomack && !out.fan) out.note = "No music links found on the source page.";
+  return aiJson(request, out);
+}
+
 // ---------- Post to the Facebook Page (admin only): cover photo + caption with the link ----------
 const FB_GRAPH = "v22.0";
 async function fbPost(request, env) {
@@ -411,6 +441,7 @@ const handler = {
     const url = new URL(request.url);
     if (url.pathname === "/api/ai/draft") return aiDraft(request, env);
     if (url.pathname === "/api/ai/fetch-leads") return aiFetchLeads(request, env);
+    if (url.pathname === "/api/ai/find-links") return aiFindLinks(request, env);
     if (url.pathname === "/api/fb/post") return fbPost(request, env);
     if (url.pathname === "/sitemap.xml") return sitemap();
     if (url.pathname.startsWith("/s/")) return storageProxy(request, url);
