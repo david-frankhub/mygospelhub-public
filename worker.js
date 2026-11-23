@@ -264,6 +264,7 @@ async function aiDraft(request, env) {
 const LEAD_QUERIES = [
   "Nigerian gospel music", "Nigerian gospel artist new song", "gospel music Nigeria concert",
   "Nigerian gospel singer", "Christian music Nigeria", "Nigeria entertainment gospel",
+  "new gospel song download Nigeria", "gospel music video official Nigeria", "new gospel album release Nigeria", "gospel song mp3 download",
   "Frank Edwards gospel", "Prinx Emmanuel", "Dunsin Oyekan", "AfroGospel Nigeria", "Greatman Takit",
 ];
 // Gospel blogs read directly (WordPress-style feeds). Backup = Google News limited to that site.
@@ -271,6 +272,14 @@ const BLOG_FEEDS = [
   { name: "Kingdomboiz", urls: ["https://kingdomboiz.com/feed", "https://www.kingdomboiz.com/feed"], site: "kingdomboiz.com" },
   { name: "Praiseworld Radio", urls: ["https://praiseworldradio.com/feed", "https://www.praiseworldradio.com/feed"], site: "praiseworldradio.com" },
 ];
+// song / video / news guess from the headline + snippet
+const leadKind = (title, snippet) => {
+  const t = (title + " " + (snippet || "")).toLowerCase();
+  const head = title.toLowerCase();
+  if (/\b(official video|music video|watch|video|live session|live recording|performance|video premiere)\b/.test(head) && !/\b(mp3|download)\b/.test(head)) return "video";
+  if (/\b(mp3|download|new song|new single|new music|lyrics|album|ep\b|listen|drops|releases? (a )?(new )?(song|single|album|track))\b/.test(t)) return "song";
+  return "news";
+};
 const decodeXml = (t) => String(t || "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&");
 const tagText = (x, tag) => { const m = x.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`)); return m ? decodeXml(m[1]).trim() : ""; };
 
@@ -296,7 +305,7 @@ async function collectLeads(env) {
             if (!isNaN(ts) && ts < cutoff) continue;
             seen.add(url); got++;
             const snippet = tagText(it, "description").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-            items.push({ title, url, source: tagText(it, "source") || tagText(it, "News:Source") || name, snippet, published_at: isNaN(ts) ? "" : new Date(ts).toISOString() });
+            items.push({ title, url, kind: leadKind(title, snippet), source: tagText(it, "source") || tagText(it, "News:Source") || name, snippet, published_at: isNaN(ts) ? "" : new Date(ts).toISOString() });
           }
         }
       } catch (e) { status = -1; }
@@ -320,7 +329,7 @@ async function collectLeads(env) {
             if (!isNaN(ts) && ts < cutoff) continue;
             seen.add(url); got++;
             const snippet = tagText(it, "description").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 600);
-            items.push({ title, url, source: b.name, snippet, published_at: isNaN(ts) ? "" : new Date(ts).toISOString() });
+            items.push({ title, url, kind: leadKind(title, snippet), source: b.name, snippet, published_at: isNaN(ts) ? "" : new Date(ts).toISOString() });
           }
         }
       } catch (e) { status = -1; }
