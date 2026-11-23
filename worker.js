@@ -255,10 +255,10 @@ const tagText = (x, tag) => { const m = x.match(new RegExp(`<${tag}[^>]*>([\\s\\
 async function collectLeads(env) {
   const seen = new Set(), items = [], diag = [];
   const feeds = (q) => [
-    ["google", `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-NG&gl=NG&ceid=NG:en`],
+    ["google", `https://news.google.com/rss/search?q=${encodeURIComponent(q + " when:3d")}&hl=en-NG&gl=NG&ceid=NG:en`],
     ["bing", `https://www.bing.com/news/search?q=${encodeURIComponent(q)}&format=rss&cc=NG`],
   ];
-  const cutoff = Date.now() - 10 * 86400000;
+  const cutoff = Date.now() - 3 * 86400000;
   for (const q of LEAD_QUERIES) {
     for (const [name, feed] of feeds(q)) {
       let got = 0, status = 0;
