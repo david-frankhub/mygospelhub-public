@@ -248,6 +248,12 @@ async function aiDraft(request, env) {
 const LEAD_QUERIES = [
   "Nigerian gospel music", "Nigerian gospel artist new song", "gospel music Nigeria concert",
   "Nigerian gospel singer", "Christian music Nigeria", "Nigeria entertainment gospel",
+  "Frank Edwards gospel", "Prinx Emmanuel", "Dunsin Oyekan", "AfroGospel Nigeria", "Greatman Takit",
+];
+// Gospel blogs read directly (WordPress-style feeds). Backup = Google News limited to that site.
+const BLOG_FEEDS = [
+  { name: "Kingdomboiz", urls: ["https://kingdomboiz.com/feed", "https://www.kingdomboiz.com/feed"], site: "kingdomboiz.com" },
+  { name: "Praiseworld Radio", urls: ["https://praiseworldradio.com/feed", "https://www.praiseworldradio.com/feed"], site: "praiseworldradio.com" },
 ];
 const decodeXml = (t) => String(t || "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&");
 const tagText = (x, tag) => { const m = x.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`)); return m ? decodeXml(m[1]).trim() : ""; };
@@ -280,6 +286,30 @@ async function collectLeads(env) {
       } catch (e) { status = -1; }
       diag.push(`${name}:${status}:${got}`);
       if (got > 0) break; // this feed worked for the query; skip the fallback
+    }
+  }
+  for (const b of BLOG_FEEDS) {
+    const tries = [...b.urls.map((u) => ["blog", u]), ["gnews", `https://news.google.com/rss/search?q=${encodeURIComponent("site:" + b.site + " when:3d")}&hl=en-NG&gl=NG&ceid=NG:en`]];
+    for (const [kind, feed] of tries) {
+      let got = 0, status = 0;
+      try {
+        const r = await fetch(feed, { headers: { "User-Agent": "Mozilla/5.0 (compatible; MyGospelHubBot/1.0)", "Accept": "application/rss+xml, text/xml, */*" } });
+        status = r.status;
+        if (r.ok) {
+          const xml = await r.text();
+          for (const it of xml.split("<item>").slice(1, 11)) {
+            const url = tagText(it, "link"), title = tagText(it, "title");
+            if (!url || !title || seen.has(url)) continue;
+            const d = tagText(it, "pubDate"), ts = d ? new Date(d).getTime() : NaN;
+            if (!isNaN(ts) && ts < cutoff) continue;
+            seen.add(url); got++;
+            const snippet = tagText(it, "description").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 600);
+            items.push({ title, url, source: b.name, snippet, published_at: isNaN(ts) ? "" : new Date(ts).toISOString() });
+          }
+        }
+      } catch (e) { status = -1; }
+      diag.push(`${b.name}(${kind}):${status}:${got}`);
+      if (status === 200) break;
     }
   }
   if (!items.length) return { added: 0, found: 0, diag };
