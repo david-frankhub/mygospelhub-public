@@ -209,6 +209,22 @@ async function aiDraft(request, env) {
   hits.push(now); aiHits.set(user.id, hits);
 
   let b; try { b = await request.json(); } catch { return aiJson(request, { error: "Bad request" }, 400); }
+  if (b.mode === "describe") {
+    const clean = (v, n) => String(v || "").replace(/https?:\/\/\S+/g, "").replace(/\s+/g, " ").trim().slice(0, n);
+    const t = clean(b.title, 150), a = clean(b.artist, 100);
+    if (!t || !a) return aiJson(request, { error: "Fill in the title and artist first." }, 400);
+    const kind = (b.type === "Audio" || b.type === "Song") ? "song" : "video";
+    const info = [`Type: ${kind}`, `Title: ${t}`, `Artist: ${a}`, b.genre && `Genre: ${clean(b.genre, 40)}`, b.producer && `Producer: ${clean(b.producer, 80)}`, b.year && `Year: ${clean(b.year, 6)}`, b.notes && `Editor notes: ${clean(b.notes, 600)}`].filter(Boolean).join("\n");
+    const sys = "You write short, search-friendly descriptions for a Nigerian gospel music website called MyGospelHub. Use ONLY the details given. Never invent facts, names, dates, lyrics, awards, numbers or quotes. Write 60-110 words of plain text in 2 short paragraphs: first paragraph names the " + kind + " title and artist naturally (for Google), the genre and what listeners can expect in general terms; second paragraph invites people to " + (kind === "song" ? "listen and download it free" : "watch it") + " on MyGospelHub. No markdown, no hashtags, no emojis, no clickbait. NEVER refuse. Reply with the description text only.";
+    let o;
+    try { o = await env.AI.run(AI_MODEL, { messages: [{ role: "system", content: sys }, { role: "user", content: info }], max_tokens: 500, chat_template_kwargs: { enable_thinking: false } }); }
+    catch (e) { return aiJson(request, { error: "AI is busy or the free daily limit is used up. Try again later." }, 502); }
+    let d = o?.choices?.[0]?.message?.content ?? o?.response ?? o?.result?.response ?? "";
+    if (Array.isArray(d)) d = d.map((x) => x?.text || "").join("");
+    d = String(d).replace(/^```[a-z]*\n?|```$/gim, "").replace(/^\s*\**DESCRIPTION\**:\**\s*/i, "").trim();
+    if (d.length < 40) return aiJson(request, { error: "The AI reply was not usable. Please try again." }, 502);
+    return aiJson(request, { description: d.slice(0, 900) });
+  }
   const facts = String(b.facts || "").replace(/https?:\/\/\S+/g, "").trim().slice(0, 8000);
   if (facts.length < 20) return aiJson(request, { error: "Paste the facts or notes first (at least a couple of sentences)." }, 400);
   const tone = String(b.tone || "warm, clear, professional").slice(0, 80);
