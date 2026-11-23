@@ -261,16 +261,32 @@ async function aiDraft(request, env) {
 
 
 // ---------- News leads collector (daily cron + admin "Fetch now") ----------
+// Broad topic searches (not tied to one artist)
 const LEAD_QUERIES = [
   "Nigerian gospel music", "Nigerian gospel artist new song", "gospel music Nigeria concert",
   "Nigerian gospel singer", "Christian music Nigeria", "Nigeria entertainment gospel",
   "new gospel song download Nigeria", "gospel music video official Nigeria", "new gospel album release Nigeria", "gospel song mp3 download",
-  "Frank Edwards gospel", "Prinx Emmanuel", "Dunsin Oyekan", "AfroGospel Nigeria", "Greatman Takit",
+  "Nigerian worship song new", "AfroGospel", "praise and worship Nigeria new release", "Yoruba gospel new song", "Igbo gospel new song",
 ];
+// Artists searched in groups (one request per group, so many names cost few requests)
+const LEAD_ARTISTS = [
+  "Frank Edwards", "Prinx Emmanuel", "Dunsin Oyekan", "Greatman Takit", "Sinach", "Mercy Chinwo", "Nathaniel Bassey", "Tope Alabi",
+  "Chioma Jesus", "Eben", "Ada Ehi", "Mike Abdul", "Judikay", "Moses Bliss", "Neeja", "Preye Odede",
+  "Joe Praize", "Samsong", "Victor Thompson", "Tim Godfrey", "Kenny Kore", "Minister GUC", "Lawrence Oyor", "Chris Morgan",
+  "Buchi", "Yadah", "Gaise Baba", "Aity Dennis", "Ebuka Songs", "Sunmisola Agbebi", "Folabi Nuel", "Mercy Chinwo",
+  "Dare Melody", "Ntokozo Mbambo", "Pastor Jerry Eze", "Chinyere Udoma", "Elijah Oyelade", "Jeremiah Gyang", "Hannah Dunsin", "Festizie",
+];
+for (let i = 0; i < LEAD_ARTISTS.length; i += 6) {
+  LEAD_QUERIES.push("(" + [...new Set(LEAD_ARTISTS.slice(i, i + 6))].map((n) => `"${n}"`).join(" OR ") + ") gospel");
+}
 // Gospel blogs read directly (WordPress-style feeds). Backup = Google News limited to that site.
 const BLOG_FEEDS = [
   { name: "Kingdomboiz", urls: ["https://kingdomboiz.com/feed", "https://www.kingdomboiz.com/feed"], site: "kingdomboiz.com" },
   { name: "Praiseworld Radio", urls: ["https://praiseworldradio.com/feed", "https://www.praiseworldradio.com/feed"], site: "praiseworldradio.com" },
+  // general music blogs: only keep gospel-related posts
+  { name: "NotJustOK", urls: ["https://notjustok.com/feed"], site: "notjustok.com", only: /gospel|worship|praise|christian|church|jesus|\bgod\b|pastor|minister|choir/i },
+  { name: "360nobs", urls: ["https://360nobs.com/feed"], site: "360nobs.com", only: /gospel|worship|praise|christian|church|jesus|\bgod\b|pastor|minister|choir/i },
+  { name: "TooXclusive", urls: ["https://tooxclusive.com/feed"], site: "tooxclusive.com", only: /gospel|worship|praise|christian|church|jesus|\bgod\b|pastor|minister|choir/i },
 ];
 // song / video / news guess from the headline + snippet
 const leadKind = (title, snippet) => {
@@ -291,7 +307,7 @@ async function collectLeads(env) {
   ];
   const cutoff = Date.now() - 3 * 86400000;
   for (const q of LEAD_QUERIES) {
-    for (const [name, feed] of feeds(q)) {
+    for (const [name, feed] of (q.startsWith("(") ? feeds(q).slice(0, 1) : feeds(q))) {
       let got = 0, status = 0;
       try {
         const r = await fetch(feed, { headers: { "User-Agent": "Mozilla/5.0 (compatible; MyGospelHubBot/1.0)", "Accept": "application/rss+xml, text/xml, */*" } });
@@ -327,8 +343,9 @@ async function collectLeads(env) {
             if (!url || !title || seen.has(url)) continue;
             const d = tagText(it, "pubDate"), ts = d ? new Date(d).getTime() : NaN;
             if (!isNaN(ts) && ts < cutoff) continue;
-            seen.add(url); got++;
             const snippet = tagText(it, "description").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 600);
+            if (b.only && !b.only.test(title + " " + snippet)) continue;
+            seen.add(url); got++;
             items.push({ title, url, kind: leadKind(title, snippet), source: b.name, snippet, published_at: isNaN(ts) ? "" : new Date(ts).toISOString() });
           }
         }
