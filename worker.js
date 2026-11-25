@@ -118,7 +118,7 @@ async function legacyRedirect(kind, url) {
 
 // Sitemap for Google: static pages + every published song, video and gist.
 const SITE = "https://mygospelhub.com.ng";
-const STATIC_PAGES = ["", "music", "browse-video", "browse-gist", "about", "contact", "privacy", "terms"];
+const STATIC_PAGES = ["", "music", "browse-video", "browse-gist", "all", "about", "contact", "privacy", "terms"];
 
 async function sbList(table, select) {
   try {
@@ -128,6 +128,30 @@ async function sbList(table, select) {
     const rows = await r.json();
     return Array.isArray(rows) ? rows : [];
   } catch (e) { return []; }
+}
+
+// Plain list of every page with real links, so Google can find them all (linked from the home page footer).
+async function allPages() {
+  const [content, gist] = await Promise.all([
+    sbList("content", "id,slug,type,title,artist"),
+    sbList("gist_articles", "id,slug,title,category"),
+  ]);
+  const e = (v) => String(v || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const li = (kind, r, extra) => `<li><a href="/${kind}/${encodeURIComponent(r.slug || r.id)}">${e(r.title)}${extra ? " – " + e(extra) : ""}</a></li>`;
+  const songs = content.filter((c) => c.type !== "Video").map((c) => li("song", c, c.artist));
+  const videos = content.filter((c) => c.type === "Video").map((c) => li("video", c, c.artist));
+  const news = gist.map((g) => li("gist", g, g.category));
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>All Songs, Videos and News | MyGospelHub</title>
+<meta name="description" content="Browse every gospel song, video and news article on MyGospelHub in one list.">
+<link rel="canonical" href="${SITE}/all">
+<style>body{background:#0a0a0a;color:#e8e6e1;font-family:system-ui,sans-serif;margin:0}main{max-width:760px;margin:0 auto;padding:24px 16px 60px}h1{font-size:26px}h2{margin-top:28px;color:#D9A441;font-size:18px}a{color:#e8e6e1}li{margin:6px 0;line-height:1.45}.top a{color:#D9A441}</style></head>
+<body><main><p class="top"><a href="/">← MyGospelHub home</a></p><h1>All Songs, Videos and News</h1>
+<h2>News (${news.length})</h2><ul>${news.join("")}</ul>
+<h2>Songs (${songs.length})</h2><ul>${songs.join("")}</ul>
+<h2>Videos (${videos.length})</h2><ul>${videos.join("")}</ul>
+<p><a href="/music">Browse music</a> · <a href="/browse-video">Browse videos</a> · <a href="/browse-gist">Browse news</a></p></main></body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=1800" } });
 }
 
 async function sitemap() {
@@ -461,6 +485,7 @@ const handler = {
     if (url.pathname === "/api/ai/find-links") return aiFindLinks(request, env);
     if (url.pathname === "/api/fb/post") return fbPost(request, env);
     if (url.pathname === "/sitemap.xml") return sitemap();
+    if (url.pathname === "/all") return allPages();
     if (url.pathname.startsWith("/s/")) return storageProxy(request, url);
     const path = url.pathname.replace(/\/$/, "");
     try {
