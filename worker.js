@@ -74,7 +74,7 @@ async function renderPage(kind, request, env, slug, id) {
     // Not found: show the normal page (it explains), but tell Google it is gone.
     return new Response(assetRes.body, { status: row ? assetRes.status : 404, headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": row ? "all" : "noindex" } });
   }
-  const canonical = `${url.origin}/${kind}/${encodeURIComponent(row.slug || row.id)}`;
+  const canonical = `${SITE}/${kind}/${encodeURIComponent(row.slug || row.id)}`;
   const p = seoParts(kind, row, canonical);
   let html = await assetRes.text();
   const head = `<base href="/">
@@ -480,6 +480,15 @@ const handler = {
   async scheduled(event, env, ctx) { if (env.INGEST_KEY) ctx.waitUntil(collectLeads(env)); },
   async fetch(request, env) {
     const url = new URL(request.url);
+    // One address per page: http -> https and www -> bare domain (fixes Google "duplicate" pages)
+    if (/^(GET|HEAD)$/.test(request.method) && (url.protocol === "http:" || url.hostname === "www.mygospelhub.com.ng")) {
+      return Response.redirect(SITE + url.pathname + url.search, 301);
+    }
+    // Empty /gist/, /song/, /video/ go to the listing page instead of a 404
+    const bare = url.pathname.match(/^\/(song|video|gist)\/?$/);
+    if (bare && !url.searchParams.get("id") && !url.searchParams.get("slug")) {
+      return Response.redirect(`${SITE}/${bare[1] === "gist" ? "browse-gist" : bare[1] === "video" ? "browse-video" : "music"}`, 301);
+    }
     if (url.pathname === "/api/ai/draft") return aiDraft(request, env);
     if (url.pathname === "/api/ai/fetch-leads") return aiFetchLeads(request, env);
     if (url.pathname === "/api/ai/find-links") return aiFindLinks(request, env);
