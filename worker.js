@@ -415,28 +415,62 @@ async function aiFindLinks(request, env) {
     const words = (x) => x.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(" ").filter((w) => w.length > 2);
     const tw = words(t), aw = words(a);
     const hit = (txt) => { const l = txt.toLowerCase(); return tw.some((w) => l.includes(w)) && aw.some((w) => l.includes(w)); };
+    const dbg = [];
+    const UA = { "User-Agent": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36", "Accept-Language": "en-US,en;q=0.9" };
+    const dec = (x) => String(x || "").replace(/&amp;/g, "&").replace(/&#39;|&#x27;/g, "'").replace(/&quot;/g, '"').replace(/<[^>]+>/g, " ");
+    // each engine returns [{text, link}]
+    const bing = async (q) => {
+      const r = await fetch(`https://www.bing.com/search?format=rss&q=${encodeURIComponent(q)}`, { headers: UA, signal: AbortSignal.timeout(8000) });
+      if (!r.ok) { dbg.push("bing " + r.status); return []; }
+      const xml = await r.text();
+      const items = xml.split("<item>").slice(1).map((it) => ({ text: dec((it.match(/<title>([^<]*)<\/title>/) || [])[1] || "") + " " + dec((it.match(/<description>([^<]*)<\/description>/) || [])[1] || ""), link: dec((it.match(/<link>([^<]+)<\/link>/) || [])[1] || "") }));
+      if (!items.length) dbg.push("bing 0 results");
+      return items;
+    };
+    const ddg = async (q) => {
+      const r = await fetch("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q), { headers: UA, signal: AbortSignal.timeout(8000) });
+      if (!r.ok) { dbg.push("ddg " + r.status); return []; }
+      const html = await r.text(); const items = [];
+      for (const m of html.matchAll(/<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>([\s\S]{0,600}?)(?=<a[^>]*class="result__a"|$)/g)) {
+        let link = dec(m[1]); const u = link.match(/uddg=([^&]+)/); if (u) { try { link = decodeURIComponent(u[1]); } catch (e) {} }
+        items.push({ text: dec(m[2]) + " " + dec(m[3]).slice(0, 300), link });
+      }
+      if (!items.length) dbg.push("ddg 0 results");
+      return items;
+    };
     const search = async (site, re) => {
-      try {
-        const r = await fetch(`https://www.bing.com/search?format=rss&q=${encodeURIComponent(`site:${site} ${a} ${t}`)}`, { headers: { "User-Agent": "Mozilla/5.0 (compatible; MyGospelHubBot/1.0)" }, signal: AbortSignal.timeout(8000) });
-        if (!r.ok) return "";
-        const xml = await r.text();
-        for (const it of xml.split("<item>").slice(1)) {
-          const link = (it.match(/<link>([^<]+)<\/link>/) || [])[1] || "";
-          const ttl = (it.match(/<title>([^<]*)<\/title>/) || [])[1] || "";
-          const m = link.replace(/&amp;/g, "&").match(re);
-          if (m && hit(ttl + " " + link)) return m[0];
-        }
-      } catch (e) { /* try the next one */ }
+      for (const eng of [bing, ddg]) {
+        try {
+          for (const it of await eng(`site:${site} ${a} ${t}`)) {
+            const m = it.link.match(re);
+            if (m && hit(it.text + " " + it.link)) return m[0];
+          }
+        } catch (e) { dbg.push("engine error"); }
+      }
       return "";
     };
-    const [yt, sp, am, fan] = await Promise.all([
-      search("youtube.com", /https?:\/\/(?:www\.)?youtube\.com\/watch\?v=[\w-]{11}/),
-      search("open.spotify.com", /https?:\/\/open\.spotify\.com\/(?:track|album)\/\w+/),
+    // YouTube also has its own search page
+    const ytDirect = async () => {
+      try {
+        const r = await fetch("https://www.youtube.com/results?search_query=" + encodeURIComponent(a + " " + t), { headers: { ...UA, Cookie: "CONSENT=YES+1; SOCS=CAI" }, signal: AbortSignal.timeout(8000) });
+        if (!r.ok) { dbg.push("youtube " + r.status); return ""; }
+        const html = await r.text();
+        const re = /"videoRenderer":\{"videoId":"([\w-]{11})"[\s\S]{0,1500}?"title":\{"runs":\[\{"text":"([^"]+)"/g;
+        let n = 0;
+        for (const m of html.matchAll(re)) { n++; if (hit(m[2])) return "https://www.youtube.com/watch?v=" + m[1]; }
+        if (!n) dbg.push("youtube 0 results");
+      } catch (e) { dbg.push("youtube error"); }
+      return "";
+    };
+    const [yt0, sp, am, fan] = await Promise.all([
+      search("youtube.com", /https?:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=[\w-]{11}/),
+      search("open.spotify.com", /https?:\/\/open\.spotify\.com\/(?:intl-\w+\/)?(?:track|album)\/\w+/),
       search("audiomack.com", /https?:\/\/(?:www\.)?audiomack\.com\/[\w.-]+\/(?:song|album)\/[\w.-]+/),
       search("ffm.to OR site:fanlink.to OR site:smarturl.it OR site:lnk.to", /https?:\/\/(?:ffm\.to|fanlink\.to|smarturl\.it|lnk\.to)\/[\w\/.-]+/),
     ]);
+    const yt = yt0 || await ytDirect();
     const out = { youtube: yt, spotify: sp, audiomack: am, fan, note: "" };
-    if (!yt && !sp && !am && !fan) out.note = "No matching links found. Check the spelling of the title and artist, or paste the links yourself.";
+    if (!yt && !sp && !am && !fan) out.note = "No matching links found. Check the spelling of the title and artist, or paste the links yourself." + (dbg.length ? " (Search info: " + [...new Set(dbg)].join(", ") + ")" : "");
     return aiJson(request, out);
   }
   let u; try { u = new URL(String(b.url || "")); } catch { return aiJson(request, { error: "Bad link" }, 400); }
