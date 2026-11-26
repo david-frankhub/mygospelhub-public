@@ -422,7 +422,7 @@ async function aiFindLinks(request, env) {
       try {
         if (env.YT_API_KEY) {
           const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=8&q=${encodeURIComponent(a + " " + t)}&key=${encodeURIComponent(env.YT_API_KEY)}`, { signal: AbortSignal.timeout(8000) });
-          if (!r.ok) { const eb = await r.json().catch(() => ({})); dbg.push("youtube api " + r.status + ": " + String(eb.error?.errors?.[0]?.reason || eb.error?.message || "").slice(0, 120)); }
+          if (!r.ok) { const eb = await r.json().catch(() => ({})); dbg.push("youtube api " + r.status + ": " + [eb.error?.errors?.[0]?.reason, eb.error?.message].filter(Boolean).join(" - ").replace(/<[^>]+>/g, "").slice(0, 220)); }
           else { const d = await r.json(); for (const it of d.items || []) if (hit(it.snippet?.title || "")) return "https://www.youtube.com/watch?v=" + it.id.videoId; dbg.push("youtube api: no match"); return ""; }
         }
         const r = await fetch("https://www.youtube.com/youtubei/v1/search?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", { method: "POST", headers: { ...UA, "Content-Type": "application/json", Origin: "https://www.youtube.com" }, body: JSON.stringify({ context: { client: { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en", gl: "NG" } }, query: a + " " + t, params: "EgIQAQ%3D%3D" }), signal: AbortSignal.timeout(8000) });
