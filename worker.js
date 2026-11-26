@@ -489,9 +489,11 @@ const handler = {
     if (bare && !url.searchParams.get("id") && !url.searchParams.get("slug")) {
       return Response.redirect(`${SITE}/${bare[1] === "gist" ? "browse-gist" : bare[1] === "video" ? "browse-video" : "music"}`, 301);
     }
-    if (url.pathname === "/api/ai/draft") return aiDraft(request, env);
-    if (url.pathname === "/api/ai/fetch-leads") return aiFetchLeads(request, env);
-    if (url.pathname === "/api/ai/find-links") return aiFindLinks(request, env);
+    // Any crash inside an admin API call still answers with readable JSON (so the browser shows the real reason, not "Failed to fetch")
+    const safe = async (fn) => { try { return await fn(request, env); } catch (e) { return aiJson(request, { error: "Server error: " + String((e && e.message) || e).slice(0, 200) + ". Please try again." }, 502); } };
+    if (url.pathname === "/api/ai/draft") return safe(aiDraft);
+    if (url.pathname === "/api/ai/fetch-leads") return safe(aiFetchLeads);
+    if (url.pathname === "/api/ai/find-links") return safe(aiFindLinks);
     if (url.pathname === "/api/fb/post") {
       try { return await fbPost(request, env); }
       catch (e) { return aiJson(request, { error: "Facebook post failed on the server: " + String(e && e.message || e).slice(0, 200) }, 502); }
