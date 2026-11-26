@@ -407,6 +407,38 @@ async function aiFindLinks(request, env) {
   const who = await aiAdmin(request, env);
   if (who instanceof Response) return who;
   let b; try { b = await request.json(); } catch { return aiJson(request, { error: "Bad request" }, 400); }
+  // Search mode: song title + artist -> look for YouTube / Spotify / Audiomack / fan links on the web (Bing RSS, direct links)
+  if (!b.url && b.title && b.artist) {
+    const clean = (v, n) => String(v || "").replace(/https?:\/\/\S+/g, "").replace(/["<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
+    const t = clean(b.title, 90), a = clean(b.artist, 60);
+    if (t.length < 2 || a.length < 2) return aiJson(request, { error: "Fill in the song title and artist first." }, 400);
+    const words = (x) => x.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(" ").filter((w) => w.length > 2);
+    const tw = words(t), aw = words(a);
+    const hit = (txt) => { const l = txt.toLowerCase(); return tw.some((w) => l.includes(w)) && aw.some((w) => l.includes(w)); };
+    const search = async (site, re) => {
+      try {
+        const r = await fetch(`https://www.bing.com/search?format=rss&q=${encodeURIComponent(`site:${site} ${a} ${t}`)}`, { headers: { "User-Agent": "Mozilla/5.0 (compatible; MyGospelHubBot/1.0)" }, signal: AbortSignal.timeout(8000) });
+        if (!r.ok) return "";
+        const xml = await r.text();
+        for (const it of xml.split("<item>").slice(1)) {
+          const link = (it.match(/<link>([^<]+)<\/link>/) || [])[1] || "";
+          const ttl = (it.match(/<title>([^<]*)<\/title>/) || [])[1] || "";
+          const m = link.replace(/&amp;/g, "&").match(re);
+          if (m && hit(ttl + " " + link)) return m[0];
+        }
+      } catch (e) { /* try the next one */ }
+      return "";
+    };
+    const [yt, sp, am, fan] = await Promise.all([
+      search("youtube.com", /https?:\/\/(?:www\.)?youtube\.com\/watch\?v=[\w-]{11}/),
+      search("open.spotify.com", /https?:\/\/open\.spotify\.com\/(?:track|album)\/\w+/),
+      search("audiomack.com", /https?:\/\/(?:www\.)?audiomack\.com\/[\w.-]+\/(?:song|album)\/[\w.-]+/),
+      search("ffm.to OR site:fanlink.to OR site:smarturl.it OR site:lnk.to", /https?:\/\/(?:ffm\.to|fanlink\.to|smarturl\.it|lnk\.to)\/[\w\/.-]+/),
+    ]);
+    const out = { youtube: yt, spotify: sp, audiomack: am, fan, note: "" };
+    if (!yt && !sp && !am && !fan) out.note = "No matching links found. Check the spelling of the title and artist, or paste the links yourself.";
+    return aiJson(request, out);
+  }
   let u; try { u = new URL(String(b.url || "")); } catch { return aiJson(request, { error: "Bad link" }, 400); }
   if (!/^https?:$/.test(u.protocol)) return aiJson(request, { error: "Bad link" }, 400);
   const out = { youtube: "", spotify: "", audiomack: "", fan: "", note: "" };
