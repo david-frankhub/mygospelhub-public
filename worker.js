@@ -425,6 +425,7 @@ async function aiFindLinks(request, env) {
       const xml = await r.text();
       const items = xml.split("<item>").slice(1).map((it) => ({ text: dec((it.match(/<title>([^<]*)<\/title>/) || [])[1] || "") + " " + dec((it.match(/<description>([^<]*)<\/description>/) || [])[1] || ""), link: dec((it.match(/<link>([^<]+)<\/link>/) || [])[1] || "") }));
       if (!items.length) dbg.push("bing 0 results");
+      else dbg.push("bing " + items.length + " items e.g. " + items.slice(0, 3).map((i) => { try { return new URL(i.link).hostname.replace(/^www\./, ""); } catch (e) { return "?"; } }).join("/"));
       return items;
     };
     const ddg = async (q) => {
