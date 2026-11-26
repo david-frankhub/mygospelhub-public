@@ -417,59 +417,39 @@ async function aiFindLinks(request, env) {
     const hit = (txt) => { const l = txt.toLowerCase(); return tw.some((w) => l.includes(w)) && aw.some((w) => l.includes(w)); };
     const dbg = [];
     const UA = { "User-Agent": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36", "Accept-Language": "en-US,en;q=0.9" };
-    const dec = (x) => String(x || "").replace(/&amp;/g, "&").replace(/&#39;|&#x27;/g, "'").replace(/&quot;/g, '"').replace(/<[^>]+>/g, " ");
-    // each engine returns [{text, link}]
-    const bing = async (q) => {
-      const r = await fetch(`https://www.bing.com/search?format=rss&q=${encodeURIComponent(q)}`, { headers: UA, signal: AbortSignal.timeout(8000) });
-      if (!r.ok) { dbg.push("bing " + r.status); return []; }
-      const xml = await r.text();
-      const items = xml.split("<item>").slice(1).map((it) => ({ text: dec((it.match(/<title>([^<]*)<\/title>/) || [])[1] || "") + " " + dec((it.match(/<description>([^<]*)<\/description>/) || [])[1] || ""), link: dec((it.match(/<link>([^<]+)<\/link>/) || [])[1] || "") }));
-      if (!items.length) dbg.push("bing 0 results");
-      else dbg.push("bing " + items.length + " items e.g. " + items.slice(0, 3).map((i) => { try { return new URL(i.link).hostname.replace(/^www\./, ""); } catch (e) { return "?"; } }).join("/"));
-      return items;
-    };
-    const ddg = async (q) => {
-      const r = await fetch("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q), { headers: UA, signal: AbortSignal.timeout(8000) });
-      if (!r.ok) { dbg.push("ddg " + r.status); return []; }
-      const html = await r.text(); const items = [];
-      for (const m of html.matchAll(/<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>([\s\S]{0,600}?)(?=<a[^>]*class="result__a"|$)/g)) {
-        let link = dec(m[1]); const u = link.match(/uddg=([^&]+)/); if (u) { try { link = decodeURIComponent(u[1]); } catch (e) {} }
-        items.push({ text: dec(m[2]) + " " + dec(m[3]).slice(0, 300), link });
-      }
-      if (!items.length) dbg.push("ddg 0 results");
-      return items;
-    };
-    const search = async (site, re) => {
-      for (const eng of [bing, ddg]) {
-        try {
-          for (const it of await eng(`site:${site} ${a} ${t}`)) {
-            const m = it.link.match(re);
-            if (m && hit(it.text + " " + it.link)) return m[0];
-          }
-        } catch (e) { dbg.push("engine error"); }
-      }
-      return "";
-    };
-    // YouTube also has its own search page
-    const ytDirect = async () => {
+    // YouTube: official API if a key is set, else YouTube's own web search
+    const ytSearch = async () => {
       try {
-        const r = await fetch("https://www.youtube.com/results?search_query=" + encodeURIComponent(a + " " + t), { headers: { ...UA, Cookie: "CONSENT=YES+1; SOCS=CAI" }, signal: AbortSignal.timeout(8000) });
+        if (env.YT_API_KEY) {
+          const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=8&q=${encodeURIComponent(a + " " + t)}&key=${encodeURIComponent(env.YT_API_KEY)}`, { signal: AbortSignal.timeout(8000) });
+          if (!r.ok) { dbg.push("youtube api " + r.status); }
+          else { const d = await r.json(); for (const it of d.items || []) if (hit(it.snippet?.title || "")) return "https://www.youtube.com/watch?v=" + it.id.videoId; dbg.push("youtube api: no match"); return ""; }
+        }
+        const r = await fetch("https://www.youtube.com/youtubei/v1/search?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", { method: "POST", headers: { ...UA, "Content-Type": "application/json", Origin: "https://www.youtube.com" }, body: JSON.stringify({ context: { client: { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en", gl: "NG" } }, query: a + " " + t, params: "EgIQAQ%3D%3D" }), signal: AbortSignal.timeout(8000) });
         if (!r.ok) { dbg.push("youtube " + r.status); return ""; }
-        const html = await r.text();
-        const re = /"videoRenderer":\{"videoId":"([\w-]{11})"[\s\S]{0,1500}?"title":\{"runs":\[\{"text":"([^"]+)"/g;
-        let n = 0;
-        for (const m of html.matchAll(re)) { n++; if (hit(m[2])) return "https://www.youtube.com/watch?v=" + m[1]; }
-        if (!n) dbg.push("youtube 0 results");
+        const txt = await r.text(); let n = 0;
+        for (const m of txt.matchAll(/"videoRenderer":\{"videoId":"([\w-]{11})"[\s\S]{0,2500}?"title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/g)) { n++; if (hit(m[2])) return "https://www.youtube.com/watch?v=" + m[1]; }
+        dbg.push(n ? "youtube: " + n + " results, none matched" : "youtube 0 results");
       } catch (e) { dbg.push("youtube error"); }
       return "";
     };
-    const [yt0, sp, am, fan] = await Promise.all([
-      search("youtube.com", /https?:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=[\w-]{11}/),
-      search("open.spotify.com", /https?:\/\/open\.spotify\.com\/(?:intl-\w+\/)?(?:track|album)\/\w+/),
-      search("audiomack.com", /https?:\/\/(?:www\.)?audiomack\.com\/[\w.-]+\/(?:song|album)\/[\w.-]+/),
-      search("ffm.to OR site:fanlink.to OR site:smarturl.it OR site:lnk.to", /https?:\/\/(?:ffm\.to|fanlink\.to|smarturl\.it|lnk\.to)\/[\w\/.-]+/),
-    ]);
-    const yt = yt0 || await ytDirect();
+    // Spotify: official API (needs SPOTIFY_CLIENT_ID + SPOTIFY_CLIENT_SECRET on the Worker)
+    const spSearch = async () => {
+      if (!env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET) { dbg.push("spotify not set up"); return ""; }
+      try {
+        const tr = await fetch("https://accounts.spotify.com/api/token", { method: "POST", headers: { Authorization: "Basic " + btoa(env.SPOTIFY_CLIENT_ID + ":" + env.SPOTIFY_CLIENT_SECRET), "Content-Type": "application/x-www-form-urlencoded" }, body: "grant_type=client_credentials", signal: AbortSignal.timeout(8000) });
+        if (!tr.ok) { dbg.push("spotify token " + tr.status); return ""; }
+        const tok = (await tr.json()).access_token;
+        const r = await fetch(`https://api.spotify.com/v1/search?type=track&limit=8&market=NG&q=${encodeURIComponent(`track:${t} artist:${a}`)}`, { headers: { Authorization: "Bearer " + tok }, signal: AbortSignal.timeout(8000) });
+        if (!r.ok) { dbg.push("spotify " + r.status); return ""; }
+        const d = await r.json();
+        for (const it of d.tracks?.items || []) if (hit((it.name || "") + " " + (it.artists || []).map((x) => x.name).join(" "))) return it.external_urls?.spotify || "";
+        dbg.push("spotify: no match");
+      } catch (e) { dbg.push("spotify error"); }
+      return "";
+    };
+    const [yt, sp] = await Promise.all([ytSearch(), spSearch()]);
+    const am = "", fan = "";
     const out = { youtube: yt, spotify: sp, audiomack: am, fan, note: "" };
     if (!yt && !sp && !am && !fan) out.note = "No matching links found. Check the spelling of the title and artist, or paste the links yourself." + (dbg.length ? " (Search info: " + [...new Set(dbg)].join(", ") + ")" : "");
     return aiJson(request, out);
