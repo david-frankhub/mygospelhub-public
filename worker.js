@@ -193,7 +193,7 @@ async function storageProxy(request, url) {
 // Swap AI_MODEL to change model; no API key needed (uses the env.AI binding).
 const AI_MODEL = "@cf/google/gemma-4-26b-a4b-it";
 const ADMIN_ORIGINS = ["https://mygospelhub-admin-2n9k-six.vercel.app"];
-const AI_CATEGORIES = ["Concert","Rumor","Community","Release","Church Life","Music Tips","Worship","Devotional","Faith and Encouragement","Artist Spotlight","Entertainment","Sports","Politics","Health and Well-being","General"];
+const AI_CATEGORIES = ["Concert","Rumor","Community","Release","Church Life","Music Tips","Worship","Devotional","Faith and Encouragement","Artist Spotlight","Entertainment","Birthday","Awards","Sports","Politics","Health and Well-being","General"];
 const aiHits = new Map(); // best-effort per-isolate rate limit
 
 function aiCors(request) {
