@@ -492,7 +492,10 @@ const handler = {
     if (url.pathname === "/api/ai/draft") return aiDraft(request, env);
     if (url.pathname === "/api/ai/fetch-leads") return aiFetchLeads(request, env);
     if (url.pathname === "/api/ai/find-links") return aiFindLinks(request, env);
-    if (url.pathname === "/api/fb/post") return fbPost(request, env);
+    if (url.pathname === "/api/fb/post") {
+      try { return await fbPost(request, env); }
+      catch (e) { return aiJson(request, { error: "Facebook post failed on the server: " + String(e && e.message || e).slice(0, 200) }, 502); }
+    }
     if (url.pathname === "/sitemap.xml") return sitemap();
     if (url.pathname === "/all") return allPages();
     if (url.pathname.startsWith("/s/")) return storageProxy(request, url);
