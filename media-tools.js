@@ -207,8 +207,78 @@
   function richText(text) { return bold(_esc(text || "")); }
   (function () {
     const st = document.createElement("style");
-    st.textContent = ".name-link{color:inherit;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;text-decoration-color:rgba(217,164,65,.7)}.name-link:hover{color:var(--gold,#d9a441)}.song-desc,.about-card p,.video-desc{white-space:pre-wrap}.song-desc strong,.about-card strong,.video-desc strong,.lyrics-body strong{color:#F2EFE9;font-weight:700}";
+    st.textContent = ".name-link{color:var(--gold,#d9a441);font-weight:600;text-decoration:none;background:rgba(217,164,65,.16);padding:1px 7px;margin:0 1px;border-radius:7px;border:1px solid rgba(217,164,65,.38);-webkit-box-decoration-break:clone;box-decoration-break:clone;white-space:normal;transition:background .15s}.name-link::after{content:\"\\2197\";font-size:.72em;margin-left:3px;opacity:.85}.name-link:hover,.name-link:active{background:rgba(217,164,65,.32);color:#fff}.song-desc,.about-card p,.video-desc{white-space:pre-wrap}.song-desc strong,.about-card strong,.video-desc strong,.lyrics-body strong{color:#F2EFE9;font-weight:700}";
     document.head.appendChild(st);
+  })();
+
+
+  // ---------- Auto-link every artist who has content on the site (descriptions and articles) ----------
+  const SB_URL = "https://kqgnpryubgdtmtcjtasi.supabase.co";
+  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZ25wcnl1YmdkdG10Y2p0YXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTQ1NjQsImV4cCI6MjA5OTczMDU2NH0.T0y1CVCzIvfmK4vgczmlpiAFZP63MRLZT5eymu8R6jY";
+  let artistRe = null;
+  async function loadKnownArtists() {
+    const KEY = "mgh_artists_v1";
+    try {
+      const c = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (c && Date.now() - c.t < 6 * 3600 * 1000 && Array.isArray(c.names)) return c.names;
+    } catch (e) {}
+    try {
+      const k = window.__SB_ANON || SB_KEY;
+      if (!k) return [];
+      const r = await fetch(SB_URL + "/rest/v1/content?select=artist&status=eq.Published&limit=3000", { headers: { apikey: k, Authorization: "Bearer " + k } });
+      if (!r.ok) return [];
+      const rows = await r.json();
+      const set = new Set();
+      rows.forEach((x) => artistNames(x.artist).forEach((n) => { if (n.length >= 4 && !/^\d+$/.test(n)) set.add(n); }));
+      const names = [...set];
+      try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), names })); } catch (e) {}
+      return names;
+    } catch (e) { return []; }
+  }
+  const AUTO_SEL = ".song-desc, .about-card p, .video-desc, .article-body, .lyrics-body";
+  let autoBusy = false;
+  function autoLinkAll() {
+    if (!artistRe || autoBusy) return;
+    autoBusy = true;
+    try {
+      document.querySelectorAll(AUTO_SEL).forEach((root) => {
+        const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+          acceptNode: (n) => (!n.nodeValue.trim() || n.parentNode.closest("a,button,script,style,.name-link")) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+        });
+        const nodes = [];
+        while (w.nextNode()) nodes.push(w.currentNode);
+        nodes.forEach((n) => {
+          const t = n.nodeValue;
+          artistRe.lastIndex = 0;
+          if (!artistRe.test(t)) return;
+          artistRe.lastIndex = 0;
+          const frag = document.createDocumentFragment();
+          let last = 0, m;
+          while ((m = artistRe.exec(t))) {
+            const start = m.index + m[1].length;
+            if (start > last) frag.appendChild(document.createTextNode(t.slice(last, start)));
+            const a = document.createElement("a");
+            a.className = "name-link";
+            a.href = nameUrl(m[2]);
+            a.textContent = m[2];
+            frag.appendChild(a);
+            last = start + m[2].length;
+          }
+          if (last < t.length) frag.appendChild(document.createTextNode(t.slice(last)));
+          n.parentNode.replaceChild(frag, n);
+        });
+      });
+    } finally { autoBusy = false; }
+  }
+  (async function initAutoLink() {
+    const names = await loadKnownArtists();
+    if (!names.length) return;
+    names.sort((a, b) => b.length - a.length);
+    artistRe = new RegExp("(^|[^\\w])(" + names.map(_re).join("|") + ")(?![\\w])", "gi");
+    let timer = null;
+    const run = () => { clearTimeout(timer); timer = setTimeout(autoLinkAll, 150); };
+    new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
+    run();
   })();
 
   window.MGH = { downloadSong, setMediaSession, nameLink, artistHtml, linkText, richText, nameUrl };
