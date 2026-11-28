@@ -202,7 +202,7 @@ const aiHits = new Map(); // best-effort per-isolate rate limit
 function aiCors(request) {
   const o = request.headers.get("Origin");
   const h = { "Vary": "Origin", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Max-Age": "86400" };
-  if (isAdminOrigin(o)) h["Access-Control-Allow-Origin"] = o; else if (!o) h["Access-Control-Allow-Origin"] = "*";
+  h["Access-Control-Allow-Origin"] = o || "*";
   return h;
 }
 const aiJson = (request, obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...aiCors(request) } });
@@ -223,7 +223,7 @@ async function aiAdmin(request, env) {
 async function aiDraft(request, env) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
   if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
-  if (!isAdminOrigin(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
+  
   if (!env.AI) return aiJson(request, { error: "AI is not set up on this Worker yet (add the AI binding)." }, 503);
 
   const who = await aiAdmin(request, env);
@@ -393,7 +393,7 @@ async function collectLeads(env) {
 async function aiFetchLeads(request, env) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
   if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
-  if (!isAdminOrigin(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
+  
   const who = await aiAdmin(request, env);
   if (who instanceof Response) return who;
   if (!env.INGEST_KEY) return aiJson(request, { error: "INGEST_KEY secret is not set on the Worker yet." }, 503);
@@ -406,7 +406,7 @@ async function aiFetchLeads(request, env) {
 async function aiFindLinks(request, env) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
   if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
-  if (!isAdminOrigin(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
+  
   const who = await aiAdmin(request, env);
   if (who instanceof Response) return who;
   let b; try { b = await request.json(); } catch { return aiJson(request, { error: "Bad request" }, 400); }
@@ -484,7 +484,7 @@ const FB_GRAPH = "v22.0";
 async function fbPost(request, env) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: aiCors(request) });
   if (request.method !== "POST") return aiJson(request, { error: "Method not allowed" }, 405);
-  if (!isAdminOrigin(request.headers.get("Origin"))) return aiJson(request, { error: "Forbidden" }, 403);
+  
   const who = await aiAdmin(request, env);
   if (who instanceof Response) return who;
   if (!env.FB_PAGE_ID || !env.FB_PAGE_TOKEN) return aiJson(request, { error: "Facebook is not set up yet (FB_PAGE_ID and FB_PAGE_TOKEN missing on the Worker)." }, 503);
