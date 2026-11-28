@@ -201,8 +201,8 @@ const aiHits = new Map(); // best-effort per-isolate rate limit
 
 function aiCors(request) {
   const o = request.headers.get("Origin");
-  const h = { "Vary": "Origin", "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Max-Age": "86400" };
-  if (isAdminOrigin(o)) h["Access-Control-Allow-Origin"] = o;
+  const h = { "Vary": "Origin", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Max-Age": "86400" };
+  if (isAdminOrigin(o)) h["Access-Control-Allow-Origin"] = o; else if (!o) h["Access-Control-Allow-Origin"] = "*";
   return h;
 }
 const aiJson = (request, obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...aiCors(request) } });
@@ -541,6 +541,7 @@ const handler = {
     }
     // Any crash inside an admin API call still answers with readable JSON (so the browser shows the real reason, not "Failed to fetch")
     const safe = async (fn) => { try { return await fn(request, env); } catch (e) { return aiJson(request, { error: "Server error: " + String((e && e.message) || e).slice(0, 200) + ". Please try again." }, 502); } };
+    if (url.pathname === "/api/ai/ping") return aiJson(request, { ok: true });
     if (url.pathname === "/api/ai/draft") return safe(aiDraft);
     if (url.pathname === "/api/ai/fetch-leads") return safe(aiFetchLeads);
     if (url.pathname === "/api/ai/find-links") return safe(aiFindLinks);
