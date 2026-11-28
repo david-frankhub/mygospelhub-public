@@ -456,26 +456,57 @@ function setSeo(title, desc, page, id) {
     });
   }
 
+  function gistCardHtml(g) {
+    return `
+      <div class="track-card" data-href="/gist/${encodeURIComponent(g.slug || g.id)}" data-id="gist-${escapeHtml(String(g.id))}">
+        <div class="tc-art" style="${g.cover_url ? `background-image:url('${escapeHtml(g.cover_url)}')` : ""}"></div>
+        <div class="tc-body">
+          <div class="tc-title">${escapeHtml(g.title)}</div>
+          <div class="tc-artist">News &bull; ${escapeHtml(g.category || "Gist")}</div>
+        </div>
+        <div class="tc-actions"><button class="tc-btn play" data-act="open" aria-label="Read ${escapeHtml(g.title)}">${ICON_STREAM}</button></div>
+      </div>`;
+  }
+
   async function loadRelated() {
     try {
-      const rows = await supabaseQuery(
+      const cur = currentSong;
+      // main artist name (before "ft", "feat", "&", "," or "x")
+      const main = String(cur.artist || "").split(/\s+(?:ft\.?|feat\.?|featuring|x)\s+|[,&]/i)[0].replace(/[*,()%]/g, " ").trim();
+      let byArtist = [], gistRows = [], more = [];
+      if (main.length > 1) {
+        const enc = encodeURIComponent("*" + main + "*");
+        [byArtist, gistRows] = await Promise.all([
+          supabaseQuery("content", `status=eq.Published&id=neq.${cur.id}&artist=ilike.${enc}&order=created_at.desc&limit=30`).catch(() => []),
+          supabaseQuery("gist_articles", `status=eq.Published&or=(title.ilike.${enc},body.ilike.${enc})&order=created_at.desc&select=id,slug,title,category,cover_url&limit=10`).catch(() => []),
+        ]);
+      }
+      const seen = new Set((byArtist || []).map(r => String(r.id)));
+      more = await supabaseQuery(
         "content",
-        `status=eq.Published&id=neq.${currentSong.id}&type=eq.${encodeURIComponent(currentSong.type || "Audio")}&genre=eq.${encodeURIComponent(currentSong.genre || "")}&order=views.desc&limit=4`
-      );
+        `status=eq.Published&id=neq.${cur.id}&type=eq.${encodeURIComponent(cur.type || "Audio")}&genre=eq.${encodeURIComponent(cur.genre || "")}&order=views.desc&limit=8`
+      ).catch(() => []);
+      more = (more || []).filter(r => !seen.has(String(r.id))).slice(0, 4);
+      const rows = [...(byArtist || []), ...more];
+      const metaFor = (r) => [r.type === "Video" ? "Video" : "Song", r.year, `${formatCount(r.views)} ${r.type === "Video" ? "views" : "plays"}`].filter(Boolean).join(" • ");
       const wrap = document.createElement("section");
       wrap.className = "related";
-      if (!rows || rows.length === 0) {
+      if (rows.length === 0 && (!gistRows || gistRows.length === 0)) {
         wrap.innerHTML = `<div class="section-label"><small>Keep listening</small>More like this</div><div class="state-block">No related tracks yet.</div>`;
       } else {
         wrap.innerHTML = `
           <div class="section-label"><small>Keep listening</small>More like this</div>
           <div class="tc-list" id="relatedList">
-            ${rows.map(r => itemCardHtml(r, [r.year, `${formatCount(r.views)} plays`].filter(Boolean).join(" • "))).join("")}
+            ${(byArtist || []).map(r => itemCardHtml(r, metaFor(r))).join("")}
+            ${(gistRows || []).map(gistCardHtml).join("")}
+            ${more.map(r => itemCardHtml(r, metaFor(r))).join("")}
           </div>
         `;
         wireItemCards(wrap.querySelector("#relatedList"), rows);
       }
-      document.getElementById("songContent").appendChild(wrap);
+      // Comments come first, then "More like this"
+      const c = document.querySelector("#songContent > section.comments");
+      if (c) c.after(wrap); else document.getElementById("songContent").appendChild(wrap);
     } catch (err) {
       console.error(err);
     }
@@ -547,7 +578,7 @@ function setSeo(title, desc, page, id) {
       </div>
       <div id="commentsList"><div class="state-block">Loading comments…</div></div>
     `;
-    document.getElementById("songContent").appendChild(wrap);
+    const rel = document.querySelector("#songContent > section.related"); if (rel) rel.before(wrap); else document.getElementById("songContent").appendChild(wrap);
 
     document.getElementById("commentSubmit").addEventListener("click", submitComment);
     refreshComments();
